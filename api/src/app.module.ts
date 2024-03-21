@@ -1,12 +1,17 @@
 import { Module } from '@nestjs/common'
 import { MongooseModule } from '@nestjs/mongoose'
 import { HashAdapter } from './adapters/hash.adapter'
+import { JwtService } from './application/jwt.service'
+import { RequestService } from './application/request.service'
 import { DbService } from './db/dbService'
 import { Comment, CommentSchema } from './db/schemas/comment.schema'
 import { CommentLike } from './db/schemas/commentLike.schema'
 import { Post, PostSchema } from './db/schemas/post.schema'
 import { PostLike, PostLikeSchema } from './db/schemas/PostLike.schema'
 import { User, UserSchema } from './db/schemas/user.schema'
+import { AuthController } from './domains/auth/auth.controller'
+import { AuthRepository } from './domains/auth/auth.repository'
+import { AuthService } from './domains/auth/auth.service'
 import { BlogsController } from './domains/blogs/blogs.controller'
 import { BlogsQueryRepository } from './domains/blogs/blogs.queryRepository'
 import { BlogsRepository } from './domains/blogs/blogs.repository'
@@ -48,6 +53,7 @@ const dbName = process.env.MONGO_DB_NAME
 		PostsController,
 		UsersController,
 		TestsController,
+		AuthController,
 	],
 	providers: [
 		BlogsService,
@@ -67,6 +73,10 @@ const dbName = process.env.MONGO_DB_NAME
 		UsersQueryRepository,
 		UsersService,
 		DbService,
+		AuthService,
+		JwtService,
+		RequestService,
+		AuthRepository,
 	],
 })
 export class AppModule {}

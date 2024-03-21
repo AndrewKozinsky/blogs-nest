@@ -5,7 +5,6 @@ import {
 	Get,
 	HttpCode,
 	HttpStatus,
-	Inject,
 	Param,
 	Post,
 	Put,
@@ -26,7 +25,6 @@ import {
 	GetBlogsQueries,
 	UpdateBlogDtoModel,
 } from './model/blogs.input.model'
-import { GetBlogsOutModel } from './model/blogs.output.model'
 
 @Controller(RouteNames.blogs)
 export class BlogsController {

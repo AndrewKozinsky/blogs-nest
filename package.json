@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "express-useragent": "^1.0.15",
+    "jsonwebtoken": "^9.0.2"
+  }
+}
