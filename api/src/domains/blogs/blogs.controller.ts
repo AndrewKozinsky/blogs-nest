@@ -44,7 +44,7 @@ export class BlogsController {
 
 	@Post()
 	@HttpCode(HttpStatus.CREATED)
-	async createNewBlog(@Query() query: GetBlogsQueries, @Body() body: CreateBlogDtoModel) {
+	async createNewBlog(@Body() body: CreateBlogDtoModel) {
 		const createdBlogId = await this.blogsService.createBlog(body)
 		const createdBlog = await this.blogsQueryRepository.getBlog(createdBlogId)
 
@@ -53,12 +53,7 @@ export class BlogsController {
 
 	@Get(':blogId')
 	@HttpCode(HttpStatus.OK)
-	async getBlogPosts(
-		@Param('blogId') blogId: string,
-		@Body() body: GetBlogPostsQueries,
-		@Res() res: Response,
-		@Req() req: Request,
-	) {
+	async getBlogPosts(@Param('blogId') blogId: string, @Res() res: Response, @Req() req: Request) {
 		const { user } = req
 
 		const blog = await this.blogsRepository.getBlogById(blogId)

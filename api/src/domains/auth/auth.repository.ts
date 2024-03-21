@@ -25,7 +25,7 @@ export class AuthRepository {
 		private jwtService: JwtService,
 	) {}
 
-	/*async getUserByRefreshToken(refreshTokenStr: string) {
+	async getUserByRefreshToken(refreshTokenStr: string) {
 		const refreshTokenData = this.jwtService.getRefreshTokenDataFromTokenStr(refreshTokenStr)
 
 		const getDeviceRes = await this.DeviceTokenModel.findOne({
@@ -38,14 +38,14 @@ export class AuthRepository {
 
 		const getUserRes = await this.UserModel.findOne({
 			_id: new ObjectId(getDeviceRes.userId),
-		}).lean()
+		})
 
 		if (!getUserRes) {
 			return null
 		}
 
 		return this.mapDbUserToServiceUser(getUserRes)
-	}*/
+	}
 
 	async getUserByEmail(loginOrEmail: string) {
 		const getUserRes = await this.UserModel.findOne({
@@ -200,7 +200,7 @@ export class AuthRepository {
 		return this.DeviceTokenModel.findOne({ deviceId }).lean()
 	}*/
 
-	/*async getUserDevicesByDeviceId(deviceId: string): Promise<LayerResult<DBTypes.DeviceToken[]>> {
+	async getUserDevicesByDeviceId(deviceId: string): Promise<LayerResult<DBTypes.DeviceToken[]>> {
 		const userDevice = await this.DeviceTokenModel.findOne({ deviceId }).lean()
 
 		if (!userDevice) {
@@ -221,7 +221,7 @@ export class AuthRepository {
 			code: LayerResultCode.Success,
 			data: userDevices.map(this.mapDbDeviceRefreshTokenToServiceDeviceRefreshToken),
 		}
-	}*/
+	}
 
 	mapDbUserToServiceUser(dbUser: UserDocument): UserServiceModel {
 		return this.commonService.mapDbUserToServiceUser(dbUser)

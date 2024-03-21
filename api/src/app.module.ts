@@ -28,6 +28,7 @@ import { PostsController } from './domains/posts/posts.controller'
 import { PostsQueryRepository } from './domains/posts/posts.queryRepository'
 import { PostsRepository } from './domains/posts/posts.repository'
 import { PostsService } from './domains/posts/posts.service'
+import { SecurityController } from './domains/security/security.controller'
 import { TestsController } from './domains/test/tests.controller'
 import { UsersController } from './domains/users/users.controller'
 import { UsersQueryRepository } from './domains/users/users.queryRepository'
@@ -54,6 +55,7 @@ const dbName = process.env.MONGO_DB_NAME
 		UsersController,
 		TestsController,
 		AuthController,
+		SecurityController,
 	],
 	providers: [
 		BlogsService,
