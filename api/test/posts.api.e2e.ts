@@ -23,9 +23,9 @@
 
 // resetDbEveryTest()
 
-/*it.skip('123', async () => {
+it.skip('123', async () => {
 	expect(2).toBe(2)
-})*/
+})
 
 /*describe('Getting post comments', () => {
 	it.skip('should return an object with property items contains an empty array', async () => {

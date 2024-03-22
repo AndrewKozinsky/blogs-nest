@@ -1,11 +1,14 @@
 import { Module } from '@nestjs/common'
 import { MongooseModule } from '@nestjs/mongoose'
+import { EmailAdapter } from './adapters/email.adapter'
 import { HashAdapter } from './adapters/hash.adapter'
+import { BrowserService } from './application/browser.service'
 import { JwtService } from './application/jwt.service'
 import { RequestService } from './application/request.service'
 import { DbService } from './db/dbService'
 import { Comment, CommentSchema } from './db/schemas/comment.schema'
 import { CommentLike } from './db/schemas/commentLike.schema'
+import { DeviceToken, DeviceTokenSchema } from './db/schemas/deviceToken.schema'
 import { Post, PostSchema } from './db/schemas/post.schema'
 import { PostLike, PostLikeSchema } from './db/schemas/PostLike.schema'
 import { User, UserSchema } from './db/schemas/user.schema'
@@ -29,11 +32,15 @@ import { PostsQueryRepository } from './domains/posts/posts.queryRepository'
 import { PostsRepository } from './domains/posts/posts.repository'
 import { PostsService } from './domains/posts/posts.service'
 import { SecurityController } from './domains/security/security.controller'
+import { SecurityQueryRepository } from './domains/security/security.queryRepository'
+import { SecurityRepository } from './domains/security/security.repository'
+import { SecurityService } from './domains/security/security.service'
 import { TestsController } from './domains/test/tests.controller'
 import { UsersController } from './domains/users/users.controller'
 import { UsersQueryRepository } from './domains/users/users.queryRepository'
 import { UsersRepository } from './domains/users/users.repository'
 import { UsersService } from './domains/users/users.service'
+import { EmailManager } from './managers/email.manager'
 
 const mongoURI = process.env.MONGO_URL
 const dbName = process.env.MONGO_DB_NAME
@@ -47,6 +54,7 @@ const dbName = process.env.MONGO_DB_NAME
 		MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
 		MongooseModule.forFeature([{ name: Comment.name, schema: CommentSchema }]),
 		MongooseModule.forFeature([{ name: CommentLike.name, schema: CommentSchema }]),
+		MongooseModule.forFeature([{ name: DeviceToken.name, schema: DeviceTokenSchema }]),
 	],
 	controllers: [
 		BlogsController,
@@ -79,6 +87,12 @@ const dbName = process.env.MONGO_DB_NAME
 		JwtService,
 		RequestService,
 		AuthRepository,
+		EmailManager,
+		BrowserService,
+		EmailAdapter,
+		SecurityQueryRepository,
+		SecurityService,
+		SecurityRepository,
 	],
 })
 export class AppModule {}

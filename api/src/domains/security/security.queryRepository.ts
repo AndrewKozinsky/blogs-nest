@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
-import { DeviceToken, DeviceTokenDocument } from '../../db/schemas/DeviceToken.schema'
+import { DeviceToken, DeviceTokenDocument } from '../../db/schemas/deviceToken.schema'
 import { AuthRepository } from '../auth/auth.repository'
 import { GetUserDevicesOutModel, UserDeviceOutModel } from './model/security.output.model'
 

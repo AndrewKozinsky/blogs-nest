@@ -1,10 +1,9 @@
-import { inject, injectable } from 'inversify'
+import { Injectable } from '@nestjs/common'
 import { EmailAdapter } from '../adapters/email.adapter'
-import { ClassNames } from '../composition/classNames'
 
-@injectable()
+@Injectable()
 export class EmailManager {
-	@inject(ClassNames.EmailAdapter) private emailAdapter: EmailAdapter
+	constructor(private emailAdapter: EmailAdapter) {}
 
 	async sendEmailConfirmationMessage(userEmail: string, confirmationCode: string) {
 		const subject = 'Registration at our web-site'

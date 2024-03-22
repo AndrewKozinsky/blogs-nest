@@ -18,9 +18,9 @@
 
 // resetDbEveryTest()
 
-/*it.skip('123', async () => {
+it.skip('123', async () => {
 	expect(2).toBe(2)
-})*/
+})
 
 /*describe('Getting a comment', () => {
 	it.skip('should return 404 if a comment does not exists', async () => {

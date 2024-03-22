@@ -9,9 +9,9 @@
 
 // resetDbEveryTest()
 
-/*it.skip('123', () => {
+it.skip('123', () => {
 	expect(2).toBe(2)
-})*/
+})
 
 /*describe('Getting all users', () => {
 	it.skip('should forbid a request from an unauthorized user', async () => {
