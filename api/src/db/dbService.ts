@@ -33,7 +33,7 @@ export class DbService {
 	}*/
 
 	async drop() {
-		const models = [
+		/*const models = [
 			this.BlogModel.deleteMany,
 			this.CommentModel.deleteMany,
 			this.CommentLikeModel.deleteMany,
@@ -43,9 +43,17 @@ export class DbService {
 			this.RateLimitModel.deleteMany,
 			this.UserModel.deleteMany,
 		]
+		await Promise.all(models)*/
 
 		try {
-			await Promise.all(models)
+			await this.BlogModel.deleteMany()
+			await this.CommentModel.deleteMany()
+			await this.CommentLikeModel.deleteMany()
+			await this.DeviceTokenModel.deleteMany()
+			await this.PostModel.deleteMany()
+			await this.PostLikeModel.deleteMany()
+			await this.RateLimitModel.deleteMany()
+			await this.UserModel.deleteMany()
 
 			return true
 		} catch (err: unknown) {

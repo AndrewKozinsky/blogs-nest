@@ -1,6 +1,9 @@
 // import dotenv from 'dotenv'
+import { INestApplication } from '@nestjs/common'
 // import { Express } from 'express'
-// import request from 'supertest'
+import { agent as request } from 'supertest'
+import RouteNames from '../../src/config/routeNames'
+import { CreateBlogDtoModel } from '../../src/domains/blogs/model/blogs.input.model'
 // import { HTTP_STATUSES } from '../../../src/config/config'
 // import RouteNames from '../../../src/config/routeNames'
 // import { DBTypes } from '../../../src/db/dbTypes'
@@ -16,19 +19,23 @@
 
 // dotenv.config()
 
-// export const adminAuthorizationValue = 'Basic YWRtaW46cXdlcnR5'
-// export const userLogin = 'my-login'
-// export const userEmail = 'mail@email.com'
-// export const userPassword = 'password'
+export const adminAuthorizationValue = 'Basic YWRtaW46cXdlcnR5'
+export const userLogin = 'my-login'
+export const userEmail = 'mail@email.com'
+export const userPassword = 'password'
 
-/*export async function addBlogRequest(app: Express, blogDto: Partial<CreateBlogDtoModel> = {}) {
+export async function addBlogRequest(
+	app: INestApplication,
+	blogDto: Partial<CreateBlogDtoModel> = {},
+) {
+	// @ts-ignore
 	return request(app)
 		.post(RouteNames.blogs)
 		.send(createDtoAddBlog(blogDto))
 		.set('Content-Type', 'application/json')
 		.set('Accept', 'application/json')
 		.set('authorization', adminAuthorizationValue)
-}*/
+}
 
 /*export async function addBlogPostRequest(
 	app: Express,
@@ -45,7 +52,7 @@
 		.set('authorization', adminAuthorizationValue)
 }*/
 
-/*export function createDtoAddBlog(newBlogObj: Partial<CreateBlogDtoModel> = {}): CreateBlogDtoModel {
+export function createDtoAddBlog(newBlogObj: Partial<CreateBlogDtoModel> = {}): CreateBlogDtoModel {
 	return Object.assign(
 		{
 			name: 'my name',
@@ -55,7 +62,7 @@
 		},
 		{ ...newBlogObj },
 	)
-}*/
+}
 
 /*export async function addPostRequest(
 	app: Express,

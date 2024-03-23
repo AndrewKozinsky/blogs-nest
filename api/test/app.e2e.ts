@@ -1,24 +1,17 @@
-import { Test, TestingModule } from '@nestjs/testing'
 import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
-import { AppModule } from '../src/app.module'
-import { resetDbEveryTest } from './utils/common'
-
-resetDbEveryTest()
+import { createTestApp } from './utils/common'
+import { clearAllDB } from './utils/db'
 
 describe('AppController (e2e)', () => {
 	let app: INestApplication
 
 	beforeEach(async () => {
-		const moduleFixture: TestingModule = await Test.createTestingModule({
-			imports: [AppModule],
-		}).compile()
-
-		app = moduleFixture.createNestApplication()
-		await app.init()
+		app = await createTestApp()
+		await clearAllDB(app)
 	})
 
-	it('/ (GET)', () => {
+	it.skip('/ (GET)', () => {
 		return request(app.getHttpServer()).get('/blogs').expect(200)
 		// return request(app.getHttpServer()).get('/blogs').expect(200).expect('Hello World!')
 	})

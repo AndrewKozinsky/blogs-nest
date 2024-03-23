@@ -11,6 +11,7 @@ import { CommentLike } from './db/schemas/commentLike.schema'
 import { DeviceToken, DeviceTokenSchema } from './db/schemas/deviceToken.schema'
 import { Post, PostSchema } from './db/schemas/post.schema'
 import { PostLike, PostLikeSchema } from './db/schemas/postLike.schema'
+import { RateLimit, RateLimitSchema } from './db/schemas/rateLimit.schema'
 import { User, UserSchema } from './db/schemas/user.schema'
 import { AuthController } from './domains/auth/auth.controller'
 import { AuthRepository } from './domains/auth/auth.repository'
@@ -55,6 +56,7 @@ const dbName = process.env.MONGO_DB_NAME
 		MongooseModule.forFeature([{ name: Comment.name, schema: CommentSchema }]),
 		MongooseModule.forFeature([{ name: CommentLike.name, schema: CommentSchema }]),
 		MongooseModule.forFeature([{ name: DeviceToken.name, schema: DeviceTokenSchema }]),
+		MongooseModule.forFeature([{ name: RateLimit.name, schema: RateLimitSchema }]),
 	],
 	controllers: [
 		BlogsController,

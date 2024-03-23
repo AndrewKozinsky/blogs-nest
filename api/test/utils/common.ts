@@ -1,13 +1,5 @@
-// import { app } from '../../../src/app'
-// import { ClassNames } from '../../../src/composition/classNames'
-// import { myContainer } from '../../../src/composition/inversify.config'
-// import { DbService } from '../../../src/db/dbService'
-
-import { clearAllDB } from './db'
-
-// const dbService = new DbService()
-
-import { DbService } from '../../src/db/dbService'
+import { Test, TestingModule } from '@nestjs/testing'
+import { AppModule } from '../../src/app.module'
 
 export function resetDbEveryTest() {
 	beforeAll(async () => {
@@ -15,10 +7,17 @@ export function resetDbEveryTest() {
 	})
 
 	beforeEach(async () => {
-		await clearAllDB()
+		// await clearAllDB()
 	})
+}
 
-	afterAll(async function () {
-		// await dbService.close()
-	})
+export async function createTestApp() {
+	const moduleFixture: TestingModule = await Test.createTestingModule({
+		imports: [AppModule],
+	}).compile()
+
+	const app = moduleFixture.createNestApplication()
+	await app.init()
+
+	return app
 }
