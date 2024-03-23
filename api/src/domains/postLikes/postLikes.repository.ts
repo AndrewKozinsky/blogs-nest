@@ -1,25 +1,10 @@
 import { Injectable } from '@nestjs/common'
-// import { DBTypes } from '../db/dbTypes'
-// import { Post } from '../db/schemas/post.schema'
-// import { GetPostsQueries } from './model/posts.input.model'
-// import { GetPostsOutModel } from './model/posts.output.model'
 import { InjectModel } from '@nestjs/mongoose'
-// import { FilterQuery, Model } from 'mongoose'
 import { ObjectId } from 'mongodb'
 import { Model } from 'mongoose'
 import { DBTypes } from '../../db/dbTypes'
-import { PostLike, PostLikeDocument } from '../../db/schemas/PostLike.schema'
+import { PostLike, PostLikeDocument } from '../../db/schemas/postLike.schema'
 import { PostLikeServiceModel } from './models/postLikes.service.model'
-// import { DBTypes } from '../../db/dbTypes'
-// import { Blog, BlogDocument } from '../../db/schemas/blog.schema'
-// import { PostOutModel } from '../../posts/model/posts.output.model'
-// import { GetBlogPostsQueries, GetBlogsQueries } from './model/blogs.input.model'
-// import {
-// 	BlogOutModel,
-// 	GetBlogOutModel,
-// 	GetBlogPostsOutModel,
-// 	GetBlogsOutModel,
-// } from './model/blogs.output.model'
 
 @Injectable()
 export class PostLikesRepository {

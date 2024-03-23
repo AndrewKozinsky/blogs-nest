@@ -3,15 +3,9 @@ import { InjectModel } from '@nestjs/mongoose'
 import { ObjectId } from 'mongodb'
 import { Model } from 'mongoose'
 import { Post, PostDocument } from '../../db/schemas/post.schema'
-import { BlogsRepository } from '../blogs/blogs.repository'
-import { CreatePostDtoModel, UpdatePostDtoModel } from './model/posts.input.model'
-import { CreatePostOutModel, PostOutModel } from './model/posts.output.model'
+import { UpdatePostDtoModel } from './model/posts.input.model'
+import { CreatePostOutModel } from './model/posts.output.model'
 import { PostServiceModel } from './model/posts.service.model'
-// import { CreatePostDtoModel } from '../../posts/model/posts.input.model'
-// import { BlogsQueryRepository } from './blogs.queryRepository'
-// import { BlogsRepository } from './blogs.repository'
-// import { CreateBlogDtoModel, CreateBlogPostDtoModel } from './model/blogs.input.model'
-// import { CreateBlogOutModel } from './model/blogs.output.model'
 
 @Injectable()
 export class PostsRepository {

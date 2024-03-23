@@ -1,20 +1,6 @@
-import {
-	Body,
-	Controller,
-	Delete,
-	Get,
-	HttpCode,
-	HttpStatus,
-	Inject,
-	Param,
-	Post,
-	Put,
-	Query,
-	Req,
-	Res,
-} from '@nestjs/common'
+import { Controller, Delete, HttpCode, HttpStatus, Res } from '@nestjs/common'
+import { Response } from 'express'
 import RouteNames from '../../config/routeNames'
-import { Request, Response } from 'express'
 import { DbService } from '../../db/dbService'
 
 @Controller(RouteNames.testing)

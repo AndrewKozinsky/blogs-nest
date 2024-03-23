@@ -1,35 +1,51 @@
-// import dotenv from 'dotenv'
-import * as mongoose from 'mongoose'
+import { InjectModel } from '@nestjs/mongoose'
+import dotenv from 'dotenv'
+import { Model } from 'mongoose'
 import { Injectable } from '@nestjs/common'
+import { Blog } from './schemas/blog.schema'
+import { Comment } from './schemas/comment.schema'
+import { CommentLike } from './schemas/commentLike.schema'
+import { DeviceToken } from './schemas/deviceToken.schema'
+import { Post } from './schemas/post.schema'
+import { PostLike } from './schemas/postLike.schema'
+import { RateLimit } from './schemas/rateLimit.schema'
+import { User } from './schemas/user.schema'
 
-// dotenv.config()
+dotenv.config()
 
 const mongoURI = process.env.MONGO_URL
 
 @Injectable()
 export class DbService {
-	/*async runDb() {
-		try {
-			await mongoose.connect(mongoURI, { dbName: process.env.MONGO_DB_NAME })
-			console.log('Connected to DB 🔥')
-		} catch {
-			await this.close()
-			console.log('Cannot connect to DB 🦁')
-		}
-	}*/
+	constructor(
+		@InjectModel(Blog.name) private BlogModel: Model<Blog>,
+		@InjectModel(Comment.name) private CommentModel: Model<Comment>,
+		@InjectModel(CommentLike.name) private CommentLikeModel: Model<CommentLike>,
+		@InjectModel(DeviceToken.name) private DeviceTokenModel: Model<DeviceToken>,
+		@InjectModel(Post.name) private PostModel: Model<Post>,
+		@InjectModel(PostLike.name) private PostLikeModel: Model<PostLike>,
+		@InjectModel(RateLimit.name) private RateLimitModel: Model<RateLimit>,
+		@InjectModel(User.name) private UserModel: Model<User>,
+	) {}
 
 	/*async close() {
 		await mongoose.disconnect()
 	}*/
 
 	async drop() {
-		try {
-			const { models } = mongoose
+		const models = [
+			this.BlogModel.deleteMany,
+			this.CommentModel.deleteMany,
+			this.CommentLikeModel.deleteMany,
+			this.DeviceTokenModel.deleteMany,
+			this.PostModel.deleteMany,
+			this.PostLikeModel.deleteMany,
+			this.RateLimitModel.deleteMany,
+			this.UserModel.deleteMany,
+		]
 
-			for (const modelName in models) {
-				const model = models[modelName]
-				await model.deleteMany()
-			}
+		try {
+			await Promise.all(models)
 
 			return true
 		} catch (err: unknown) {

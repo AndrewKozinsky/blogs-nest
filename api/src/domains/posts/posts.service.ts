@@ -13,11 +13,6 @@ import {
 } from './model/posts.input.model'
 import { PostOutModel } from './model/posts.output.model'
 import { PostsRepository } from './posts.repository'
-// import { CreatePostDtoModel } from '../../posts/model/posts.input.model'
-// import { BlogsQueryRepository } from './blogs.queryRepository'
-// import { BlogsRepository } from './blogs.repository'
-// import { CreateBlogDtoModel, CreateBlogPostDtoModel } from './model/blogs.input.model'
-// import { CreateBlogOutModel } from './model/blogs.output.model'
 
 @Injectable()
 export class PostsService {

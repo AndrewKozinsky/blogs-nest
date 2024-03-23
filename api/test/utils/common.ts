@@ -3,20 +3,22 @@
 // import { myContainer } from '../../../src/composition/inversify.config'
 // import { DbService } from '../../../src/db/dbService'
 
-// import { clearAllDB } from './db'
+import { clearAllDB } from './db'
 
-// const dbService = myContainer.get<DbService>(ClassNames.DbService)
+// const dbService = new DbService()
 
-/*export function resetDbEveryTest() {
+import { DbService } from '../../src/db/dbService'
+
+export function resetDbEveryTest() {
 	beforeAll(async () => {
-		await dbService.runDb()
+		// await dbService.runDb()
 	})
 
 	beforeEach(async () => {
-		await clearAllDB(app)
+		await clearAllDB()
 	})
 
 	afterAll(async function () {
 		// await dbService.close()
 	})
-}*/
+}

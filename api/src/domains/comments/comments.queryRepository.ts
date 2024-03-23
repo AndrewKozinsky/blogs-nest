@@ -3,12 +3,11 @@ import { DBTypes } from '../../db/dbTypes'
 import { Comment, CommentDocument } from '../../db/schemas/comment.schema'
 import { Post } from '../../db/schemas/post.schema'
 import { CommentLikesRepository } from '../commentLikes/CommentLikes.repository'
-import { PostLikesRepository } from '../postLikes/postLikes.repository'
 import { GetPostCommentsQueries } from '../posts/model/posts.input.model'
 import { UsersRepository } from '../users/users.repository'
 import { CommentOutModel, GetCommentOutModel } from './model/comments.output.model'
 import { InjectModel } from '@nestjs/mongoose'
-import { FilterQuery, Model } from 'mongoose'
+import { Model } from 'mongoose'
 import { ObjectId } from 'mongodb'
 
 type GetPostCommentsResult =

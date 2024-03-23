@@ -1,8 +1,18 @@
-// import { Express } from 'express'
-// import request from 'supertest'
-// import { HTTP_STATUSES } from '../../../src/config/config'
-// import RouteNames from '../../../src/config/routeNames'
+import { HttpStatus } from '@nestjs/common'
+import { agent as request } from 'supertest'
+import { Test, TestingModule } from '@nestjs/testing'
+import { AppModule } from '../../src/app.module'
+import RouteNames from '../../src/config/routeNames'
 
-/*export async function clearAllDB(app: Express) {
-	await request(app).delete(RouteNames.testingAllData).expect(HTTP_STATUSES.NO_CONTENT_204)
-}*/
+export async function clearAllDB() {
+	const moduleFixture: TestingModule = await Test.createTestingModule({
+		imports: [AppModule],
+	}).compile()
+
+	const app = moduleFixture.createNestApplication()
+	await app.init()
+
+	await request(app.getHttpServer())
+		.delete(RouteNames.testingAllData)
+		.expect(HttpStatus.NO_CONTENT)
+}

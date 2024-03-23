@@ -1,12 +1,5 @@
 import { Injectable } from '@nestjs/common'
-// import { DBTypes } from '../db/dbTypes'
-// import { Post } from '../db/schemas/post.schema'
-// import {PostLike} from '../db/schemas/PostLike.schema'
-// import { PostLikesRepository } from '../postLikes/postLikes.repository'
-// import { GetPostsQueries } from './model/posts.input.model'
-// import { GetPostsOutModel } from './model/posts.output.model'
 import { InjectModel } from '@nestjs/mongoose'
-// import { FilterQuery, Model } from 'mongoose'
 import { ObjectId } from 'mongodb'
 import { FilterQuery, Model } from 'mongoose'
 import { DBTypes } from '../../db/dbTypes'
@@ -14,17 +7,6 @@ import { CommonService } from '../common/common.service'
 import { User, UserDocument } from '../../db/schemas/user.schema'
 import { GetUsersQueries } from './models/users.input.model'
 import { GetUserOutModel, GetUsersOutModel, UserOutModel } from './models/users.output.model'
-import { UserServiceModel } from './models/users.service.model'
-// import { DBTypes } from '../../db/dbTypes'
-// import { Blog, BlogDocument } from '../../db/schemas/blog.schema'
-// import { PostOutModel } from '../../posts/model/posts.output.model'
-// import { GetBlogPostsQueries, GetBlogsQueries } from './model/blogs.input.model'
-// import {
-// 	BlogOutModel,
-// 	GetBlogOutModel,
-// 	GetBlogPostsOutModel,
-// 	GetBlogsOutModel,
-// } from './model/blogs.output.model'
 
 @Injectable()
 export class UsersQueryRepository {
