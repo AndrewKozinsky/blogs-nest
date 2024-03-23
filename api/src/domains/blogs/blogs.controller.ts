@@ -69,7 +69,7 @@ export class BlogsController {
 			return
 		}
 
-		return posts
+		res.send(posts)
 	}
 
 	@Post(':blogId/posts')
@@ -93,7 +93,7 @@ export class BlogsController {
 
 		const createdPost = await this.postsQueryRepository.getPost(user?.id, createPostInsertedId)
 
-		return createdPost
+		res.send(createdPost)
 	}
 
 	@Get(':blogId')

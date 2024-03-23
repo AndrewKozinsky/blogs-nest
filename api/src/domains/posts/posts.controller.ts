@@ -72,7 +72,7 @@ export class PostsController {
 			return
 		}
 
-		return post
+		res.send(post)
 	}
 
 	// Update existing post by id with InputModel
@@ -125,7 +125,7 @@ export class PostsController {
 			return
 		}
 
-		return postComments.data
+		res.send(postComments.data)
 	}
 
 	// Create new comment
@@ -151,7 +151,7 @@ export class PostsController {
 			createdCommentId,
 		)
 
-		return getCommentRes
+		res.send(getCommentRes)
 	}
 
 	// Make like/unlike/dislike/undislike operation
