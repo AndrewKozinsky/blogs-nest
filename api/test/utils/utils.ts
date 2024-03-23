@@ -3,7 +3,11 @@ import { INestApplication } from '@nestjs/common'
 // import { Express } from 'express'
 import { agent as request } from 'supertest'
 import RouteNames from '../../src/config/routeNames'
-import { CreateBlogDtoModel } from '../../src/domains/blogs/model/blogs.input.model'
+import { DBTypes } from '../../src/db/dbTypes'
+import {
+	CreateBlogDtoModel,
+	CreateBlogPostDtoModel,
+} from '../../src/domains/blogs/model/blogs.input.model'
 // import { HTTP_STATUSES } from '../../../src/config/config'
 // import RouteNames from '../../../src/config/routeNames'
 // import { DBTypes } from '../../../src/db/dbTypes'
@@ -24,11 +28,7 @@ export const userLogin = 'my-login'
 export const userEmail = 'mail@email.com'
 export const userPassword = 'password'
 
-export async function addBlogRequest(
-	app: INestApplication,
-	blogDto: Partial<CreateBlogDtoModel> = {},
-) {
-	// @ts-ignore
+export async function addBlogRequest(app: any, blogDto: Partial<CreateBlogDtoModel> = {}) {
 	return request(app)
 		.post(RouteNames.blogs)
 		.send(createDtoAddBlog(blogDto))
@@ -37,8 +37,8 @@ export async function addBlogRequest(
 		.set('authorization', adminAuthorizationValue)
 }
 
-/*export async function addBlogPostRequest(
-	app: Express,
+export async function addBlogPostRequest(
+	app: any,
 	blogId: string,
 	postDto: Partial<CreateBlogPostDtoModel> = {},
 ) {
@@ -50,7 +50,7 @@ export async function addBlogRequest(
 		.set('Content-Type', 'application/json')
 		.set('Accept', 'application/json')
 		.set('authorization', adminAuthorizationValue)
-}*/
+}
 
 export function createDtoAddBlog(newBlogObj: Partial<CreateBlogDtoModel> = {}): CreateBlogDtoModel {
 	return Object.assign(
@@ -92,7 +92,7 @@ export function createDtoAddBlog(newBlogObj: Partial<CreateBlogDtoModel> = {}): 
 	)
 }*/
 
-/*export function createDtoAddBlogPost(
+export function createDtoAddBlogPost(
 	newPostObj: Partial<CreateBlogPostDtoModel> = {},
 ): CreateBlogPostDtoModel {
 	return Object.assign(
@@ -103,9 +103,9 @@ export function createDtoAddBlog(newBlogObj: Partial<CreateBlogDtoModel> = {}): 
 		},
 		newPostObj,
 	)
-}*/
+}
 
-/*export function checkPostObj(
+export function checkPostObj(
 	postObj: any,
 	likesCount: number,
 	dislikesCount: number,
@@ -135,7 +135,7 @@ export function createDtoAddBlog(newBlogObj: Partial<CreateBlogDtoModel> = {}): 
 		expect(typeof postObj.extendedLikesInfo.newestLikes[0].userId).toBe('string')
 		expect(typeof postObj.extendedLikesInfo.newestLikes[0].login).toBe('string')
 	}
-}*/
+}
 
 /*export async function addUserByAdminRequest(
 	app: Express,

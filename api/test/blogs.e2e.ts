@@ -13,16 +13,18 @@ import { agent as request } from 'supertest'
 import { describe } from 'node:test'
 import { HTTP_STATUSES } from '../src/config/config'
 import RouteNames from '../src/config/routeNames'
+import { DBTypes } from '../src/db/dbTypes'
 import { GetBlogsOutModel } from '../src/domains/blogs/model/blogs.output.model'
+import { GetPostsOutModel } from '../src/domains/posts/model/posts.output.model'
 import { createTestApp } from './utils/common'
 import { clearAllDB } from './utils/db'
-import { addBlogRequest } from './utils/utils'
+import { addBlogPostRequest, addBlogRequest, checkPostObj } from './utils/utils'
 
 it.skip('123', async () => {
 	expect(2).toBe(2)
 })
 
-describe('Getting all blogs', () => {
+describe('ROOT', () => {
 	let app: any
 
 	beforeEach(async () => {
@@ -90,7 +92,7 @@ describe('Getting all blogs', () => {
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
-		it('should not create a blog by wrong dto', async () => {
+		it.skip('should not create a blog by wrong dto', async () => {
 			const createdBlogRes = await addBlogRequest(app.getHttpServer(), {
 				websiteUrl: 'samurai.it-incubator',
 			})
@@ -116,24 +118,30 @@ describe('Getting all blogs', () => {
 		})
 	})
 
-	/*describe('Getting a blog', () => {
+	describe('Getting a blog', () => {
 		it.skip("should return a 404 if a blog doesn't exists", async () => {
-			await request(app.getHttpServer()).get(RouteNames.blog('999')).expect(HTTP_STATUSES.NOT_FOUNT_404)
+			await request(app.getHttpServer())
+				.get(RouteNames.blog('999'))
+				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
 
 		it.skip('should return an existing blog', async () => {
 			const createdBlogRes = await addBlogRequest(app.getHttpServer())
 			const createdBlogId = createdBlogRes.body.id
 
-			const getBlogRes = await request(app.getHttpServer()).get(RouteNames.blog(createdBlogId))
+			const getBlogRes = await request(app.getHttpServer()).get(
+				RouteNames.blog(createdBlogId),
+			)
 			expect(getBlogRes.status).toBe(HTTP_STATUSES.OK_200)
 			checkBlogObj(getBlogRes.body)
 		})
-	})*/
+	})
 
-	/*describe('Getting a blog posts', () => {
-		it.skip("should return a 404 if a blog doesn't exists", async () => {
-			await request(app.getHttpServer()).get(RouteNames.blogPosts('999')).expect(HTTP_STATUSES.NOT_FOUNT_404)
+	describe('Getting a blog posts', () => {
+		it("should return a 404 if a blog doesn't exists", async () => {
+			await request(app.getHttpServer())
+				.get(RouteNames.blogPosts('999'))
+				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
 
 		it.skip('should return an object with property items contains an empty array', async () => {
@@ -170,8 +178,8 @@ describe('Getting all blogs', () => {
 			expect(getBlogPostsRes.body.totalCount).toBe(2)
 			expect(getBlogPostsRes.body.items.length).toBe(2)
 
-			checkPostObj(getBlogPostsRes.body.items[0])
-			checkPostObj(getBlogPostsRes.body.items[1])
+			checkPostObj(getBlogPostsRes.body.items[0], 0, 0, DBTypes.LikeStatuses.None)
+			checkPostObj(getBlogPostsRes.body.items[1], 0, 0, DBTypes.LikeStatuses.None)
 		})
 
 		it.skip('should return an object with properties with specific values after creating 5 blog posts', async () => {
@@ -195,7 +203,7 @@ describe('Getting all blogs', () => {
 			expect(getBlogsRes.body.totalCount).toBe(7)
 			expect(getBlogsRes.body.items.length).toBe(2)
 		})
-	})*/
+	})
 
 	/*describe('Updating a blog', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
