@@ -24,7 +24,7 @@ export class UsersQueryRepository {
 		}
 
 		const sortBy = queries.sortBy ?? 'createdAt'
-		const sortDirection = queries.sortDirection ?? 'desc'
+		const sortDirection = queries.sortDirection ?? 'asc'
 		const sort = { [sortBy]: sortDirection }
 
 		const pageNumber = queries.pageNumber ? +queries.pageNumber : 1
