@@ -24,7 +24,7 @@ export class UsersController {
 	) {}
 
 	// Returns all users
-	@Get(':postId')
+	@Get()
 	async getUsers(@Query() query: GetUsersQueries, @Res() res: Response) {
 		const users = await this.usersQueryRepository.getUsers(query)
 
