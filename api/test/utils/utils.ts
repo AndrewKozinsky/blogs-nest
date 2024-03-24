@@ -8,6 +8,11 @@ import {
 	CreateBlogDtoModel,
 	CreateBlogPostDtoModel,
 } from '../../src/domains/blogs/model/blogs.input.model'
+import {
+	CreatePostCommentDtoModel,
+	CreatePostDtoModel,
+} from '../../src/domains/posts/model/posts.input.model'
+import { CreateUserDtoModel } from '../../src/domains/users/models/users.input.model'
 // import { HTTP_STATUSES } from '../../../src/config/config'
 // import RouteNames from '../../../src/config/routeNames'
 // import { DBTypes } from '../../../src/db/dbTypes'
@@ -64,8 +69,8 @@ export function createDtoAddBlog(newBlogObj: Partial<CreateBlogDtoModel> = {}): 
 	)
 }
 
-/*export async function addPostRequest(
-	app: Express,
+export async function addPostRequest(
+	app: any,
 	blogId: string,
 	postDto: Partial<CreatePostDtoModel> = {},
 ) {
@@ -75,9 +80,9 @@ export function createDtoAddBlog(newBlogObj: Partial<CreateBlogDtoModel> = {}): 
 		.send(createDtoAddPost(blogId, postDto))
 		.set('Content-Type', 'application/json')
 		.set('Accept', 'application/json')
-}*/
+}
 
-/*export function createDtoAddPost(
+export function createDtoAddPost(
 	blogId: string,
 	newPostObj: Partial<CreatePostDtoModel> = {},
 ): CreatePostDtoModel {
@@ -90,7 +95,7 @@ export function createDtoAddBlog(newBlogObj: Partial<CreateBlogDtoModel> = {}): 
 		},
 		newPostObj,
 	)
-}*/
+}
 
 export function createDtoAddBlogPost(
 	newPostObj: Partial<CreateBlogPostDtoModel> = {},
@@ -137,10 +142,7 @@ export function checkPostObj(
 	}
 }
 
-/*export async function addUserByAdminRequest(
-	app: Express,
-	userDto: Partial<CreateUserDtoModel> = {},
-) {
+export async function addUserByAdminRequest(app: any, userDto: Partial<CreateUserDtoModel> = {}) {
 	// Register user
 	return await request(app)
 		.post(RouteNames.users)
@@ -148,9 +150,9 @@ export function checkPostObj(
 		.set('Content-Type', 'application/json')
 		.set('Accept', 'application/json')
 		.set('authorization', adminAuthorizationValue)
-}*/
+}
 
-/*export function createDtoAddUser(newUserObj: Partial<CreateUserDtoModel> = {}): CreateUserDtoModel {
+export function createDtoAddUser(newUserObj: Partial<CreateUserDtoModel> = {}): CreateUserDtoModel {
 	return Object.assign(
 		{
 			login: userLogin,
@@ -159,7 +161,7 @@ export function checkPostObj(
 		},
 		newUserObj,
 	)
-}*/
+}
 
 /*export function checkUserObj(userObj: any) {
 	expect(userObj._id).toBe(undefined)
@@ -185,12 +187,12 @@ export function checkPostObj(
 	)
 }*/
 
-/*export function loginRequest(app: Express, loginOrEmail: string, password: string) {
+export function loginRequest(app: any, loginOrEmail: string, password: string) {
 	return request(app).post(RouteNames.authLogin).send({ loginOrEmail, password })
-}*/
+}
 
-/*export async function addPostCommentRequest(
-	app: Express,
+export async function addPostCommentRequest(
+	app: any,
 	userAuthorizationToken: string,
 	postId: string,
 	commentDto: Partial<CreatePostCommentDtoModel> = {},
@@ -201,9 +203,9 @@ export function checkPostObj(
 		.set('Content-Type', 'application/json')
 		.set('Accept', 'application/json')
 		.set('authorization', 'Bearer ' + userAuthorizationToken)
-}*/
+}
 
-/*export function createDtoAddPostComment(
+export function createDtoAddPostComment(
 	newCommentObj: Partial<CreatePostCommentDtoModel> = {},
 ): CreatePostCommentDtoModel {
 	return Object.assign(
@@ -212,9 +214,9 @@ export function checkPostObj(
 		},
 		newCommentObj,
 	)
-}*/
+}
 
-/*export function checkCommentObj(
+export function checkCommentObj(
 	commentObj: any,
 	userId: string,
 	userLogin: string,
@@ -240,4 +242,4 @@ export function checkPostObj(
 	expect(commentObj.createdAt).toMatch(
 		/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/,
 	)
-}*/
+}

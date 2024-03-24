@@ -63,7 +63,6 @@ export class PostsController {
 
 	// Return post by id
 	@Get('postId')
-	@HttpCode(HttpStatus.OK)
 	async getPost(@Param('postId') postId: string, @Res() res: Response, @Req() req: Request) {
 		const { user } = req
 

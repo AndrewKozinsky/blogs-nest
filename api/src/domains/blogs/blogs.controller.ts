@@ -60,7 +60,6 @@ export class BlogsController {
 		}
 
 		const posts = await this.blogsQueryRepository.getBlogPosts(user?.id, blogId, req.query)
-
 		if (!posts) {
 			res.sendStatus(HttpStatus.NOT_FOUND)
 			return

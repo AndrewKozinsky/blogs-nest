@@ -1,7 +1,3 @@
-// import RouteNames from '../../src/config/routeNames'
-// import { CreateBlogDtoModel } from '../../src/models/input/blogs.input.model'
-// import { GetPostsOutModel } from '../../src/models/output/posts.output.model'
-// import { resetDbEveryTest } from './utils/common'
 import { agent as request } from 'supertest'
 import { describe } from 'node:test'
 import { HTTP_STATUSES } from '../src/config/config'
