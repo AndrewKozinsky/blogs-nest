@@ -120,9 +120,11 @@ describe('ROOT', () => {
 		})
 	})
 
-	/*describe('Creating an user', () => {
+	describe('Creating an user', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
-			await request(app.getHttpServer()).post(RouteNames.users).expect(HTTP_STATUSES.UNAUTHORIZED_401)
+			await request(app.getHttpServer())
+				.post(RouteNames.users)
+				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
 		it.skip('should not create an user by wrong dto', async () => {
@@ -149,7 +151,7 @@ describe('ROOT', () => {
 				.set('authorization', adminAuthorizationValue)
 			expect(allUsersRes.body.items.length).toBe(2)
 		})
-	})*/
+	})
 
 	/*
 	describe('Deleting an user', () => {
