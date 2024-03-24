@@ -62,7 +62,7 @@ export class PostsController {
 	}
 
 	// Return post by id
-	@Get('postId')
+	@Get(':postId')
 	async getPost(@Param('postId') postId: string, @Res() res: Response, @Req() req: Request) {
 		const { user } = req
 
@@ -77,7 +77,7 @@ export class PostsController {
 	}
 
 	// Update existing post by id with InputModel
-	@Put('postId')
+	@Put(':postId')
 	async updatePost(
 		@Body() body: UpdatePostDtoModel,
 		@Res() res: Response,
@@ -94,7 +94,7 @@ export class PostsController {
 	}
 
 	// Delete post specified by id
-	@Delete('postId')
+	@Delete(':postId')
 	async deletePost(@Res() res: Response, @Param('postId') postId: string) {
 		const isPostDeleted = await this.postsService.deletePost(postId)
 

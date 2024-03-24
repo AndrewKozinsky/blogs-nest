@@ -24,7 +24,7 @@ export class UsersController {
 	) {}
 
 	// Returns all users
-	@Get('postId')
+	@Get(':postId')
 	async getUsers(@Query() query: GetUsersQueries, @Res() res: Response) {
 		const users = await this.usersQueryRepository.getUsers(query)
 
@@ -43,7 +43,7 @@ export class UsersController {
 		res.status(HttpStatus.CREATED).send(getUserRes)
 	}
 
-	@Delete('userId')
+	@Delete(':userId')
 	async deleteUser(@Param('userId') userId: string, @Res() res: Response) {
 		const isUserDeleted = await this.usersService.deleteUser(userId)
 
