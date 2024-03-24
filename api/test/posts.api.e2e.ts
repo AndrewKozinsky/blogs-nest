@@ -65,7 +65,7 @@ describe('ROOT', () => {
 			const postId = createdPostRes.body.id
 
 			// User on whose behalf comments will be created
-			const createdUserRes = await addUserByAdminRequest(app.getHttpServer())
+			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const loginUserRes = await loginRequest(app, userEmail, userPassword)
 			const userToken = loginUserRes.body.accessToken
@@ -115,7 +115,7 @@ describe('ROOT', () => {
 			const postId = createdPostRes.body.id
 
 			// User on whose behalf comments will be created
-			const createdUserRes = await addUserByAdminRequest(app.getHttpServer())
+			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const loginUserRes = await loginRequest(app, userEmail, userPassword)
 			const userToken = loginUserRes.body.accessToken
@@ -333,7 +333,7 @@ describe('ROOT', () => {
 			const postId = createdPostRes.body.id
 
 			// User on whose behalf comments will be created
-			const createdUserRes = await addUserByAdminRequest(app.getHttpServer())
+			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const loginUserRes = await loginRequest(app, userEmail, userPassword)
 			const userToken = loginUserRes.body.accessToken
@@ -361,7 +361,7 @@ describe('ROOT', () => {
 			const postId = createdPostRes.body.id
 
 			// User on whose behalf comments will be created
-			const createdUserRes = await addUserByAdminRequest(app.getHttpServer())
+			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const loginUserRes = await loginRequest(app, userEmail, userPassword)
 			const userToken = loginUserRes.body.accessToken
@@ -497,9 +497,9 @@ describe('ROOT', () => {
 			const getPostRes = await request(app.getHttpServer()).get(
 				RouteNames.post(createdPostId),
 			)
-			// expect(getPostRes.status).toBe(HTTP_STATUSES.OK_200)
+			expect(getPostRes.status).toBe(HTTP_STATUSES.OK_200)
 
-			/*checkPostObj(getPostRes.body, 0, 0, DBTypes.LikeStatuses.None)*/
+			checkPostObj(getPostRes.body, 0, 0, DBTypes.LikeStatuses.None)
 		})
 	})
 
@@ -601,7 +601,7 @@ describe('ROOT', () => {
 
 		it.skip('should return 404 if a post does not exists', async () => {
 			// User will create a post
-			const createdUserRes = await addUserByAdminRequest(app.getHttpServer())
+			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const loginUserRes = await loginRequest(app, userEmail, userPassword)
 			const userToken = loginUserRes.body.accessToken
@@ -617,7 +617,7 @@ describe('ROOT', () => {
 
 		it.skip('should return 400 if requst body does not exist', async () => {
 			// User will create a comment
-			const createdUserRes = await addUserByAdminRequest(app.getHttpServer())
+			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const loginUserRes = await loginRequest(app, userEmail, userPassword)
 			const userToken = loginUserRes.body.accessToken
@@ -640,7 +640,7 @@ describe('ROOT', () => {
 			const postId = createdPostRes.body.id
 
 			// Create a user on behalf of which requests will be made
-			const createdUserRes = await addUserByAdminRequest(app.getHttpServer())
+			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const loginUserRes = await loginRequest(app, userEmail, userPassword)
 			const userToken = loginUserRes.body.accessToken

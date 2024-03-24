@@ -144,7 +144,7 @@ export function checkPostObj(
 
 export async function addUserByAdminRequest(app: any, userDto: Partial<CreateUserDtoModel> = {}) {
 	// Register user
-	return await request(app)
+	return await request(app.getHttpServer())
 		.post(RouteNames.users)
 		.send(createDtoAddUser(userDto))
 		.set('Content-Type', 'application/json')
@@ -163,7 +163,7 @@ export function createDtoAddUser(newUserObj: Partial<CreateUserDtoModel> = {}): 
 	)
 }
 
-/*export function checkUserObj(userObj: any) {
+export function checkUserObj(userObj: any) {
 	expect(userObj._id).toBe(undefined)
 	expect(typeof userObj.id).toBe('string')
 	expect(userObj.login).toMatch(/^[a-zA-Z0-9_-]*$/)
@@ -172,7 +172,7 @@ export function createDtoAddUser(newUserObj: Partial<CreateUserDtoModel> = {}): 
 	expect(userObj.createdAt).toMatch(
 		/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/,
 	)
-}*/
+}
 
 /*export function checkUserDeviceObj(userDeviceObj: any) {
 	expect(userDeviceObj).toEqual({

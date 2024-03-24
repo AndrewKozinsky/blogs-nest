@@ -10,10 +10,7 @@ import { GetUserOutModel, GetUsersOutModel, UserOutModel } from './models/users.
 
 @Injectable()
 export class UsersQueryRepository {
-	constructor(
-		@InjectModel(User.name) private UserModel: Model<User>,
-		private commonService: CommonService,
-	) {}
+	constructor(@InjectModel(User.name) private UserModel: Model<User>) {}
 
 	async getUsers(queries: GetUsersQueries): Promise<GetUsersOutModel> {
 		const filter: FilterQuery<DBTypes.User> = {
@@ -24,8 +21,8 @@ export class UsersQueryRepository {
 		}
 
 		const sortBy = queries.sortBy ?? 'createdAt'
-		const sortDirection = queries.sortDirection ?? 'asc'
-		const sort = { [sortBy]: sortDirection }
+		const sortDirection = queries.sortDirection ?? 'desc'
+		const sort = { ['account.' + sortBy]: sortDirection }
 
 		const pageNumber = queries.pageNumber ? +queries.pageNumber : 1
 		const pageSize = queries.pageSize ? +queries.pageSize : 10

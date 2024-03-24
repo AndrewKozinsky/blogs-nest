@@ -10,7 +10,7 @@ export class User {
 			login: { type: String, require: true },
 			email: { type: String, require: true },
 			password: { type: String, require: true },
-			passwordRecoveryCode: { type: String, require: false },
+			passwordRecoveryCode: { type: String },
 			createdAt: { type: String, require: true },
 		}),
 	)
