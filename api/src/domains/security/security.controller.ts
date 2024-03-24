@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, HttpCode, HttpStatus, Param, Req, Res } from '@nestjs/common'
+import { Controller, Delete, Get, HttpStatus, Param, Req, Res } from '@nestjs/common'
 import { Request, Response } from 'express'
 import { RequestService } from '../../application/request.service'
 import RouteNames from '../../config/routeNames'
@@ -16,26 +16,26 @@ export class SecurityController {
 
 	// Returns all devices with active sessions for current user
 	@Get('devices')
-	@HttpCode(HttpStatus.OK)
-	async getUserDevices(@Req() req: Request) {
+	async getUserDevices(@Req() req: Request, @Res() res: Response) {
 		const refreshTokenFromCookie = this.requestService.getDeviceRefreshStrTokenFromReq(req)
 
 		const userDevices =
 			await this.securityQueryRepository.getUserDevices(refreshTokenFromCookie)
-		return userDevices
+
+		res.status(HttpStatus.OK).send(userDevices)
 	}
 
 	// Terminate all other (exclude current) device's sessions
 	@Delete('devices')
-	@HttpCode(HttpStatus.NO_CONTENT)
-	async terminateUserDevicesExceptOne(@Req() req: Request) {
+	async terminateUserDevicesExceptOne(@Req() req: Request, @Res() res: Response) {
 		const refreshTokenFromCookie = this.requestService.getDeviceRefreshStrTokenFromReq(req)
 		await this.securityService.terminateAllDeviceRefreshTokensApartThis(refreshTokenFromCookie)
+
+		res.sendStatus(HttpStatus.NO_CONTENT)
 	}
 
 	// Terminate specified device session
 	@Delete('devices/:deviceId')
-	@HttpCode(HttpStatus.NO_CONTENT)
 	async terminateUserDevice(
 		@Param('deviceId') deviceId: string,
 		@Req() req: Request,
@@ -56,5 +56,7 @@ export class SecurityController {
 			res.sendStatus(HttpStatus.FORBIDDEN)
 			return
 		}
+
+		res.sendStatus(HttpStatus.NO_CONTENT)
 	}
 }

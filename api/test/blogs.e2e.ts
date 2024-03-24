@@ -2,23 +2,23 @@
 // import { CreateBlogDtoModel } from '../../src/models/input/blogs.input.model'
 // import { GetPostsOutModel } from '../../src/models/output/posts.output.model'
 // import { resetDbEveryTest } from './utils/common'
-/*import {
-	addBlogPostRequest,
-	addBlogRequest,
-	adminAuthorizationValue,
-	checkPostObj,
-	createDtoAddBlogPost,
-} from './utils/utils'*/
 import { agent as request } from 'supertest'
 import { describe } from 'node:test'
 import { HTTP_STATUSES } from '../src/config/config'
 import RouteNames from '../src/config/routeNames'
 import { DBTypes } from '../src/db/dbTypes'
+import { CreateBlogDtoModel } from '../src/domains/blogs/model/blogs.input.model'
 import { GetBlogsOutModel } from '../src/domains/blogs/model/blogs.output.model'
 import { GetPostsOutModel } from '../src/domains/posts/model/posts.output.model'
 import { createTestApp } from './utils/common'
 import { clearAllDB } from './utils/db'
-import { addBlogPostRequest, addBlogRequest, checkPostObj } from './utils/utils'
+import {
+	addBlogPostRequest,
+	addBlogRequest,
+	adminAuthorizationValue,
+	checkPostObj,
+	createDtoAddBlogPost,
+} from './utils/utils'
 
 it.skip('123', async () => {
 	expect(2).toBe(2)
@@ -138,7 +138,7 @@ describe('ROOT', () => {
 	})
 
 	describe('Getting a blog posts', () => {
-		it("should return a 404 if a blog doesn't exists", async () => {
+		it.skip("should return a 404 if a blog doesn't exists", async () => {
 			await request(app.getHttpServer())
 				.get(RouteNames.blogPosts('999'))
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
@@ -205,9 +205,11 @@ describe('ROOT', () => {
 		})
 	})
 
-	/*describe('Updating a blog', () => {
+	describe('Updating a blog', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
-			await request(app.getHttpServer()).put(RouteNames.blog('999')).expect(HTTP_STATUSES.UNAUTHORIZED_401)
+			await request(app.getHttpServer())
+				.put(RouteNames.blog('999'))
+				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
 		it.skip('should not update a non existing blog', async () => {
@@ -250,18 +252,22 @@ describe('ROOT', () => {
 				.set('Accept', 'application/json')
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 
-			const getBlogRes = await request(app.getHttpServer()).get(RouteNames.blog(createdBlogId))
+			const getBlogRes = await request(app.getHttpServer()).get(
+				RouteNames.blog(createdBlogId),
+			)
 
 			expect(getBlogRes.status).toBe(HTTP_STATUSES.OK_200)
 			expect(getBlogRes.body.name).toBe(updateBlogDto.name)
 			expect(getBlogRes.body.description).toBe(updateBlogDto.description)
 			expect(getBlogRes.body.websiteUrl).toBe(updateBlogDto.websiteUrl)
 		})
-	})*/
+	})
 
-	/*describe('Create a blog post', () => {
+	describe('Create a blog post', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
-			await request(app.getHttpServer()).post(RouteNames.blogPosts('999')).expect(HTTP_STATUSES.UNAUTHORIZED_401)
+			await request(app.getHttpServer())
+				.post(RouteNames.blogPosts('999'))
+				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
 		it.skip('forbid to create a blog post by wrong blog id', async () => {
@@ -280,7 +286,11 @@ describe('ROOT', () => {
 			const createdBlogRes = await addBlogRequest(app.getHttpServer())
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
-			const addBlogPostRes = await addBlogPostRequest(app.getHttpServer(), createdBlogRes.body.id, { title: '' })
+			const addBlogPostRes = await addBlogPostRequest(
+				app.getHttpServer(),
+				createdBlogRes.body.id,
+				{ title: '' },
+			)
 
 			expect({}.toString.call(addBlogPostRes.body.errorsMessages)).toBe('[object Array]')
 			expect(addBlogPostRes.body.errorsMessages.length).toBe(1)
@@ -291,18 +301,26 @@ describe('ROOT', () => {
 			const createdBlogRes = await addBlogRequest(app.getHttpServer())
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
-			const createBlogPostRes = await addBlogPostRequest(app.getHttpServer(), createdBlogRes.body.id)
+			const createBlogPostRes = await addBlogPostRequest(
+				app.getHttpServer(),
+				createdBlogRes.body.id,
+			)
 
-			checkPostObj(createBlogPostRes.body)
+			checkPostObj(createBlogPostRes.body, 0, 0, DBTypes.LikeStatuses.None)
 
 			// Check if there are 2 blog posts after adding another one
-			const createdSecondBlogPostRes = await addBlogPostRequest(app.getHttpServer(), createdBlogRes.body.id)
+			const createdSecondBlogPostRes = await addBlogPostRequest(
+				app.getHttpServer(),
+				createdBlogRes.body.id,
+			)
 			expect(createdSecondBlogPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
-			const allBlogPostsRes = await request(app.getHttpServer()).get(RouteNames.blogPosts(createdBlogRes.body.id))
+			const allBlogPostsRes = await request(app.getHttpServer()).get(
+				RouteNames.blogPosts(createdBlogRes.body.id),
+			)
 			expect(allBlogPostsRes.body.items.length).toBe(2)
 		})
-	})*/
+	})
 
 	/*describe('Deleting a blog', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {

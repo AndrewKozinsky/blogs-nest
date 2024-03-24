@@ -8,7 +8,6 @@ export class TestsController {
 	constructor(private dbService: DbService) {}
 
 	@Delete('all-data')
-	@HttpCode(HttpStatus.BAD_REQUEST)
 	async deleteAllData(@Res() res: Response) {
 		const isDropped = await this.dbService.drop()
 
@@ -16,5 +15,7 @@ export class TestsController {
 			res.sendStatus(HttpStatus.NO_CONTENT)
 			return
 		}
+
+		res.sendStatus(HttpStatus.BAD_REQUEST)
 	}
 }

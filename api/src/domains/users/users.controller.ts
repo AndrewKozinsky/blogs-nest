@@ -25,27 +25,25 @@ export class UsersController {
 
 	// Returns all users
 	@Get('postId')
-	@HttpCode(HttpStatus.OK)
-	async getUsers(@Query() query: GetUsersQueries) {
+	async getUsers(@Query() query: GetUsersQueries, @Res() res: Response) {
 		const users = await this.usersQueryRepository.getUsers(query)
-		return users
+
+		res.status(HttpStatus.OK).send(users)
 	}
 
 	// ---
 
 	// Create new user by the admin
 	@Post()
-	@HttpCode(HttpStatus.CREATED)
-	async createUser(@Body() body: CreateUserDtoModel) {
+	async createUser(@Body() body: CreateUserDtoModel, @Res() res: Response) {
 		const createdUserId = await this.usersService.createUserByAdmin(body)
 
 		const getUserRes = await this.usersQueryRepository.getUser(createdUserId)
 
-		return getUserRes
+		res.status(HttpStatus.CREATED).send(getUserRes)
 	}
 
 	@Delete('userId')
-	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteUser(@Param('userId') userId: string, @Res() res: Response) {
 		const isUserDeleted = await this.usersService.deleteUser(userId)
 
@@ -53,5 +51,7 @@ export class UsersController {
 			res.sendStatus(HttpStatus.NOT_FOUND)
 			return
 		}
+
+		res.sendStatus(HttpStatus.NO_CONTENT)
 	}
 }

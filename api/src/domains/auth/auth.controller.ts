@@ -21,8 +21,7 @@ export class AuthController {
 		private requestService: RequestService,
 	) {}
 
-	@Post('/login')
-	@HttpCode(HttpStatus.OK)
+	@Post('login')
 	async login(@Body() body: AuthLoginDtoModel, @Res() res: Response, @Req() req: Request) {
 		const loginServiceRes = await this.authService.login(req)
 
@@ -37,14 +36,13 @@ export class AuthController {
 			secure: true,
 		})
 
-		return {
+		res.sendStatus(HttpStatus.OK).send({
 			accessToken: this.jwtService.createAccessTokenStr(loginServiceRes.data.user.id),
-		}
+		})
 	}
 
 	// Generate the new pair of access and refresh tokens (in cookie client must send correct refreshToken that will be revoked after refreshing)
-	@Post('/refresh-token')
-	@HttpCode(HttpStatus.OK)
+	@Post('refresh-token')
 	async refreshToken(@Req() req: Request, @Res() res: Response) {
 		const generateTokensRes = await this.authService.refreshToken(req)
 
@@ -61,14 +59,14 @@ export class AuthController {
 			secure: true,
 		})
 
-		return {
+		res.status(HttpStatus.OK).send({
 			accessToken: newAccessToken,
-		}
+		})
 	}
 
 	// Registration in the system.
 	// Email with confirmation code will be sent to passed email address.
-	@Post('/registration')
+	@Post('registration')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async registration(@Body() body: AuthRegistrationDtoModel, @Res() res: Response) {
 		const regStatus = await this.authService.registration(body)
@@ -78,14 +76,13 @@ export class AuthController {
 			return
 		}
 
-		return
+		res.sendStatus(HttpStatus.NO_CONTENT)
 	}
 
 	// ---
 
 	// Registration email resending.
 	@Post('registration-email-resending')
-	@HttpCode(HttpStatus.NO_CONTENT)
 	async registrationEmailResending(
 		@Body() body: AuthRegistrationEmailResendingDtoModel,
 		@Res() res: Response,
@@ -97,7 +94,7 @@ export class AuthController {
 			return
 		}
 
-		return
+		res.sendStatus(HttpStatus.NO_CONTENT)
 	}
 
 	@Post('registration-confirmation')
@@ -113,7 +110,7 @@ export class AuthController {
 			return
 		}
 
-		return
+		res.sendStatus(HttpStatus.NO_CONTENT)
 	}
 
 	@Get('me')
@@ -124,7 +121,6 @@ export class AuthController {
 	}
 
 	@Post('logout')
-	@HttpCode(HttpStatus.NO_CONTENT)
 	async logout(@Req() req: Request, @Res() res: Response) {
 		const refreshTokenFromCookie = this.requestService.getDeviceRefreshStrTokenFromReq(req)
 		const logoutServiceRes = await this.authService.logout(refreshTokenFromCookie)
@@ -135,12 +131,11 @@ export class AuthController {
 		}
 
 		res.clearCookie(config.refreshToken.name)
-		return
+		res.sendStatus(HttpStatus.NO_CONTENT)
 	}
 
 	// Password recovery via Email confirmation. Email should be sent with RecoveryCode inside
 	@Post('password-recovery')
-	@HttpCode(HttpStatus.NO_CONTENT)
 	async passwordRecovery(@Body() body: AuthPasswordRecoveryDtoModel, @Res() res: Response) {
 		const passwordRecoveryServiceRes = await this.authService.passwordRecovery(body.email)
 
@@ -150,12 +145,11 @@ export class AuthController {
 		}
 
 		// 204 Even if current email is not registered (for prevent user's email detection)
-		return
+		res.sendStatus(HttpStatus.NO_CONTENT)
 	}
 
 	// Confirm Password recovery
 	@Post('new-password')
-	@HttpCode(HttpStatus.NO_CONTENT)
 	async newPassword(@Body() body: AuthNewPasswordDtoModel, @Res() res: Response) {
 		const passwordRecoveryServiceRes = await this.authService.newPassword(
 			body.recoveryCode,
@@ -168,6 +162,6 @@ export class AuthController {
 		}
 
 		// 204 Even if current email is not registered (for prevent user's email detection)
-		return
+		res.sendStatus(HttpStatus.NO_CONTENT)
 	}
 }

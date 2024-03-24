@@ -36,23 +36,20 @@ export class BlogsController {
 	) {}
 
 	@Get()
-	@HttpCode(HttpStatus.OK)
-	async getBlogs(@Query() query: GetBlogsQueries) {
+	async getBlogs(@Query() query: GetBlogsQueries, @Res() res: Response) {
 		const blogs = await this.blogsQueryRepository.getBlogs(query)
-		return blogs
+		res.status(HttpStatus.OK).send(blogs)
 	}
 
 	@Post()
-	@HttpCode(HttpStatus.CREATED)
-	async createNewBlog(@Body() body: CreateBlogDtoModel) {
+	async createNewBlog(@Body() body: CreateBlogDtoModel, @Res() res: Response) {
 		const createdBlogId = await this.blogsService.createBlog(body)
 		const createdBlog = await this.blogsQueryRepository.getBlog(createdBlogId)
 
-		return createdBlog
+		res.status(HttpStatus.CREATED).send(createdBlog)
 	}
 
 	@Get(':blogId/posts')
-	@HttpCode(HttpStatus.OK)
 	async getBlogPosts(@Param('blogId') blogId: string, @Res() res: Response, @Req() req: Request) {
 		const { user } = req
 
@@ -69,11 +66,10 @@ export class BlogsController {
 			return
 		}
 
-		res.send(posts)
+		res.status(HttpStatus.OK).send(posts)
 	}
 
 	@Post(':blogId/posts')
-	@HttpCode(HttpStatus.CREATED)
 	async createNewPostForSpecificBlog(
 		@Param('blogId') blogId: string,
 		@Body() body: CreateBlogPostDtoModel,
@@ -83,21 +79,18 @@ export class BlogsController {
 		const { user } = req
 
 		const blog = await this.blogsRepository.getBlogById(blogId)
-
 		if (!blog) {
 			res.sendStatus(HttpStatus.NOT_FOUND)
 			return
 		}
 
 		const createPostInsertedId = await this.blogsService.createBlogPost(blogId, body)
-
 		const createdPost = await this.postsQueryRepository.getPost(user?.id, createPostInsertedId)
 
-		res.send(createdPost)
+		res.status(HttpStatus.CREATED).send(createdPost)
 	}
 
 	@Get(':blogId')
-	@HttpCode(HttpStatus.OK)
 	async getBlog(@Param('blogId') blogId: string, @Res() res: Response) {
 		const blog = await this.blogsQueryRepository.getBlog(blogId)
 
@@ -106,11 +99,10 @@ export class BlogsController {
 			return
 		}
 
-		res.send(blog)
+		res.status(HttpStatus.OK).send(blog)
 	}
 
 	@Put(':blogId')
-	@HttpCode(HttpStatus.NO_CONTENT)
 	async updateBlog(
 		@Param('blogId') blogId: string,
 		@Body() body: UpdateBlogDtoModel,
@@ -122,10 +114,11 @@ export class BlogsController {
 			res.sendStatus(HttpStatus.NOT_FOUND)
 			return
 		}
+
+		res.sendStatus(HttpStatus.NO_CONTENT)
 	}
 
 	@Delete(':blogId')
-	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteBlog(@Param('blogId') blogId: string, @Res() res: Response) {
 		const isBlogDeleted = await this.blogsService.deleteBlog(blogId)
 
@@ -133,5 +126,7 @@ export class BlogsController {
 			res.sendStatus(HttpStatus.NOT_FOUND)
 			return
 		}
+
+		res.sendStatus(HttpStatus.NO_CONTENT)
 	}
 }

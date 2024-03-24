@@ -42,12 +42,11 @@ export class CommentsController {
 			return
 		}
 
-		return comment
+		res.status(HttpStatus.OK).send(comment)
 	}
 
 	// Update existing comment by id with InputModel
 	@Put(':commentId')
-	@HttpCode(HttpStatus.NO_CONTENT)
 	async updateComment(
 		@Param('commentId') commentId: string,
 		@Body() body: UpdateCommentDtoModel,
@@ -69,13 +68,14 @@ export class CommentsController {
 			res.sendStatus(HttpStatus.NOT_FOUND)
 			return
 		}
+
+		res.sendStatus(HttpStatus.NO_CONTENT)
 	}
 
 	// ----
 
 	// Delete comment specified by id
 	@Delete(':commentId')
-	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteComment(
 		@Param('commentId') commentId: string,
 		@Res() res: Response,
@@ -92,13 +92,14 @@ export class CommentsController {
 			res.sendStatus(HttpStatus.NOT_FOUND)
 			return
 		}
+
+		res.sendStatus(HttpStatus.NO_CONTENT)
 	}
 
 	// ----
 
 	// Make like/unlike/dislike/undislike operation
 	@Put(':commentId/like-status')
-	@HttpCode(HttpStatus.NO_CONTENT)
 	async setCommentLikeStatus(
 		@Param('commentId') commentId: string,
 		@Body() body: CommentLikeOperationsDtoModel,
@@ -115,5 +116,7 @@ export class CommentsController {
 			res.sendStatus(HttpStatus.NOT_FOUND)
 			return
 		}
+
+		res.sendStatus(HttpStatus.NO_CONTENT)
 	}
 }

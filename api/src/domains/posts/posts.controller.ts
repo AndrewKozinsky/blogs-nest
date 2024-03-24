@@ -38,25 +38,27 @@ export class PostsController {
 
 	// Returns all posts
 	@Get()
-	@HttpCode(HttpStatus.OK)
-	async getPosts(@Query() query: GetPostsQueries, @Req() req: Request) {
+	async getPosts(@Query() query: GetPostsQueries, @Req() req: Request, @Res() res: Response) {
 		const { user } = req
 
 		const posts = await this.postsQueryRepository.getPosts(user?.id, req.query)
 
-		return posts
+		res.status(HttpStatus.OK).send(posts)
 	}
 
 	// Create new post
 	@Post()
-	@HttpCode(HttpStatus.CREATED)
-	async createNewPost(@Body() body: CreatePostDtoModel, @Req() req: Request) {
+	async createNewPost(
+		@Body() body: CreatePostDtoModel,
+		@Req() req: Request,
+		@Res() res: Response,
+	) {
 		const { user } = req
 		const createPostId = await this.postsService.createPost(body)
 
 		const getPostRes = await this.postsQueryRepository.getPost(user?.id, createPostId)
 
-		return getPostRes
+		res.status(HttpStatus.CREATED).send(getPostRes)
 	}
 
 	// Return post by id
@@ -72,12 +74,11 @@ export class PostsController {
 			return
 		}
 
-		res.send(post)
+		res.status(HttpStatus.OK).send(post)
 	}
 
 	// Update existing post by id with InputModel
 	@Put('postId')
-	@HttpCode(HttpStatus.NO_CONTENT)
 	async updatePost(
 		@Body() body: UpdatePostDtoModel,
 		@Res() res: Response,
@@ -89,11 +90,12 @@ export class PostsController {
 			res.sendStatus(HttpStatus.NOT_FOUND)
 			return
 		}
+
+		res.sendStatus(HttpStatus.NO_CONTENT)
 	}
 
 	// Delete post specified by id
 	@Delete('postId')
-	@HttpCode(HttpStatus.NO_CONTENT)
 	async deletePost(@Res() res: Response, @Param('postId') postId: string) {
 		const isPostDeleted = await this.postsService.deletePost(postId)
 
@@ -101,6 +103,8 @@ export class PostsController {
 			res.sendStatus(HttpStatus.NOT_FOUND)
 			return
 		}
+
+		res.sendStatus(HttpStatus.NO_CONTENT)
 	}
 
 	// Returns comments for specified post
@@ -125,12 +129,11 @@ export class PostsController {
 			return
 		}
 
-		res.send(postComments.data)
+		res.status(HttpStatus.OK).send(postComments.data)
 	}
 
 	// Create new comment
 	@Post(':postId/comments')
-	@HttpCode(HttpStatus.CREATED)
 	async createComment(
 		@Body() body: CreatePostCommentDtoModel,
 		@Res() res: Response,
@@ -151,7 +154,7 @@ export class PostsController {
 			createdCommentId,
 		)
 
-		res.send(getCommentRes)
+		res.status(HttpStatus.CREATED).send(getCommentRes)
 	}
 
 	// Make like/unlike/dislike/undislike operation
@@ -172,5 +175,7 @@ export class PostsController {
 			res.sendStatus(HttpStatus.NOT_FOUND)
 			return
 		}
+
+		res.sendStatus(HttpStatus.OK)
 	}
 }
