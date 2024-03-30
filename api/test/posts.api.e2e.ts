@@ -1,9 +1,9 @@
 import { agent as request } from 'supertest'
 import { describe } from 'node:test'
-import { HTTP_STATUSES } from '../src/config/config'
-import RouteNames from '../src/config/routeNames'
+import { HTTP_STATUSES } from '../src/settings/config'
+import RouteNames from '../src/settings/routeNames'
 import { DBTypes } from '../src/db/dbTypes'
-import { GetPostCommentsOutModel } from '../src/domains/comments/model/comments.output.model'
+import { GetPostCommentsOutModel } from '../src/features/comments/model/comments.output.model'
 import { createTestApp } from './utils/common'
 import { clearAllDB } from './utils/db'
 import {

@@ -2,17 +2,17 @@
 import { INestApplication } from '@nestjs/common'
 // import { Express } from 'express'
 import { agent as request } from 'supertest'
-import RouteNames from '../../src/config/routeNames'
+import RouteNames from '../../src/settings/routeNames'
 import { DBTypes } from '../../src/db/dbTypes'
 import {
 	CreateBlogDtoModel,
 	CreateBlogPostDtoModel,
-} from '../../src/domains/blogs/model/blogs.input.model'
+} from '../../src/features/blogs/model/blogs.input.model'
 import {
 	CreatePostCommentDtoModel,
 	CreatePostDtoModel,
-} from '../../src/domains/posts/model/posts.input.model'
-import { CreateUserDtoModel } from '../../src/domains/users/models/users.input.model'
+} from '../../src/features/posts/model/posts.input.model'
+import { CreateUserDtoModel } from '../../src/features/users/models/users.input.model'
 // import { HTTP_STATUSES } from '../../../src/config/config'
 // import RouteNames from '../../../src/config/routeNames'
 // import { DBTypes } from '../../../src/db/dbTypes'

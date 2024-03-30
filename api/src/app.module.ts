@@ -1,10 +1,11 @@
-import { Module } from '@nestjs/common'
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common'
 import { MongooseModule } from '@nestjs/mongoose'
-import { EmailAdapter } from './adapters/email.adapter'
-import { HashAdapter } from './adapters/hash.adapter'
-import { BrowserService } from './application/browser.service'
-import { JwtService } from './application/jwt.service'
-import { RequestService } from './application/request.service'
+import { EmailAdapter } from './base/adapters/email.adapter'
+import { HashAdapter } from './base/adapters/hash.adapter'
+import { BrowserService } from './base/application/browser.service'
+import { JwtService } from './base/application/jwt.service'
+import { RequestService } from './base/application/request.service'
+import { EmailManager } from './base/managers/email.manager'
 import { DbService } from './db/dbService'
 import { Comment, CommentSchema } from './db/schemas/comment.schema'
 import { CommentLike } from './db/schemas/commentLike.schema'
@@ -13,35 +14,36 @@ import { Post, PostSchema } from './db/schemas/post.schema'
 import { PostLike, PostLikeSchema } from './db/schemas/postLike.schema'
 import { RateLimit, RateLimitSchema } from './db/schemas/rateLimit.schema'
 import { User, UserSchema } from './db/schemas/user.schema'
-import { AuthController } from './domains/auth/auth.controller'
-import { AuthRepository } from './domains/auth/auth.repository'
-import { AuthService } from './domains/auth/auth.service'
-import { BlogsController } from './domains/blogs/blogs.controller'
-import { BlogsQueryRepository } from './domains/blogs/blogs.queryRepository'
-import { BlogsRepository } from './domains/blogs/blogs.repository'
-import { BlogsService } from './domains/blogs/blogs.service'
-import { CommentLikesRepository } from './domains/commentLikes/CommentLikes.repository'
-import { CommentsController } from './domains/comments/comments.controller'
-import { CommentsQueryRepository } from './domains/comments/comments.queryRepository'
-import { CommentsRepository } from './domains/comments/comments.repository'
-import { CommentsService } from './domains/comments/comments.service'
-import { CommonService } from './domains/common/common.service'
+import { AuthController } from './features/auth/auth.controller'
+import { AuthRepository } from './features/auth/auth.repository'
+import { AuthService } from './features/auth/auth.service'
+import { BlogsController } from './features/blogs/blogs.controller'
+import { BlogsQueryRepository } from './features/blogs/blogs.queryRepository'
+import { BlogsRepository } from './features/blogs/blogs.repository'
+import { BlogsService } from './features/blogs/blogs.service'
+import { CommentLikesRepository } from './features/commentLikes/CommentLikes.repository'
+import { CommentsController } from './features/comments/comments.controller'
+import { CommentsQueryRepository } from './features/comments/comments.queryRepository'
+import { CommentsRepository } from './features/comments/comments.repository'
+import { CommentsService } from './features/comments/comments.service'
+import { CommonService } from './features/common/common.service'
 import { Blog, BlogSchema } from './db/schemas/blog.schema'
-import { PostLikesRepository } from './domains/postLikes/postLikes.repository'
-import { PostsController } from './domains/posts/posts.controller'
-import { PostsQueryRepository } from './domains/posts/posts.queryRepository'
-import { PostsRepository } from './domains/posts/posts.repository'
-import { PostsService } from './domains/posts/posts.service'
-import { SecurityController } from './domains/security/security.controller'
-import { SecurityQueryRepository } from './domains/security/security.queryRepository'
-import { SecurityRepository } from './domains/security/security.repository'
-import { SecurityService } from './domains/security/security.service'
-import { TestsController } from './domains/test/tests.controller'
-import { UsersController } from './domains/users/users.controller'
-import { UsersQueryRepository } from './domains/users/users.queryRepository'
-import { UsersRepository } from './domains/users/users.repository'
-import { UsersService } from './domains/users/users.service'
-import { EmailManager } from './managers/email.manager'
+import { PostLikesRepository } from './features/postLikes/postLikes.repository'
+import { PostsController } from './features/posts/posts.controller'
+import { PostsQueryRepository } from './features/posts/posts.queryRepository'
+import { PostsRepository } from './features/posts/posts.repository'
+import { PostsService } from './features/posts/posts.service'
+import { SecurityController } from './features/security/security.controller'
+import { SecurityQueryRepository } from './features/security/security.queryRepository'
+import { SecurityRepository } from './features/security/security.repository'
+import { SecurityService } from './features/security/security.service'
+import { TestsController } from './features/test/tests.controller'
+import { UsersController } from './features/users/users.controller'
+import { UsersQueryRepository } from './features/users/users.queryRepository'
+import { UsersRepository } from './features/users/users.repository'
+import { UsersService } from './features/users/users.service'
+import { RequestsLimiterMiddleware } from './infrastructure/middlewares/requestsLimiter.middleware'
+import { RouteNames } from './settings/routeNames'
 
 const mongoURI = process.env.MONGO_URL
 const dbName = process.env.MONGO_DB_NAME
@@ -97,4 +99,43 @@ const dbName = process.env.MONGO_DB_NAME
 		SecurityRepository,
 	],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+	configure(consumer: MiddlewareConsumer) {
+		consumer
+			.apply(RequestsLimiterMiddleware)
+			.forRoutes({
+				path: RouteNames.AUTH.LOGIN.full,
+				method: RequestMethod.POST,
+			})
+			.apply(RequestsLimiterMiddleware)
+			.forRoutes({
+				path: RouteNames.AUTH.REFRESH_TOKEN.full,
+				method: RequestMethod.POST,
+			})
+			.apply(RequestsLimiterMiddleware)
+			.forRoutes({
+				path: RouteNames.AUTH.REGISTRATION.full,
+				method: RequestMethod.POST,
+			})
+			.apply(RequestsLimiterMiddleware)
+			.forRoutes({
+				path: RouteNames.AUTH.REGISTRATION_EMAIL_RESENDING.full,
+				method: RequestMethod.POST,
+			})
+			.apply(RequestsLimiterMiddleware)
+			.forRoutes({
+				path: RouteNames.AUTH.REGISTRATION_CONFIRMATION.full,
+				method: RequestMethod.POST,
+			})
+			.apply(RequestsLimiterMiddleware)
+			.forRoutes({
+				path: RouteNames.AUTH.PASSWORD_RECOVERY.full,
+				method: RequestMethod.POST,
+			})
+			.apply(RequestsLimiterMiddleware)
+			.forRoutes({
+				path: RouteNames.AUTH.NEW_PASSWORD.full,
+				method: RequestMethod.POST,
+			})
+	}
+}
