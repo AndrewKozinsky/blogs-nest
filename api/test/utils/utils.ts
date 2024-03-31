@@ -50,7 +50,7 @@ export async function addBlogPostRequest(
 	const addBlogPostDto = createDtoAddBlogPost(postDto)
 
 	return await request(app)
-		.post(RouteNames.blogPosts(blogId))
+		.post(RouteNames.BLOGS.BLOG_ID(blogId).POSTS.full)
 		.send(addBlogPostDto)
 		.set('Content-Type', 'application/json')
 		.set('Accept', 'application/json')
@@ -145,7 +145,7 @@ export function checkPostObj(
 export async function addUserByAdminRequest(app: any, userDto: Partial<CreateUserDtoModel> = {}) {
 	// Register user
 	return await request(app.getHttpServer())
-		.post(RouteNames.users)
+		.post(RouteNames.USERS.value)
 		.send(createDtoAddUser(userDto))
 		.set('Content-Type', 'application/json')
 		.set('Accept', 'application/json')
@@ -188,7 +188,7 @@ export function checkUserObj(userObj: any) {
 }*/
 
 export function loginRequest(app: any, loginOrEmail: string, password: string) {
-	return request(app).post(RouteNames.authLogin).send({ loginOrEmail, password })
+	return request(app).post(RouteNames.AUTH.LOGIN.full).send({ loginOrEmail, password })
 }
 
 export async function addPostCommentRequest(
@@ -198,7 +198,7 @@ export async function addPostCommentRequest(
 	commentDto: Partial<CreatePostCommentDtoModel> = {},
 ) {
 	return request(app)
-		.post(RouteNames.postComments(postId))
+		.post(RouteNames.POSTS.POST_ID(postId).COMMENTS.full())
 		.send(createDtoAddPostComment(commentDto))
 		.set('Content-Type', 'application/json')
 		.set('Accept', 'application/json')
