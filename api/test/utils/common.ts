@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { AppModule } from '../../src/app.module'
+import { applyAppSettings } from '../../src/settings/applyAppSettings'
 
 export function resetDbEveryTest() {
 	beforeAll(async () => {
@@ -17,6 +18,7 @@ export async function createTestApp() {
 	}).compile()
 
 	const app = moduleFixture.createNestApplication()
+	applyAppSettings(app)
 	await app.init()
 
 	return app
