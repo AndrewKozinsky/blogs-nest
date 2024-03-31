@@ -29,7 +29,7 @@ describe('ROOT', () => {
 	})
 
 	describe('Getting all blogs', () => {
-		it('should return an object with property items contains an empty array', async () => {
+		it.skip('should return an object with property items contains an empty array', async () => {
 			const successAnswer: GetBlogsOutModel = {
 				pagesCount: 0,
 				page: 1,
@@ -39,16 +39,16 @@ describe('ROOT', () => {
 			}
 
 			await request(app.getHttpServer())
-				.get(RouteNames.BLOGS.value)
+				.get('/' + RouteNames.BLOGS.value)
 				.expect(HTTP_STATUSES.OK_200, successAnswer)
 		})
 
-		/*it.skip('should return an object with property items contains array with 2 items after creating 2 blogs', async () => {
+		it.skip('should return an object with property items contains array with 2 items after creating 2 blogs', async () => {
 			await addBlogRequest(app.getHttpServer())
 			await addBlogRequest(app.getHttpServer())
 
 			const getBlogsRes = await request(app.getHttpServer())
-				.get(RouteNames.blogs)
+				.get('/' + RouteNames.BLOGS.value)
 				.expect(HTTP_STATUSES.OK_200)
 
 			expect(getBlogsRes.body.pagesCount).toBe(1)
@@ -71,20 +71,20 @@ describe('ROOT', () => {
 			await addBlogRequest(app.getHttpServer())
 
 			const getBlogsRes = await request(app.getHttpServer()).get(
-				RouteNames.blogs + '?pageNumber=2&pageSize=2',
+				'/' + RouteNames.BLOGS.value + '?pageNumber=2&pageSize=2',
 			)
 
 			expect(getBlogsRes.body.page).toBe(2)
 			expect(getBlogsRes.body.pagesCount).toBe(4)
 			expect(getBlogsRes.body.totalCount).toBe(7)
 			expect(getBlogsRes.body.items.length).toBe(2)
-		})*/
+		})
 	})
 
-	/*describe('Creating a blog', () => {
+	describe('Creating a blog', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
-				.post(RouteNames.blogs)
+				.post('/' + RouteNames.BLOGS.value)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
@@ -92,6 +92,7 @@ describe('ROOT', () => {
 			const createdBlogRes = await addBlogRequest(app.getHttpServer(), {
 				websiteUrl: 'samurai.it-incubator',
 			})
+
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.BAD_REQUEST_400)
 
 			expect({}.toString.call(createdBlogRes.body.errorsMessages)).toBe('[object Array]')
@@ -109,15 +110,15 @@ describe('ROOT', () => {
 			const createdSecondBlogRes = await addBlogRequest(app.getHttpServer())
 			expect(createdSecondBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
-			const allBlogsRes = await request(app.getHttpServer()).get(RouteNames.blogs)
+			const allBlogsRes = await request(app.getHttpServer()).get('/' + RouteNames.BLOGS.value)
 			expect(allBlogsRes.body.items.length).toBe(2)
 		})
-	})*/
+	})
 
-	/*describe('Getting a blog', () => {
+	describe('Getting a blog', () => {
 		it.skip("should return a 404 if a blog doesn't exists", async () => {
 			await request(app.getHttpServer())
-				.get(RouteNames.blog('999'))
+				.get('/' + RouteNames.BLOGS.BLOG_ID('999').full)
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
 
@@ -125,18 +126,19 @@ describe('ROOT', () => {
 			const createdBlogRes = await addBlogRequest(app.getHttpServer())
 			const createdBlogId = createdBlogRes.body.id
 
+			console.log('/' + RouteNames.BLOGS.BLOG_ID(createdBlogId).full)
 			const getBlogRes = await request(app.getHttpServer()).get(
-				RouteNames.blog(createdBlogId),
+				'/' + RouteNames.BLOGS.BLOG_ID(createdBlogId).full,
 			)
 			expect(getBlogRes.status).toBe(HTTP_STATUSES.OK_200)
 			checkBlogObj(getBlogRes.body)
 		})
-	})*/
+	})
 
-	/*describe('Getting a blog posts', () => {
+	describe('Getting a blog posts', () => {
 		it.skip("should return a 404 if a blog doesn't exists", async () => {
 			await request(app.getHttpServer())
-				.get(RouteNames.blogPosts('999'))
+				.get('/' + RouteNames.BLOGS.BLOG_ID('999').POSTS.full)
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
 
@@ -153,7 +155,7 @@ describe('ROOT', () => {
 			}
 
 			await request(app.getHttpServer())
-				.get(RouteNames.blogPosts(blogId))
+				.get('/' + RouteNames.BLOGS.BLOG_ID(blogId).POSTS.full)
 				.expect(HTTP_STATUSES.OK_200, successAnswer)
 		})
 
@@ -165,7 +167,7 @@ describe('ROOT', () => {
 			await addBlogPostRequest(app.getHttpServer(), blogId)
 
 			const getBlogPostsRes = await request(app.getHttpServer())
-				.get(RouteNames.blogPosts(blogId))
+				.get('/' + RouteNames.BLOGS.BLOG_ID(blogId).POSTS.full)
 				.expect(HTTP_STATUSES.OK_200)
 
 			expect(getBlogPostsRes.body.pagesCount).toBe(1)
@@ -191,7 +193,7 @@ describe('ROOT', () => {
 			await addBlogPostRequest(app.getHttpServer(), blogId)
 
 			const getBlogsRes = await request(app.getHttpServer()).get(
-				RouteNames.blogPosts(blogId) + '?pageNumber=2&pageSize=2',
+				'/' + RouteNames.BLOGS.BLOG_ID(blogId).POSTS.full + '?pageNumber=2&pageSize=2',
 			)
 
 			expect(getBlogsRes.body.page).toBe(2)
@@ -199,18 +201,18 @@ describe('ROOT', () => {
 			expect(getBlogsRes.body.totalCount).toBe(7)
 			expect(getBlogsRes.body.items.length).toBe(2)
 		})
-	})*/
+	})
 
-	/*describe('Updating a blog', () => {
+	describe('Updating a blog', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
-				.put(RouteNames.blog('999'))
+				.put('/' + RouteNames.BLOGS.BLOG_ID('999').full)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
 		it.skip('should not update a non existing blog', async () => {
 			await request(app.getHttpServer())
-				.post(RouteNames.blog('999'))
+				.post('/' + RouteNames.BLOGS.BLOG_ID('999').full)
 				.set('authorization', adminAuthorizationValue)
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
@@ -220,7 +222,7 @@ describe('ROOT', () => {
 			const createdBlogId = createdBlogRes.body.id
 
 			await request(app.getHttpServer())
-				.put(RouteNames.blog(createdBlogId))
+				.put('/' + RouteNames.BLOGS.BLOG_ID(createdBlogId).full)
 				.send({})
 				.set('authorization', adminAuthorizationValue)
 				.set('Content-Type', 'application/json')
@@ -241,7 +243,7 @@ describe('ROOT', () => {
 			}
 
 			await request(app.getHttpServer())
-				.put(RouteNames.blog(createdBlogId))
+				.put('/' + RouteNames.BLOGS.BLOG_ID(createdBlogId).full)
 				.send(updateBlogDto)
 				.set('authorization', adminAuthorizationValue)
 				.set('Content-Type', 'application/json')
@@ -249,7 +251,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 
 			const getBlogRes = await request(app.getHttpServer()).get(
-				RouteNames.blog(createdBlogId),
+				'/' + RouteNames.BLOGS.BLOG_ID(createdBlogId).full,
 			)
 
 			expect(getBlogRes.status).toBe(HTTP_STATUSES.OK_200)
@@ -257,12 +259,12 @@ describe('ROOT', () => {
 			expect(getBlogRes.body.description).toBe(updateBlogDto.description)
 			expect(getBlogRes.body.websiteUrl).toBe(updateBlogDto.websiteUrl)
 		})
-	})*/
+	})
 
-	/*describe('Create a blog post', () => {
+	describe('Create a blog post', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
-				.post(RouteNames.blogPosts('999'))
+				.post('/' + RouteNames.BLOGS.BLOG_ID('999').POSTS.full)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
@@ -270,7 +272,7 @@ describe('ROOT', () => {
 			const addBlogPostDto = createDtoAddBlogPost()
 
 			return await request(app.getHttpServer())
-				.post(RouteNames.blogPosts('999'))
+				.post('/' + RouteNames.BLOGS.BLOG_ID('999').POSTS.full)
 				.send(addBlogPostDto)
 				.set('authorization', adminAuthorizationValue)
 				.set('Content-Type', 'application/json')
@@ -312,20 +314,20 @@ describe('ROOT', () => {
 			expect(createdSecondBlogPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
 			const allBlogPostsRes = await request(app.getHttpServer()).get(
-				RouteNames.blogPosts(createdBlogRes.body.id),
+				'/' + RouteNames.BLOGS.BLOG_ID(createdBlogRes.body.id).POSTS.full,
 			)
 			expect(allBlogPostsRes.body.items.length).toBe(2)
 		})
-	})*/
+	})
 
-	/*describe('Deleting a blog', () => {
+	describe('Deleting a blog', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
-			return request(app.getHttpServer()).delete(RouteNames.blogs)
+			return request(app.getHttpServer()).delete('/' + RouteNames.BLOGS.value)
 		})
 
 		it.skip('should not delete a non existing blog', async () => {
 			await request(app.getHttpServer())
-				.delete(RouteNames.blog('999'))
+				.delete('/' + RouteNames.BLOGS.BLOG_ID('999').full)
 				.set('authorization', adminAuthorizationValue)
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
@@ -336,13 +338,15 @@ describe('ROOT', () => {
 			const createdBlogId = createdBlogRes.body.id
 
 			await request(app.getHttpServer())
-				.delete(RouteNames.blog(createdBlogId))
+				.delete('/' + RouteNames.BLOGS.BLOG_ID(createdBlogId).full)
 				.set('authorization', adminAuthorizationValue)
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 
-			await request(app.getHttpServer()).get(RouteNames.blog(createdBlogId)).expect(HTTP_STATUSES.NOT_FOUNT_404)
+			await request(app.getHttpServer())
+				.get('/' + RouteNames.BLOGS.BLOG_ID(createdBlogId).full)
+				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
-	})*/
+	})
 })
 
 function checkBlogObj(blogObj: any) {

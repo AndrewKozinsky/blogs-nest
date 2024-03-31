@@ -7,6 +7,7 @@ import {
 	IsOptional,
 	IsString,
 	IsUrl,
+	Matches,
 	MaxLength,
 	MinLength,
 } from 'class-validator'
@@ -23,7 +24,7 @@ export class CreateBlogDtoModel {
 	description: string
 
 	@IsString({ message: 'WebsiteUrl must be a string' })
-	@IsUrl()
+	@Matches('^https://([a-zA-Z0-9_-]+\\.)+[a-zA-Z0-9_-]+(\\/[a-zA-Z0-9_-]+)*\\/?$')
 	@MinLength(1, { message: 'WebsiteUrl is too short' })
 	@MaxLength(100, { message: 'WebsiteUrl is too long' })
 	websiteUrl: string
@@ -60,7 +61,7 @@ export class UpdateBlogDtoModel {
 	@IsString({ message: 'WebsiteUrl must be a string' })
 	@MinLength(1, { message: 'WebsiteUrl is too short' })
 	@MaxLength(100, { message: 'WebsiteUrl is too long' })
-	@IsUrl()
+	@Matches('^https://([a-zA-Z0-9_-]+\\.)+[a-zA-Z0-9_-]+(\\/[a-zA-Z0-9_-]+)*\\/?$')
 	websiteUrl: string
 }
 

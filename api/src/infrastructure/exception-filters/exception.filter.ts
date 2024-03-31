@@ -19,7 +19,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 		if (status === 400) {
 			const errorResponse = {
 				// @ts-ignore
-				errors: exception.getResponse().message,
+				errorsMessages: exception.getResponse().message,
 			}
 
 			response.status(status).json(errorResponse)

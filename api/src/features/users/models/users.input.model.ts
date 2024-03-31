@@ -17,7 +17,7 @@ export class CreateUserDtoModel {
 	@IsString({ message: 'Login must be a string' })
 	@MinLength(3, { message: 'Login is too short' })
 	@MaxLength(10, { message: 'Login is too long' })
-	@Matches('^[a-zA-Z0-9_-]*$', 'Incorrect login')
+	@Matches('^[a-zA-Z0-9_-]*$')
 	login: string
 
 	@IsString({ message: 'Password must be a string' })

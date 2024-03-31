@@ -17,6 +17,11 @@ import { User, UserSchema } from './db/schemas/user.schema'
 import { AuthController } from './features/auth/auth.controller'
 import { AuthRepository } from './features/auth/auth.repository'
 import { AuthService } from './features/auth/auth.service'
+import {
+	IsEmailExistsValidation,
+	IsLoginExistsValidation,
+} from './features/auth/model/authRegistration.input.model'
+import { IsRecoveryCodeExistsValidation } from './features/auth/model/newPassword.input.model'
 import { BlogsController } from './features/blogs/blogs.controller'
 import { BlogsQueryRepository } from './features/blogs/blogs.queryRepository'
 import { BlogsRepository } from './features/blogs/blogs.repository'
@@ -29,6 +34,7 @@ import { CommentsService } from './features/comments/comments.service'
 import { CommonService } from './features/common/common.service'
 import { Blog, BlogSchema } from './db/schemas/blog.schema'
 import { PostLikesRepository } from './features/postLikes/postLikes.repository'
+import { BlogIdValidation } from './features/posts/model/posts.input.model'
 import { PostsController } from './features/posts/posts.controller'
 import { PostsQueryRepository } from './features/posts/posts.queryRepository'
 import { PostsRepository } from './features/posts/posts.repository'
@@ -98,6 +104,10 @@ const dbName = process.env.MONGO_DB_NAME
 		SecurityQueryRepository,
 		SecurityService,
 		SecurityRepository,
+		IsLoginExistsValidation,
+		IsEmailExistsValidation,
+		IsRecoveryCodeExistsValidation,
+		BlogIdValidation,
 	],
 })
 export class AppModule implements NestModule {

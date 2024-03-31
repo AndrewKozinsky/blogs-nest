@@ -31,7 +31,7 @@
 			items: [],
 		}
 
-		await request(app).get(RouteNames.blogs).expect(HTTP_STATUSES.OK_200, successAnswer)
+		await request(app).get('/' + RouteNames.BLOGS.value).expect(HTTP_STATUSES.OK_200, successAnswer)
 	})
 
 	it.skip('should return an object with property items contains array with 2 items after creating 2 blogs', async () => {

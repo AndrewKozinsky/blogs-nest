@@ -13,7 +13,7 @@ import { AuthRepository } from '../auth.repository'
 
 @ValidatorConstraint({ name: 'email', async: true })
 @Injectable()
-class IsEmailExistsValidation implements ValidatorConstraintInterface {
+export class IsEmailExistsValidation implements ValidatorConstraintInterface {
 	constructor(private readonly authRepository: AuthRepository) {}
 
 	async validate(value: string): Promise<boolean> {
@@ -47,7 +47,7 @@ export class AuthRegistrationDtoModel {
 	@IsString({ message: 'Login must be a string' })
 	@MinLength(3, { message: 'Login is too short' })
 	@MaxLength(10, { message: 'Login is too long' })
-	@Matches('^[a-zA-Z0-9_-]*$', 'Incorrect login')
+	@Matches('^[a-zA-Z0-9_-]*$')
 	@Validate(IsLoginExistsValidation)
 	login: string
 

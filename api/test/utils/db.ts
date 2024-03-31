@@ -4,6 +4,6 @@ import RouteNames from '../../src/settings/routeNames'
 
 export async function clearAllDB(app: INestApplication<any>) {
 	await request(app.getHttpServer())
-		.delete(RouteNames.TESTING.ALL_DATA.full)
+		.delete('/' + RouteNames.TESTING.ALL_DATA.full)
 		.expect(HttpStatus.NO_CONTENT)
 }

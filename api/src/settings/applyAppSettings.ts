@@ -2,7 +2,6 @@ import { BadRequestException, INestApplication, ValidationPipe } from '@nestjs/c
 import { useContainer } from 'class-validator'
 import { AppModule } from '../app.module'
 import { HttpExceptionFilter } from '../infrastructure/exception-filters/exception.filter'
-import { SetReqUserMiddleware } from '../infrastructure/middlewares/setReqUser.middleware'
 
 export function applyAppSettings(app: INestApplication) {
 	// Thus ensuring all endpoints are protected from receiving incorrect data.

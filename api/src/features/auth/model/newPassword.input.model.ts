@@ -11,7 +11,7 @@ import { AuthRepository } from '../auth.repository'
 
 @ValidatorConstraint({ name: 'recoveryCode', async: true })
 @Injectable()
-class IsRecoveryCodeExistsValidation implements ValidatorConstraintInterface {
+export class IsRecoveryCodeExistsValidation implements ValidatorConstraintInterface {
 	constructor(private readonly authRepository: AuthRepository) {}
 
 	async validate(value: string): Promise<boolean> {

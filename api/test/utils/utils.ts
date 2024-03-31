@@ -35,7 +35,7 @@ export const userPassword = 'password'
 
 export async function addBlogRequest(app: any, blogDto: Partial<CreateBlogDtoModel> = {}) {
 	return request(app)
-		.post(RouteNames.BLOGS.value)
+		.post('/' + RouteNames.BLOGS.value)
 		.send(createDtoAddBlog(blogDto))
 		.set('Content-Type', 'application/json')
 		.set('Accept', 'application/json')
@@ -50,7 +50,7 @@ export async function addBlogPostRequest(
 	const addBlogPostDto = createDtoAddBlogPost(postDto)
 
 	return await request(app)
-		.post(RouteNames.BLOGS.BLOG_ID(blogId).POSTS.full)
+		.post('/' + RouteNames.BLOGS.BLOG_ID(blogId).POSTS.full)
 		.send(addBlogPostDto)
 		.set('Content-Type', 'application/json')
 		.set('Accept', 'application/json')
@@ -75,7 +75,7 @@ export async function addPostRequest(
 	postDto: Partial<CreatePostDtoModel> = {},
 ) {
 	return request(app)
-		.post(RouteNames.POSTS.value)
+		.post('/' + RouteNames.POSTS.value)
 		.set('authorization', adminAuthorizationValue)
 		.send(createDtoAddPost(blogId, postDto))
 		.set('Content-Type', 'application/json')
@@ -145,7 +145,7 @@ export function checkPostObj(
 export async function addUserByAdminRequest(app: any, userDto: Partial<CreateUserDtoModel> = {}) {
 	// Register user
 	return await request(app.getHttpServer())
-		.post(RouteNames.USERS.value)
+		.post('/' + RouteNames.USERS.value)
 		.send(createDtoAddUser(userDto))
 		.set('Content-Type', 'application/json')
 		.set('Accept', 'application/json')
@@ -188,7 +188,9 @@ export function checkUserObj(userObj: any) {
 }*/
 
 export function loginRequest(app: any, loginOrEmail: string, password: string) {
-	return request(app).post(RouteNames.AUTH.LOGIN.full).send({ loginOrEmail, password })
+	return request(app.getHttpServer())
+		.post('/' + RouteNames.AUTH.LOGIN.full)
+		.send({ loginOrEmail, password })
 }
 
 export async function addPostCommentRequest(
@@ -198,7 +200,7 @@ export async function addPostCommentRequest(
 	commentDto: Partial<CreatePostCommentDtoModel> = {},
 ) {
 	return request(app)
-		.post(RouteNames.POSTS.POST_ID(postId).COMMENTS.full())
+		.post('/' + RouteNames.POSTS.POST_ID(postId).COMMENTS.full())
 		.send(createDtoAddPostComment(commentDto))
 		.set('Content-Type', 'application/json')
 		.set('Accept', 'application/json')
