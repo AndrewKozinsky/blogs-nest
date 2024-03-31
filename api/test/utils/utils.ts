@@ -35,7 +35,7 @@ export const userPassword = 'password'
 
 export async function addBlogRequest(app: any, blogDto: Partial<CreateBlogDtoModel> = {}) {
 	return request(app)
-		.post(RouteNames.blogs)
+		.post(RouteNames.BLOGS.value)
 		.send(createDtoAddBlog(blogDto))
 		.set('Content-Type', 'application/json')
 		.set('Accept', 'application/json')
@@ -75,7 +75,7 @@ export async function addPostRequest(
 	postDto: Partial<CreatePostDtoModel> = {},
 ) {
 	return request(app)
-		.post(RouteNames.posts)
+		.post(RouteNames.POSTS.value)
 		.set('authorization', adminAuthorizationValue)
 		.send(createDtoAddPost(blogId, postDto))
 		.set('Content-Type', 'application/json')
