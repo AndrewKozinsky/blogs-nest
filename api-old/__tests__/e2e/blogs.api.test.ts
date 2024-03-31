@@ -1,5 +1,5 @@
-// @ts-ignore
-// import request from 'supertest'
+
+// import { agent as request } from 'supertest'
 // import { app } from '../../src/app'
 // import { HTTP_STATUSES } from '../../src/config/config'
 // import RouteNames from '../../src/config/routeNames'

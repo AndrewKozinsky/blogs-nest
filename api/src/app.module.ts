@@ -43,6 +43,7 @@ import { UsersQueryRepository } from './features/users/users.queryRepository'
 import { UsersRepository } from './features/users/users.repository'
 import { UsersService } from './features/users/users.service'
 import { RequestsLimiterMiddleware } from './infrastructure/middlewares/requestsLimiter.middleware'
+import { SetReqUserMiddleware } from './infrastructure/middlewares/setReqUser.middleware'
 import { RouteNames } from './settings/routeNames'
 
 const mongoURI = process.env.MONGO_URL
@@ -102,6 +103,8 @@ const dbName = process.env.MONGO_DB_NAME
 export class AppModule implements NestModule {
 	configure(consumer: MiddlewareConsumer) {
 		consumer
+			.apply(SetReqUserMiddleware)
+			.forRoutes('*')
 			.apply(RequestsLimiterMiddleware)
 			.forRoutes({
 				path: RouteNames.AUTH.LOGIN.full,

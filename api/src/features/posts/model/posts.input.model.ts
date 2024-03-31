@@ -1,5 +1,5 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common'
-import { plainToInstance } from 'class-transformer'
+import { plainToInstance, Type } from 'class-transformer'
 import {
 	IsIn,
 	IsInt,
@@ -90,12 +90,14 @@ export class GetPostsQueries {
 	sortDirection?: 'desc' | 'asc'
 
 	@IsOptional()
-	@IsInt()
+	@Type(() => Number)
+	@IsNumber()
 	// pageNumber is number of portions that should be returned. Default value : 1
 	pageNumber?: number
 
 	@IsOptional()
-	@IsInt()
+	@Type(() => Number)
+	@IsNumber()
 	@Min(1)
 	// pageSize is portions size that should be returned. Default value : 10
 	pageSize?: number
@@ -124,13 +126,15 @@ export class GetPostCommentsQueries {
 	sortDirection?: 'desc' | 'asc'
 
 	@IsOptional()
-	@IsInt()
+	@Type(() => Number)
+	@IsNumber()
 	@Min(1)
 	// pageNumber is number of portions that should be returned. Default value : 1
 	pageNumber?: number
 
 	@IsOptional()
-	@IsInt()
+	@Type(() => Number)
+	@IsNumber()
 	@Min(1)
 	// pageSize is portions size that should be returned. Default value : 10
 	pageSize?: number

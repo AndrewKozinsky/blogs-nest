@@ -5,7 +5,6 @@ import { agent as request } from 'supertest'
 import { GetUsersOutModel } from '../src/features/users/models/users.output.model'
 import { createTestApp } from './utils/common'
 import { clearAllDB } from './utils/db'
-// import request from 'supertest'
 // import { app } from '../../src/app'
 // import { HTTP_STATUSES } from '../../src/config/config'
 // import RouteNames from '../../src/config/routeNames'
@@ -26,7 +25,7 @@ describe('ROOT', () => {
 		await clearAllDB(app)
 	})
 
-	describe('Getting all users', () => {
+	/*describe('Getting all users', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
 				.get(RouteNames.users)
@@ -118,9 +117,9 @@ describe('ROOT', () => {
 			expect(getUsers2Res.body.items[0].email).toBe('email-8@email.com')
 			expect(getUsers2Res.body.items[1].email).toBe('email-7@email.ru')
 		})
-	})
+	})*/
 
-	describe('Creating an user', () => {
+	/*describe('Creating an user', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
 				.post(RouteNames.users)
@@ -151,7 +150,7 @@ describe('ROOT', () => {
 				.set('authorization', adminAuthorizationValue)
 			expect(allUsersRes.body.items.length).toBe(2)
 		})
-	})
+	})*/
 
 	/*
 	describe('Deleting an user', () => {

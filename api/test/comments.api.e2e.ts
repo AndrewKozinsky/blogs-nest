@@ -1,5 +1,4 @@
-// @ts-ignore
-// import request from 'supertest'
+import { agent as request } from 'supertest'
 // import { app } from '../../src/app'
 // import { HTTP_STATUSES } from '../../src/config/config'
 // import RouteNames from '../../src/config/routeNames'
@@ -16,13 +15,23 @@
 	userPassword,
 } from './utils/utils'*/
 
-// resetDbEveryTest()
+import { describe } from 'node:test'
+import { createTestApp } from './utils/common'
+import { clearAllDB } from './utils/db'
 
 it.skip('123', async () => {
 	expect(2).toBe(2)
 })
 
-/*describe('Getting a comment', () => {
+describe('ROOT', () => {
+	let app: any
+
+	beforeEach(async () => {
+		app = await createTestApp()
+		await clearAllDB(app)
+	})
+
+	/*describe('Getting a comment', () => {
 	it.skip('should return 404 if a comment does not exists', async () => {
 		const getCommentRes = await request(app).get(RouteNames.comment('999'))
 
@@ -62,292 +71,293 @@ it.skip('123', async () => {
 	})
 })*/
 
-/*describe('Updating a comment', () => {
-	it.skip('should forbid a request from an unauthorized user', async () => {
-		await request(app).put(RouteNames.comment('999')).expect(HTTP_STATUSES.UNAUTHORIZED_401)
-	})
-
-	it.skip('should not update a non existing comment', async () => {
-		const createdUserRes = await addUserByAdminRequest(app)
-		expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const loginUserRes = await loginRequest(app, userEmail, userPassword)
-		const userToken = loginUserRes.body.accessToken
-
-		await request(app)
-			.post(RouteNames.comment('999'))
-			.set('authorization', 'Bearer ' + userToken)
-			.expect(HTTP_STATUSES.NOT_FOUNT_404)
-	})
-
-	it.skip('should not update a comment if the user is not owner', async () => {
-		const createdBlogRes = await addBlogRequest(app)
-		expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const blogId = createdBlogRes.body.id
-
-		const createdPostRes = await addPostRequest(app, blogId)
-		expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const postId = createdPostRes.body.id
-
-		// User one will create a comment
-		const createdUserOneRes = await addUserByAdminRequest(app)
-		expect(createdUserOneRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const loginUserOneRes = await loginRequest(app, userEmail, userPassword)
-		const userOneToken = loginUserOneRes.body.accessToken
-
-		// User two will try to update the comment
-		const createdUserTwoRes = await addUserByAdminRequest(app, {
-			login: 'login-2',
-			password: 'password-2',
-			email: 'email-2@mail.com',
+	/*describe('Updating a comment', () => {
+		it.skip('should forbid a request from an unauthorized user', async () => {
+			await request(app).put(RouteNames.comment('999')).expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
-		expect(createdUserTwoRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const loginUserTwoRes = await loginRequest(app, 'email-2@mail.com', 'password-2')
-		const userTwoToken = loginUserTwoRes.body.accessToken
 
-		// User one will create a comment
-		const createdCommentRes = await addPostCommentRequest(app, userOneToken, postId)
-		const commentId = createdCommentRes.body.id
+		it.skip('should not update a non existing comment', async () => {
+			const createdUserRes = await addUserByAdminRequest(app)
+			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const loginUserRes = await loginRequest(app, userEmail, userPassword)
+			const userToken = loginUserRes.body.accessToken
 
-		// User two will try to update the comment
-		const updateCommentRes = await request(app)
-			.put(RouteNames.comment(commentId))
-			.send(JSON.stringify({ content: 'new content min 20 characters' }))
-			.set('Content-Type', 'application/json')
-			.set('Accept', 'application/json')
-			.set('authorization', 'Bearer ' + userTwoToken)
-			.expect(HTTP_STATUSES.FORBIDDEN_403)
-	})
-
-	it.skip('should not update a comment by wrong dto', async () => {
-		const createdBlogRes = await addBlogRequest(app)
-		expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const blogId = createdBlogRes.body.id
-
-		const createdPostRes = await addPostRequest(app, blogId)
-		expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const postId = createdPostRes.body.id
-
-		// User will create a comment
-		const createdUserRes = await addUserByAdminRequest(app)
-		expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const loginUserRes = await loginRequest(app, userEmail, userPassword)
-		const userToken = loginUserRes.body.accessToken
-
-		// User one will create a comment
-		const createdCommentRes = await addPostCommentRequest(app, userToken, postId)
-		const commentId = createdCommentRes.body.id
-
-		const updateCommentRes = await request(app)
-			.put(RouteNames.comment(commentId))
-			.send(JSON.stringify({ content: 'WRONG' }))
-			.set('Content-Type', 'application/json')
-			.set('Accept', 'application/json')
-			.set('authorization', 'Bearer ' + userToken)
-			.expect(HTTP_STATUSES.BAD_REQUEST_400)
-	})
-
-	it.skip('should update a comment by correct dto', async () => {
-		const createdBlogRes = await addBlogRequest(app)
-		expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const blogId = createdBlogRes.body.id
-
-		const createdPostRes = await addPostRequest(app, blogId)
-		expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const postId = createdPostRes.body.id
-
-		// User will create a comment
-		const createdUserRes = await addUserByAdminRequest(app)
-		expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const loginUserRes = await loginRequest(app, userEmail, userPassword)
-		const userToken = loginUserRes.body.accessToken
-
-		// User one will create a comment
-		const createdCommentRes = await addPostCommentRequest(app, userToken, postId)
-		const commentId = createdCommentRes.body.id
-
-		const updateCommentRes = await request(app)
-			.put(RouteNames.comment(commentId))
-			.send(JSON.stringify({ content: 'right content right content' }))
-			.set('Content-Type', 'application/json')
-			.set('Accept', 'application/json')
-			.set('authorization', 'Bearer ' + userToken)
-			.expect(HTTP_STATUSES.NO_CONTENT_204)
-	})
-})*/
-
-/*describe('Deleting a comment', () => {
-	it.skip('should forbid a request from an unauthorized user', async () => {
-		return request(app).put(RouteNames.comment(''))
-	})
-
-	it.skip('should not delete a non existing comment', async () => {
-		// User will create a comment
-		const createdUserRes = await addUserByAdminRequest(app)
-		expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const loginUserRes = await loginRequest(app, userEmail, userPassword)
-		const userToken = loginUserRes.body.accessToken
-
-		await request(app)
-			.delete(RouteNames.comment('notExist'))
-			.set('authorization', 'Bearer ' + userToken)
-			.expect(HTTP_STATUSES.NOT_FOUNT_404)
-	})
-
-	it.skip('should not delete a comment if the user is not owner', async () => {
-		const createdBlogRes = await addBlogRequest(app)
-		expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const blogId = createdBlogRes.body.id
-
-		const createdPostRes = await addPostRequest(app, blogId)
-		expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const postId = createdPostRes.body.id
-
-		// User one will create a comment
-		const createdUserOneRes = await addUserByAdminRequest(app)
-		expect(createdUserOneRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const loginUserOneRes = await loginRequest(app, userEmail, userPassword)
-		const userOneToken = loginUserOneRes.body.accessToken
-
-		// User two will try to delete the comment
-		const createdUserTwoRes = await addUserByAdminRequest(app, {
-			login: 'login-2',
-			password: 'password-2',
-			email: 'email-2@mail.com',
+			await request(app)
+				.post(RouteNames.comment('999'))
+				.set('authorization', 'Bearer ' + userToken)
+				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
-		expect(createdUserTwoRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const loginUserTwoRes = await loginRequest(app, 'email-2@mail.com', 'password-2')
-		const userTwoToken = loginUserTwoRes.body.accessToken
 
-		// User one will delete a comment
-		const createdCommentRes = await addPostCommentRequest(app, userOneToken, postId)
-		const commentId = createdCommentRes.body.id
+		it.skip('should not update a comment if the user is not owner', async () => {
+			const createdBlogRes = await addBlogRequest(app)
+			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const blogId = createdBlogRes.body.id
 
-		// User two will try to delete the comment
-		await request(app)
-			.delete(RouteNames.comment(commentId))
-			.set('authorization', 'Bearer ' + userTwoToken)
-			.expect(HTTP_STATUSES.FORBIDDEN_403)
-	})
+			const createdPostRes = await addPostRequest(app, blogId)
+			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const postId = createdPostRes.body.id
 
-	it.skip('should delete an existing comment', async () => {
-		const createdBlogRes = await addBlogRequest(app)
-		expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const blogId = createdBlogRes.body.id
+			// User one will create a comment
+			const createdUserOneRes = await addUserByAdminRequest(app)
+			expect(createdUserOneRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const loginUserOneRes = await loginRequest(app, userEmail, userPassword)
+			const userOneToken = loginUserOneRes.body.accessToken
 
-		const createdPostRes = await addPostRequest(app, blogId)
-		expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const postId = createdPostRes.body.id
+			// User two will try to update the comment
+			const createdUserTwoRes = await addUserByAdminRequest(app, {
+				login: 'login-2',
+				password: 'password-2',
+				email: 'email-2@mail.com',
+			})
+			expect(createdUserTwoRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const loginUserTwoRes = await loginRequest(app, 'email-2@mail.com', 'password-2')
+			const userTwoToken = loginUserTwoRes.body.accessToken
 
-		// User will create a comment
-		const createdUserRes = await addUserByAdminRequest(app)
-		expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const loginUserRes = await loginRequest(app, userEmail, userPassword)
-		const userToken = loginUserRes.body.accessToken
+			// User one will create a comment
+			const createdCommentRes = await addPostCommentRequest(app, userOneToken, postId)
+			const commentId = createdCommentRes.body.id
 
-		// User one will create a comment
-		const createdCommentRes = await addPostCommentRequest(app, userToken, postId)
-		const commentId = createdCommentRes.body.id
+			// User two will try to update the comment
+			const updateCommentRes = await request(app)
+				.put(RouteNames.comment(commentId))
+				.send(JSON.stringify({ content: 'new content min 20 characters' }))
+				.set('Content-Type', 'application/json')
+				.set('Accept', 'application/json')
+				.set('authorization', 'Bearer ' + userTwoToken)
+				.expect(HTTP_STATUSES.FORBIDDEN_403)
+		})
 
-		await request(app)
-			.delete(RouteNames.comment(commentId))
-			.set('authorization', 'Bearer ' + userToken)
-			.expect(HTTP_STATUSES.NO_CONTENT_204)
-	})
-})*/
+		it.skip('should not update a comment by wrong dto', async () => {
+			const createdBlogRes = await addBlogRequest(app)
+			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const blogId = createdBlogRes.body.id
 
-/*describe('Make a comment like status', () => {
-	it.skip('should forbid a request from an unauthorized user', async () => {
-		await request(app)
-			.put(RouteNames.commentLikeStatus('999'))
-			.expect(HTTP_STATUSES.UNAUTHORIZED_401)
-	})
+			const createdPostRes = await addPostRequest(app, blogId)
+			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const postId = createdPostRes.body.id
 
-	it.skip('should return 404 if a comment does not exists', async () => {
-		// User will create a comment
-		const createdUserRes = await addUserByAdminRequest(app)
-		expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const loginUserRes = await loginRequest(app, userEmail, userPassword)
-		const userToken = loginUserRes.body.accessToken
+			// User will create a comment
+			const createdUserRes = await addUserByAdminRequest(app)
+			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const loginUserRes = await loginRequest(app, userEmail, userPassword)
+			const userToken = loginUserRes.body.accessToken
 
-		await request(app)
-			.put(RouteNames.commentLikeStatus('999'))
-			.set('authorization', 'Bearer ' + userToken)
-			.send(JSON.stringify({ likeStatus: 'None' }))
-			.set('Content-Type', 'application/json')
-			.set('Accept', 'application/json')
-			.expect(HTTP_STATUSES.NOT_FOUNT_404)
-	})
+			// User one will create a comment
+			const createdCommentRes = await addPostCommentRequest(app, userToken, postId)
+			const commentId = createdCommentRes.body.id
 
-	it.skip('should return 400 if requst body does not exist', async () => {
-		// User will create a comment
-		const createdUserRes = await addUserByAdminRequest(app)
-		expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const loginUserRes = await loginRequest(app, userEmail, userPassword)
-		const userToken = loginUserRes.body.accessToken
+			const updateCommentRes = await request(app)
+				.put(RouteNames.comment(commentId))
+				.send(JSON.stringify({ content: 'WRONG' }))
+				.set('Content-Type', 'application/json')
+				.set('Accept', 'application/json')
+				.set('authorization', 'Bearer ' + userToken)
+				.expect(HTTP_STATUSES.BAD_REQUEST_400)
+		})
 
-		await request(app)
-			.put(RouteNames.commentLikeStatus('999'))
-			.set('authorization', 'Bearer ' + userToken)
-			.expect(HTTP_STATUSES.BAD_REQUEST_400)
-	})
+		it.skip('should update a comment by correct dto', async () => {
+			const createdBlogRes = await addBlogRequest(app)
+			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const blogId = createdBlogRes.body.id
 
-	it.skip('should return 204 if pass right body data to right address', async () => {
-		// Create a blog
-		const createdBlogRes = await addBlogRequest(app)
-		expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const blogId = createdBlogRes.body.id
+			const createdPostRes = await addPostRequest(app, blogId)
+			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const postId = createdPostRes.body.id
 
-		// Create a post in the blog
-		const createdPostRes = await addPostRequest(app, blogId)
-		expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const postId = createdPostRes.body.id
+			// User will create a comment
+			const createdUserRes = await addUserByAdminRequest(app)
+			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const loginUserRes = await loginRequest(app, userEmail, userPassword)
+			const userToken = loginUserRes.body.accessToken
 
-		// Create a user on behalf of which requests will be made
-		const createdUserRes = await addUserByAdminRequest(app)
-		expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const loginUserRes = await loginRequest(app, userEmail, userPassword)
-		const userToken = loginUserRes.body.accessToken
+			// User one will create a comment
+			const createdCommentRes = await addPostCommentRequest(app, userToken, postId)
+			const commentId = createdCommentRes.body.id
 
-		// Create a comment
-		const createdCommentRes = await addPostCommentRequest(app, userToken, postId)
-		const commentId = createdCommentRes.body.id
+			const updateCommentRes = await request(app)
+				.put(RouteNames.comment(commentId))
+				.send(JSON.stringify({ content: 'right content right content' }))
+				.set('Content-Type', 'application/json')
+				.set('Accept', 'application/json')
+				.set('authorization', 'Bearer ' + userToken)
+				.expect(HTTP_STATUSES.NO_CONTENT_204)
+		})
+	})*/
 
-		// Set a like status to the comment
-		await request(app)
-			.put(RouteNames.commentLikeStatus(commentId))
-			.set('authorization', 'Bearer ' + userToken)
-			.send(JSON.stringify({ likeStatus: DBTypes.LikeStatuses.Like }))
-			.set('Content-Type', 'application/json')
-			.set('Accept', 'application/json')
-			.expect(HTTP_STATUSES.NO_CONTENT_204)
+	/*describe('Deleting a comment', () => {
+		it.skip('should forbid a request from an unauthorized user', async () => {
+			return request(app).put(RouteNames.comment(''))
+		})
 
-		// Get the comment again by an unauthorized user to check a returned object
-		const getCommentRes = await request(app)
-			.get(RouteNames.comment(commentId))
-			.expect(HTTP_STATUSES.OK_200)
+		it.skip('should not delete a non existing comment', async () => {
+			// User will create a comment
+			const createdUserRes = await addUserByAdminRequest(app)
+			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const loginUserRes = await loginRequest(app, userEmail, userPassword)
+			const userToken = loginUserRes.body.accessToken
 
-		checkCommentObj(
-			getCommentRes.body,
-			createdUserRes.body.id,
-			createdUserRes.body.login,
-			1,
-			0,
-			DBTypes.LikeStatuses.None,
-		)
+			await request(app)
+				.delete(RouteNames.comment('notExist'))
+				.set('authorization', 'Bearer ' + userToken)
+				.expect(HTTP_STATUSES.NOT_FOUNT_404)
+		})
 
-		// Get the comment again by an authorized user to check a returned object
-		const getComment2Res = await request(app)
-			.get(RouteNames.comment(commentId))
-			.set('authorization', 'Bearer ' + userToken)
-			.expect(HTTP_STATUSES.OK_200)
+		it.skip('should not delete a comment if the user is not owner', async () => {
+			const createdBlogRes = await addBlogRequest(app)
+			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const blogId = createdBlogRes.body.id
 
-		checkCommentObj(
-			getComment2Res.body,
-			createdUserRes.body.id,
-			createdUserRes.body.login,
-			1,
-			0,
-			DBTypes.LikeStatuses.Like,
-		)
-	})
-})*/
+			const createdPostRes = await addPostRequest(app, blogId)
+			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const postId = createdPostRes.body.id
+
+			// User one will create a comment
+			const createdUserOneRes = await addUserByAdminRequest(app)
+			expect(createdUserOneRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const loginUserOneRes = await loginRequest(app, userEmail, userPassword)
+			const userOneToken = loginUserOneRes.body.accessToken
+
+			// User two will try to delete the comment
+			const createdUserTwoRes = await addUserByAdminRequest(app, {
+				login: 'login-2',
+				password: 'password-2',
+				email: 'email-2@mail.com',
+			})
+			expect(createdUserTwoRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const loginUserTwoRes = await loginRequest(app, 'email-2@mail.com', 'password-2')
+			const userTwoToken = loginUserTwoRes.body.accessToken
+
+			// User one will delete a comment
+			const createdCommentRes = await addPostCommentRequest(app, userOneToken, postId)
+			const commentId = createdCommentRes.body.id
+
+			// User two will try to delete the comment
+			await request(app)
+				.delete(RouteNames.comment(commentId))
+				.set('authorization', 'Bearer ' + userTwoToken)
+				.expect(HTTP_STATUSES.FORBIDDEN_403)
+		})
+
+		it.skip('should delete an existing comment', async () => {
+			const createdBlogRes = await addBlogRequest(app)
+			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const blogId = createdBlogRes.body.id
+
+			const createdPostRes = await addPostRequest(app, blogId)
+			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const postId = createdPostRes.body.id
+
+			// User will create a comment
+			const createdUserRes = await addUserByAdminRequest(app)
+			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const loginUserRes = await loginRequest(app, userEmail, userPassword)
+			const userToken = loginUserRes.body.accessToken
+
+			// User one will create a comment
+			const createdCommentRes = await addPostCommentRequest(app, userToken, postId)
+			const commentId = createdCommentRes.body.id
+
+			await request(app)
+				.delete(RouteNames.comment(commentId))
+				.set('authorization', 'Bearer ' + userToken)
+				.expect(HTTP_STATUSES.NO_CONTENT_204)
+		})
+	})*/
+
+	/*describe('Make a comment like status', () => {
+		it.skip('should forbid a request from an unauthorized user', async () => {
+			await request(app)
+				.put(RouteNames.commentLikeStatus('999'))
+				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
+		})
+
+		it.skip('should return 404 if a comment does not exists', async () => {
+			// User will create a comment
+			const createdUserRes = await addUserByAdminRequest(app)
+			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const loginUserRes = await loginRequest(app, userEmail, userPassword)
+			const userToken = loginUserRes.body.accessToken
+
+			await request(app)
+				.put(RouteNames.commentLikeStatus('999'))
+				.set('authorization', 'Bearer ' + userToken)
+				.send(JSON.stringify({ likeStatus: 'None' }))
+				.set('Content-Type', 'application/json')
+				.set('Accept', 'application/json')
+				.expect(HTTP_STATUSES.NOT_FOUNT_404)
+		})
+
+		it.skip('should return 400 if requst body does not exist', async () => {
+			// User will create a comment
+			const createdUserRes = await addUserByAdminRequest(app)
+			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const loginUserRes = await loginRequest(app, userEmail, userPassword)
+			const userToken = loginUserRes.body.accessToken
+
+			await request(app)
+				.put(RouteNames.commentLikeStatus('999'))
+				.set('authorization', 'Bearer ' + userToken)
+				.expect(HTTP_STATUSES.BAD_REQUEST_400)
+		})
+
+		it.skip('should return 204 if pass right body data to right address', async () => {
+			// Create a blog
+			const createdBlogRes = await addBlogRequest(app)
+			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const blogId = createdBlogRes.body.id
+
+			// Create a post in the blog
+			const createdPostRes = await addPostRequest(app, blogId)
+			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const postId = createdPostRes.body.id
+
+			// Create a user on behalf of which requests will be made
+			const createdUserRes = await addUserByAdminRequest(app)
+			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const loginUserRes = await loginRequest(app, userEmail, userPassword)
+			const userToken = loginUserRes.body.accessToken
+
+			// Create a comment
+			const createdCommentRes = await addPostCommentRequest(app, userToken, postId)
+			const commentId = createdCommentRes.body.id
+
+			// Set a like status to the comment
+			await request(app)
+				.put(RouteNames.commentLikeStatus(commentId))
+				.set('authorization', 'Bearer ' + userToken)
+				.send(JSON.stringify({ likeStatus: DBTypes.LikeStatuses.Like }))
+				.set('Content-Type', 'application/json')
+				.set('Accept', 'application/json')
+				.expect(HTTP_STATUSES.NO_CONTENT_204)
+
+			// Get the comment again by an unauthorized user to check a returned object
+			const getCommentRes = await request(app)
+				.get(RouteNames.comment(commentId))
+				.expect(HTTP_STATUSES.OK_200)
+
+			checkCommentObj(
+				getCommentRes.body,
+				createdUserRes.body.id,
+				createdUserRes.body.login,
+				1,
+				0,
+				DBTypes.LikeStatuses.None,
+			)
+
+			// Get the comment again by an authorized user to check a returned object
+			const getComment2Res = await request(app)
+				.get(RouteNames.comment(commentId))
+				.set('authorization', 'Bearer ' + userToken)
+				.expect(HTTP_STATUSES.OK_200)
+
+			checkCommentObj(
+				getComment2Res.body,
+				createdUserRes.body.id,
+				createdUserRes.body.login,
+				1,
+				0,
+				DBTypes.LikeStatuses.Like,
+			)
+		})
+	})*/
+})

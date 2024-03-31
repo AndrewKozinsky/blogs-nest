@@ -29,7 +29,7 @@ describe('ROOT', () => {
 	})
 
 	describe('Getting all blogs', () => {
-		it.skip('should return an object with property items contains an empty array', async () => {
+		it('should return an object with property items contains an empty array', async () => {
 			const successAnswer: GetBlogsOutModel = {
 				pagesCount: 0,
 				page: 1,
@@ -39,11 +39,11 @@ describe('ROOT', () => {
 			}
 
 			await request(app.getHttpServer())
-				.get(RouteNames.blogs)
+				.get(RouteNames.BLOGS.value)
 				.expect(HTTP_STATUSES.OK_200, successAnswer)
 		})
 
-		it.skip('should return an object with property items contains array with 2 items after creating 2 blogs', async () => {
+		/*it.skip('should return an object with property items contains array with 2 items after creating 2 blogs', async () => {
 			await addBlogRequest(app.getHttpServer())
 			await addBlogRequest(app.getHttpServer())
 
@@ -78,10 +78,10 @@ describe('ROOT', () => {
 			expect(getBlogsRes.body.pagesCount).toBe(4)
 			expect(getBlogsRes.body.totalCount).toBe(7)
 			expect(getBlogsRes.body.items.length).toBe(2)
-		})
+		})*/
 	})
 
-	describe('Creating a blog', () => {
+	/*describe('Creating a blog', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
 				.post(RouteNames.blogs)
@@ -112,9 +112,9 @@ describe('ROOT', () => {
 			const allBlogsRes = await request(app.getHttpServer()).get(RouteNames.blogs)
 			expect(allBlogsRes.body.items.length).toBe(2)
 		})
-	})
+	})*/
 
-	describe('Getting a blog', () => {
+	/*describe('Getting a blog', () => {
 		it.skip("should return a 404 if a blog doesn't exists", async () => {
 			await request(app.getHttpServer())
 				.get(RouteNames.blog('999'))
@@ -131,9 +131,9 @@ describe('ROOT', () => {
 			expect(getBlogRes.status).toBe(HTTP_STATUSES.OK_200)
 			checkBlogObj(getBlogRes.body)
 		})
-	})
+	})*/
 
-	describe('Getting a blog posts', () => {
+	/*describe('Getting a blog posts', () => {
 		it.skip("should return a 404 if a blog doesn't exists", async () => {
 			await request(app.getHttpServer())
 				.get(RouteNames.blogPosts('999'))
@@ -199,9 +199,9 @@ describe('ROOT', () => {
 			expect(getBlogsRes.body.totalCount).toBe(7)
 			expect(getBlogsRes.body.items.length).toBe(2)
 		})
-	})
+	})*/
 
-	describe('Updating a blog', () => {
+	/*describe('Updating a blog', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
 				.put(RouteNames.blog('999'))
@@ -257,9 +257,9 @@ describe('ROOT', () => {
 			expect(getBlogRes.body.description).toBe(updateBlogDto.description)
 			expect(getBlogRes.body.websiteUrl).toBe(updateBlogDto.websiteUrl)
 		})
-	})
+	})*/
 
-	describe('Create a blog post', () => {
+	/*describe('Create a blog post', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
 				.post(RouteNames.blogPosts('999'))
@@ -316,7 +316,7 @@ describe('ROOT', () => {
 			)
 			expect(allBlogPostsRes.body.items.length).toBe(2)
 		})
-	})
+	})*/
 
 	/*describe('Deleting a blog', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {

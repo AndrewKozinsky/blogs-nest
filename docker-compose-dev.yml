@@ -33,7 +33,7 @@ services:
     command: yarn run start:dev
     restart: unless-stopped
     ports:
-      - "9229:9229"
+      - "3000:3000"
     environment:
       AUTH_LOGIN: admin
       AUTH_PASSWORD: qwerty

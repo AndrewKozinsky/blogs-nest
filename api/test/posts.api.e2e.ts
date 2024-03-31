@@ -30,7 +30,7 @@ describe('ROOT', () => {
 		await clearAllDB(app)
 	})
 
-	describe('Getting post comments', () => {
+	/*describe('Getting post comments', () => {
 		it.skip('should return an object with property items contains an empty array', async () => {
 			const createdBlogRes = await addBlogRequest(app.getHttpServer())
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
@@ -312,7 +312,7 @@ describe('ROOT', () => {
 				DBTypes.LikeStatuses.Like,
 			)
 		})
-	})
+	})*/
 
 	/*describe('Creating a comment', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
@@ -480,7 +480,7 @@ describe('ROOT', () => {
 		})
 	})*/
 
-	describe('Getting a post', () => {
+	/*describe('Getting a post', () => {
 		it.skip('should return 404 if a post does not exists', async () => {
 			const getPostRes = await request(app.getHttpServer()).get(RouteNames.post('999'))
 			expect(getPostRes.status).toBe(HTTP_STATUSES.NOT_FOUNT_404)
@@ -501,7 +501,7 @@ describe('ROOT', () => {
 
 			checkPostObj(getPostRes.body, 0, 0, DBTypes.LikeStatuses.None)
 		})
-	})
+	})*/
 
 	/*describe('Updating a post', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {

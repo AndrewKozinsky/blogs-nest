@@ -1,6 +1,6 @@
 // import * as jwt from 'jsonwebtoken'
 // @ts-ignore
-// import request from 'supertest'
+import { agent as request } from 'supertest'
 // import { app } from '../../src/app'
 // import { HTTP_STATUSES, config } from '../../src/config/config'
 // import { DBTypes } from '../../src/db/dbTypes'

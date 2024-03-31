@@ -5,9 +5,6 @@ import { HttpExceptionFilter } from '../infrastructure/exception-filters/excepti
 import { SetReqUserMiddleware } from '../infrastructure/middlewares/setReqUser.middleware'
 
 export function applyAppSettings(app: INestApplication) {
-	// Применение глобальной промежуточный функции
-	app.use(SetReqUserMiddleware)
-
 	// Thus ensuring all endpoints are protected from receiving incorrect data.
 	app.useGlobalPipes(
 		new ValidationPipe({

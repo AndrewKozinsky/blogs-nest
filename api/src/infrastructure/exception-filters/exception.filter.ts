@@ -15,12 +15,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
 		const request = ctx.getRequest<Request>()
 		const status = exception.getStatus()
 
+		// @ts-ignore
 		if (status === 400) {
 			const errorResponse = {
 				// @ts-ignore
-				errors: response.message.map((m) => {
-					return m
-				}),
+				errors: exception.getResponse().message,
 			}
 
 			response.status(status).json(errorResponse)
