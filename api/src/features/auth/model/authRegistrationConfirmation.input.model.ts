@@ -23,7 +23,7 @@ export class CodeCustomValidation implements ValidatorConstraintInterface {
 
 		if (!user) {
 			throw new BadRequestException([
-				{ field: 'code', value: 'Confirmation code is not exists' },
+				{ field: 'code', message: 'Confirmation code is not exists' },
 			])
 		}
 

@@ -25,7 +25,7 @@ export class BlogIdValidation implements ValidatorConstraintInterface {
 		const blog = await this.blogsRepository.getBlogById(value)
 
 		if (!blog) {
-			throw new BadRequestException([{ field: 'blogId', value: 'Incorrect blogId' }])
+			throw new BadRequestException([{ field: 'blogId', message: 'Incorrect blogId' }])
 		}
 
 		return true

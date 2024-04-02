@@ -20,7 +20,7 @@ export class IsLoginExistsValidation implements ValidatorConstraintInterface {
 		const user = await this.authRepository.getUserByLoginOrEmail(value)
 
 		if (user) {
-			throw new BadRequestException([{ field: 'login', value: 'Login exists already' }])
+			throw new BadRequestException([{ field: 'login', message: 'Login exists already' }])
 		}
 
 		return true
