@@ -18,7 +18,9 @@ export class IsEmailExistsValidationInAuthRegistrationEmailResendingDto
 		const user = await this.authRepository.getUserByEmail(value)
 
 		if (!user || user.emailConfirmation.isConfirmed) {
-			throw new BadRequestException([{ field: 'email', value: 'Email is already confirmed' }])
+			throw new BadRequestException([
+				{ field: 'email', message: 'Email is already confirmed' },
+			])
 		}
 
 		return true

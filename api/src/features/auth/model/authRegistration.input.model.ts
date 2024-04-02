@@ -35,7 +35,7 @@ export class IsEmailExistsValidation implements ValidatorConstraintInterface {
 		const user = await this.authRepository.getUserByLoginOrEmail(value)
 
 		if (user) {
-			throw new BadRequestException([{ field: 'email', value: 'Email exists already' }])
+			throw new BadRequestException([{ field: 'email', message: 'Email exists already' }])
 		}
 
 		return true

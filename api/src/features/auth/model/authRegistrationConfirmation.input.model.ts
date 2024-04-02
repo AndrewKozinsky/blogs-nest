@@ -18,7 +18,7 @@ export class CodeCustomValidation implements ValidatorConstraintInterface {
 		const user = await this.authRepository.getUserByConfirmationCode(value)
 
 		if (user?.emailConfirmation.isConfirmed) {
-			throw new BadRequestException([{ field: 'code', value: 'Email exists already' }])
+			throw new BadRequestException([{ field: 'code', message: 'Email exists already' }])
 		}
 
 		if (!user) {
