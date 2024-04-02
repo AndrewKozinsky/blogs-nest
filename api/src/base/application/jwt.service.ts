@@ -13,9 +13,10 @@ export class JwtService {
 		})
 	}
 
-	createRefreshTokenStr(deviceId: string): string {
+	createRefreshTokenStr(deviceId: string, expirationDate: Date): string {
 		return jwt.sign({ deviceId }, config.JWT_SECRET, {
-			expiresIn: config.refreshToken.lifeDurationInMs / 1000 + 's',
+			// expiresIn: config.refreshToken.lifeDurationInMs / 1000 + 's',
+			expiresIn: (+expirationDate - +new Date()) / 1000 + 's',
 		})
 	}
 

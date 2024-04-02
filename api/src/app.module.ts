@@ -58,14 +58,18 @@ const dbName = process.env.MONGO_DB_NAME
 @Module({
 	imports: [
 		MongooseModule.forRoot(mongoURI, { dbName }),
-		MongooseModule.forFeature([{ name: Blog.name, schema: BlogSchema }]),
-		MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
-		MongooseModule.forFeature([{ name: PostLike.name, schema: PostLikeSchema }]),
-		MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-		MongooseModule.forFeature([{ name: Comment.name, schema: CommentSchema }]),
-		MongooseModule.forFeature([{ name: CommentLike.name, schema: CommentSchema }]),
-		MongooseModule.forFeature([{ name: DeviceToken.name, schema: DeviceTokenSchema }]),
-		MongooseModule.forFeature([{ name: RateLimit.name, schema: RateLimitSchema }]),
+		// Ограничитель можно сделать отдельным пакетом Limit throller
+		// Схемы в папку feature
+		MongooseModule.forFeature([
+			{ name: Blog.name, schema: BlogSchema },
+			{ name: Post.name, schema: PostSchema },
+			{ name: PostLike.name, schema: PostLikeSchema },
+			{ name: User.name, schema: UserSchema },
+			{ name: Comment.name, schema: CommentSchema },
+			{ name: CommentLike.name, schema: CommentSchema },
+			{ name: DeviceToken.name, schema: DeviceTokenSchema },
+			{ name: RateLimit.name, schema: RateLimitSchema },
+		]),
 	],
 	controllers: [
 		BlogsController,

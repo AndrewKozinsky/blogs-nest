@@ -33,27 +33,19 @@ export class DbService {
 	}*/
 
 	async drop() {
-		/*const models = [
-			this.BlogModel.deleteMany,
-			this.CommentModel.deleteMany,
-			this.CommentLikeModel.deleteMany,
-			this.DeviceTokenModel.deleteMany,
-			this.PostModel.deleteMany,
-			this.PostLikeModel.deleteMany,
-			this.RateLimitModel.deleteMany,
-			this.UserModel.deleteMany,
-		]
-		await Promise.all(models)*/
-
 		try {
-			await this.BlogModel.deleteMany()
-			await this.CommentModel.deleteMany()
-			await this.CommentLikeModel.deleteMany()
-			await this.DeviceTokenModel.deleteMany()
-			await this.PostModel.deleteMany()
-			await this.PostLikeModel.deleteMany()
-			await this.RateLimitModel.deleteMany()
-			await this.UserModel.deleteMany()
+			const models = [
+				this.BlogModel.deleteMany(),
+				this.CommentModel.deleteMany(),
+				this.CommentLikeModel.deleteMany(),
+				this.DeviceTokenModel.deleteMany(),
+				this.PostModel.deleteMany(),
+				this.PostLikeModel.deleteMany(),
+				this.RateLimitModel.deleteMany(),
+				this.UserModel.deleteMany(),
+			]
+
+			await Promise.all(models)
 
 			return true
 		} catch (err: unknown) {

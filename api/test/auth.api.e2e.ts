@@ -1,3 +1,6 @@
+import { INestApplication } from '@nestjs/common'
+import { TestingModule } from '@nestjs/testing'
+import { add } from 'date-fns'
 import * as jwt from 'jsonwebtoken'
 import { agent as request } from 'supertest'
 import { HashAdapter } from '../src/base/adapters/hash.adapter'
@@ -8,16 +11,13 @@ import { AuthRepository } from '../src/features/auth/auth.repository'
 import { CommonService } from '../src/features/common/common.service'
 import { wait } from '../src/utils/promise'
 import { createUniqString, parseCookieStringToObj } from '../src/utils/stringUtils'
-// import { HTTP_STATUSES, config } from '../../src/config/config'
 import { DBTypes } from '../src/db/dbTypes'
-// import { resetDbEveryTest } from './utils/common'
 import {
 	addUserByAdminRequest,
 	adminAuthorizationValue,
 	loginRequest,
 	userEmail,
 } from './utils/utils'
-
 import { describe } from 'node:test'
 import { HTTP_STATUSES, config } from '../src/settings/config'
 import RouteNames from '../src/settings/routeNames'
@@ -29,14 +29,16 @@ it.skip('123', async () => {
 })
 
 describe('ROOT', () => {
-	let app: any
+	let app: INestApplication
 	let authRepository: AuthRepository
+	const jwtService = new JwtService()
 
 	beforeEach(async () => {
 		app = await createTestApp()
 		await clearAllDB(app)
 
-		const userModel = new User()
+		authRepository = await app.resolve(AuthRepository)
+		/*const userModel = new User()
 		const deviceToken = new DeviceToken()
 		const hashAdapter = new HashAdapter()
 		const commonService = new CommonService(userModel, hashAdapter)
@@ -47,7 +49,7 @@ describe('ROOT', () => {
 			hashAdapter,
 			commonService,
 			jwtService,
-		)
+		)*/
 	})
 
 	describe('Login user', () => {
@@ -170,7 +172,7 @@ describe('ROOT', () => {
 
 			const expiredRefreshToken: DBTypes.DeviceToken = {
 				issuedAt: new Date(),
-				expirationDate: new Date(),
+				expirationDate: add(new Date(), { days: 6 }),
 				deviceIP: '123',
 				deviceId,
 				deviceName: 'Unknown',
@@ -180,11 +182,17 @@ describe('ROOT', () => {
 			await authRepository.insertDeviceRefreshToken(expiredRefreshToken)
 
 			// Get created expired token
-			const refreshToken = authRepository.getDeviceRefreshTokenByDeviceId(deviceId)
+			const refreshToken = await authRepository.getDeviceRefreshTokenByDeviceId(deviceId)
+			// console.log(refreshToken)
+			const refreshTokenStr = jwtService.createRefreshTokenStr(
+				refreshToken!.deviceId,
+				refreshToken!.expirationDate,
+			)
+			// console.log(refreshTokenStr)
 
 			await request(app.getHttpServer())
 				.post('/' + RouteNames.AUTH.REFRESH_TOKEN.full)
-				.set('Cookie', config.refreshToken.name + '=' + refreshToken)
+				.set('Cookie', config.refreshToken.name + '=' + refreshTokenStr)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 

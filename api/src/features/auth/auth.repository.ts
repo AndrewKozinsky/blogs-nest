@@ -161,7 +161,6 @@ export class AuthRepository {
 		const getTokenRes = await this.DeviceTokenModel.findOne({
 			deviceId,
 		})
-
 		if (!getTokenRes) return null
 
 		return this.mapDbDeviceRefreshTokenToServiceDeviceRefreshToken(getTokenRes)
@@ -191,9 +190,12 @@ export class AuthRepository {
 	}
 
 	async getDeviceRefreshTokenByTokenStr(tokenStr: string): Promise<null | DBTypes.DeviceToken> {
-		const refreshToken = this.jwtService.getRefreshTokenDataFromTokenStr(tokenStr)
-
-		return this.getDeviceRefreshTokenByDeviceId(refreshToken!.deviceId)
+		try {
+			const refreshToken = this.jwtService.getRefreshTokenDataFromTokenStr(tokenStr)
+			return this.getDeviceRefreshTokenByDeviceId(refreshToken!.deviceId)
+		} catch (err: unknown) {
+			return null
+		}
 	}
 
 	/*async findDeviceRefreshTokenInDb(deviceId: string) {
