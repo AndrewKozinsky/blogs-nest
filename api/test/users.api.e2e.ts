@@ -6,12 +6,6 @@ import { agent as request } from 'supertest'
 import { GetUsersOutModel } from '../src/features/users/models/users.output.model'
 import { createTestApp } from './utils/common'
 import { clearAllDB } from './utils/db'
-// import { app } from '../../src/app'
-// import { HTTP_STATUSES } from '../../src/config/config'
-// import RouteNames from '../../src/config/routeNames'
-// import { GetUsersOutModel } from '../../src/models/output/users.output.model'
-// import { resetDbEveryTest } from './utils/common'
-// import { addUserByAdminRequest, adminAuthorizationValue, checkUserObj } from './utils/utils'
 import { addUserByAdminRequest, adminAuthorizationValue, checkUserObj } from './utils/utils'
 
 it.skip('123', () => {

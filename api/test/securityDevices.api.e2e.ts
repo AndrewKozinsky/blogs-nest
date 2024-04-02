@@ -3,16 +3,11 @@ import { agent as request } from 'supertest'
 import { JwtService } from '../src/base/application/jwt.service'
 import { AuthRepository } from '../src/features/auth/auth.repository'
 import { HTTP_STATUSES, config } from '../src/settings/config'
-// import { app } from '../../src/app'
-// import { HTTP_STATUSES, config } from '../../src/config/config'
 import { DBTypes } from '../src/db/dbTypes'
 import { createUniqString, parseCookieStringToObj } from '../src/utils/stringUtils'
-// import { resetDbEveryTest } from './utils/common'
 import {
 	addUserByAdminRequest,
-	adminAuthorizationValue,
 	checkUserDeviceObj,
-	checkUserObj,
 	loginRequest,
 	userLogin,
 	userPassword,

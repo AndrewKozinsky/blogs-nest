@@ -1,10 +1,8 @@
 import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
-// import { app } from '../../src/app'
 import { HTTP_STATUSES } from '../src/settings/config'
 import RouteNames from '../src/settings/routeNames'
 import { DBTypes } from '../src/db/dbTypes'
-// import { resetDbEveryTest } from './utils/common'
 import {
 	addBlogRequest,
 	addPostCommentRequest,
