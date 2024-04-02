@@ -16,7 +16,7 @@ export class RequestsLimiterMiddleware implements NestMiddleware {
 	) {}
 
 	async use(req: Request, res: Response, next: NextFunction) {
-		const ip = this.browserService.getClientIP(req)
+		/*const ip = this.browserService.getClientIP(req)
 		const { method, path } = req
 
 		const oldTime = addMilliseconds(new Date(), -config.reqLimit.durationInMs)
@@ -42,6 +42,10 @@ export class RequestsLimiterMiddleware implements NestMiddleware {
 			return
 		}
 
-		res.sendStatus(HttpStatus.TOO_MANY_REQUESTS)
+		res.sendStatus(HttpStatus.TOO_MANY_REQUESTS)*/
+
+		// ---
+
+		next()
 	}
 }
