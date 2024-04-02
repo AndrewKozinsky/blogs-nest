@@ -1,11 +1,14 @@
+import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
+import { JwtService } from '../src/base/application/jwt.service'
+import { AuthRepository } from '../src/features/auth/auth.repository'
+import { HTTP_STATUSES, config } from '../src/settings/config'
 // import { app } from '../../src/app'
 // import { HTTP_STATUSES, config } from '../../src/config/config'
-// import RouteNames from '../../src/config/routeNames'
-// import { DBTypes } from '../../src/db/dbTypes'
-// import { createUniqString, parseCookieStringToObj } from '../../src/utils/stringUtils'
+import { DBTypes } from '../src/db/dbTypes'
+import { createUniqString, parseCookieStringToObj } from '../src/utils/stringUtils'
 // import { resetDbEveryTest } from './utils/common'
-/*import {
+import {
 	addUserByAdminRequest,
 	adminAuthorizationValue,
 	checkUserDeviceObj,
@@ -13,10 +16,11 @@ import { agent as request } from 'supertest'
 	loginRequest,
 	userLogin,
 	userPassword,
-} from './utils/utils'*/
+} from './utils/utils'
 // import * as jwt from 'jsonwebtoken'
 
 import { describe } from 'node:test'
+import RouteNames from '../src/settings/routeNames'
 import { createTestApp } from './utils/common'
 import { clearAllDB } from './utils/db'
 
@@ -25,42 +29,49 @@ it.skip('123', () => {
 })
 
 describe('ROOT', () => {
-	let app: any
+	let app: INestApplication
+	let authRepository: AuthRepository
+	const jwtService = new JwtService()
 
 	beforeEach(async () => {
 		app = await createTestApp()
 		await clearAllDB(app)
+
+		authRepository = await app.resolve(AuthRepository)
 	})
 
-	/*describe('Getting all user devices', () => {
-	it.skip('should forbid a request if there is not refresh token', async () => {
-		await request(app).get(RouteNames.securityDevices).expect(HTTP_STATUSES.UNAUTHORIZED_401)
+	describe('Getting all user devices', () => {
+		it.skip('should forbid a request if there is not refresh token', async () => {
+			await request(app.getHttpServer())
+				.get('/' + RouteNames.SECURITY.DEVICES.full)
+				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
+		})
+
+		it.skip('should return an array of devices data if a refreshToken inside cookie is valid', async () => {
+			const login = 'login'
+			const password = 'password'
+			const email = 'email@email.ru'
+
+			const createdUserRes = await addUserByAdminRequest(app, { login, password, email })
+			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
+
+			const loginRes = await loginRequest(app, login, password).expect(HTTP_STATUSES.OK_200)
+			const refreshTokenStr = loginRes.headers['set-cookie'][0]
+			const refreshToken = refreshTokenStr.split('=')[1]
+
+			const getUserDevicesRes = await request(app.getHttpServer())
+				.get('/' + RouteNames.SECURITY.DEVICES.full)
+				.set('Cookie', config.refreshToken.name + '=' + refreshToken)
+				.expect(HTTP_STATUSES.OK_200)
+
+			checkUserDeviceObj(getUserDevicesRes.body[0])
+		})
 	})
-	it.skip('should return an array of devices data if a refreshToken inside cookie is valid', async () => {
-		const login = 'login'
-		const password = 'password'
-		const email = 'email@email.ru'
 
-		const createdUserRes = await addUserByAdminRequest(app, { login, password, email })
-		expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-
-		const loginRes = await loginRequest(app, login, password).expect(HTTP_STATUSES.OK_200)
-		const refreshTokenStr = loginRes.headers['set-cookie'][0]
-		const refreshToken = refreshTokenStr.split('=')[1]
-
-		const getUserDevicesRes = await request(app)
-			.get(RouteNames.securityDevices)
-			.set('Cookie', config.refreshToken.name + '=' + refreshToken)
-			.expect(HTTP_STATUSES.OK_200)
-
-		checkUserDeviceObj(getUserDevicesRes.body[0])
-	})
-})*/
-
-	/*describe('Terminate specified device session', () => {
+	describe('Terminate specified device session', () => {
 		it.skip('should forbid a request from a user without a device refresh token', async () => {
-			return request(app)
-				.delete(RouteNames.securityDevice('999'))
+			return request(app.getHttpServer())
+				.delete('/' + RouteNames.SECURITY.DEVICES.DEVICE_ID('999').full)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
@@ -86,8 +97,8 @@ describe('ROOT', () => {
 			// Get created expired token
 			const refreshToken = authRepository.getDeviceRefreshTokenByDeviceId(deviceId)
 
-			return request(app)
-				.delete(RouteNames.securityDevice('999'))
+			return request(app.getHttpServer())
+				.delete('/' + RouteNames.SECURITY.DEVICES.DEVICE_ID('999').full)
 				.set('Cookie', config.refreshToken.name + '=' + refreshToken)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
@@ -102,8 +113,8 @@ describe('ROOT', () => {
 			const refreshTokenStr = loginRes.headers['set-cookie'][0]
 			const refreshTokenValue = parseCookieStringToObj(refreshTokenStr).cookieValue
 
-			return request(app)
-				.delete(RouteNames.securityDevice('999'))
+			return request(app.getHttpServer())
+				.delete('/' + RouteNames.SECURITY.DEVICES.DEVICE_ID('999').full)
 				.set('Cookie', config.refreshToken.name + '=' + refreshTokenValue)
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
@@ -134,15 +145,17 @@ describe('ROOT', () => {
 			const createdUser_2_Res = await addUserByAdminRequest(app, { login, password, email })
 			expect(createdUser_2_Res.status).toBe(HTTP_STATUSES.CREATED_201)
 
-			const login_2_Res = await loginRequest(app, login, password).expect(HTTP_STATUSES.OK_200)
+			const login_2_Res = await loginRequest(app, login, password).expect(
+				HTTP_STATUSES.OK_200,
+			)
 
 			const deviceRefreshTokenUser_2_Str = login_2_Res.headers['set-cookie'][0]
 			const deviceRefreshTokenUser_2_Value = parseCookieStringToObj(
 				deviceRefreshTokenUser_2_Str,
 			).cookieValue
 
-			return request(app)
-				.delete(RouteNames.securityDevice(deviceId))
+			return request(app.getHttpServer())
+				.delete('/' + RouteNames.SECURITY.DEVICES.DEVICE_ID(deviceId).full)
 				.set('Cookie', config.refreshToken.name + '=' + deviceRefreshTokenUser_2_Value)
 				.expect(HTTP_STATUSES.FORBIDDEN_403)
 		})
@@ -156,22 +169,23 @@ describe('ROOT', () => {
 			)
 
 			const deviceRefreshTokenStr = loginRes.headers['set-cookie'][0]
-			const deviceRefreshTokenValue = parseCookieStringToObj(deviceRefreshTokenStr).cookieValue
+			const deviceRefreshTokenValue =
+				parseCookieStringToObj(deviceRefreshTokenStr).cookieValue
 
 			const deviceId =
 				jwtService.getRefreshTokenDataFromTokenStr(deviceRefreshTokenValue)!.deviceId
 
-			return request(app)
-				.delete(RouteNames.securityDevice(deviceId))
+			return request(app.getHttpServer())
+				.delete('/' + RouteNames.SECURITY.DEVICES.DEVICE_ID(deviceId).full)
 				.set('Cookie', config.refreshToken.name + '=' + deviceRefreshTokenValue)
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 		})
-	})*/
+	})
 
-	/*describe('Terminate this device session', () => {
+	describe('Terminate this device session', () => {
 		it.skip('should forbid a request from a user without a device refresh token', async () => {
-			return request(app)
-				.delete(RouteNames.securityDevices)
+			return request(app.getHttpServer())
+				.delete('/' + RouteNames.SECURITY.DEVICES.full)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
@@ -197,8 +211,8 @@ describe('ROOT', () => {
 			// Get created expired token
 			const refreshToken = authRepository.getDeviceRefreshTokenByDeviceId(deviceId)
 
-			return request(app)
-				.delete(RouteNames.securityDevices)
+			return request(app.getHttpServer())
+				.delete('/' + RouteNames.SECURITY.DEVICES.full)
 				.set('Cookie', config.refreshToken.name + '=' + refreshToken)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
@@ -212,12 +226,13 @@ describe('ROOT', () => {
 			)
 
 			const deviceRefreshTokenStr = loginRes.headers['set-cookie'][0]
-			const deviceRefreshTokenValue = parseCookieStringToObj(deviceRefreshTokenStr).cookieValue
+			const deviceRefreshTokenValue =
+				parseCookieStringToObj(deviceRefreshTokenStr).cookieValue
 
-			return request(app)
-				.delete(RouteNames.securityDevices)
+			return request(app.getHttpServer())
+				.delete('/' + RouteNames.SECURITY.DEVICES.full)
 				.set('Cookie', config.refreshToken.name + '=' + deviceRefreshTokenValue)
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 		})
-	})*/
+	})
 })

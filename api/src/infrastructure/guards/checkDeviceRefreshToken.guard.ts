@@ -1,4 +1,4 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common'
+import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '../../base/application/jwt.service'
 import { RequestService } from '../../base/application/request.service'
 import { AuthRepository } from '../../features/auth/auth.repository'
@@ -18,7 +18,7 @@ export class CheckDeviceRefreshTokenGuard implements CanActivate {
 			const refreshTokenStr = this.requestService.getDeviceRefreshStrTokenFromReq(request)
 
 			if (!this.jwtService.isRefreshTokenStrValid(refreshTokenStr)) {
-				return false
+				throw new UnauthorizedException()
 			}
 
 			// Check if refreshTokenStr has another expiration date
@@ -29,15 +29,19 @@ export class CheckDeviceRefreshTokenGuard implements CanActivate {
 				await this.authRepository.getDeviceRefreshTokenByTokenStr(refreshTokenStr)
 
 			if (!refreshTokenStrExpirationDate || !deviceRefreshToken) {
-				return false
+				throw new UnauthorizedException()
 			}
 
-			return (
+			if (
 				refreshTokenStrExpirationDate!.toLocaleString() ===
 				deviceRefreshToken!.expirationDate.toLocaleString()
-			)
+			) {
+				return true
+			}
+
+			throw new UnauthorizedException()
 		} catch (err: unknown) {
-			return false
+			throw new UnauthorizedException()
 		}
 	}
 }

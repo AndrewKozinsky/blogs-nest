@@ -1,5 +1,8 @@
+import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
 import { describe } from 'node:test'
+import { CreatePostDtoModel } from '../src/features/posts/model/posts.input.model'
+import { GetPostsOutModel } from '../src/features/posts/model/posts.output.model'
 import { HTTP_STATUSES } from '../src/settings/config'
 import RouteNames from '../src/settings/routeNames'
 import { DBTypes } from '../src/db/dbTypes'
@@ -11,6 +14,7 @@ import {
 	addPostCommentRequest,
 	addPostRequest,
 	addUserByAdminRequest,
+	adminAuthorizationValue,
 	checkCommentObj,
 	checkPostObj,
 	loginRequest,
@@ -23,16 +27,16 @@ it.skip('123', async () => {
 })
 
 describe('ROOT', () => {
-	let app: any
+	let app: INestApplication
 
 	beforeAll(async () => {
 		app = await createTestApp()
 		await clearAllDB(app)
 	})
 
-	/*describe('Getting post comments', () => {
+	describe('Getting post comments', () => {
 		it.skip('should return an object with property items contains an empty array', async () => {
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
@@ -49,13 +53,13 @@ describe('ROOT', () => {
 			}
 
 			await request(app.getHttpServer())
-				.get(RouteNames.postComments(postId))
+				.get('/' + RouteNames.POSTS.POST_ID(postId).COMMENTS.full())
 				.expect(HTTP_STATUSES.OK_200, successAnswer)
 		})
 
 		it.skip('should return an object with property items contains array with 2 items after creating 2 comments', async () => {
 			// Create a blog
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
@@ -74,7 +78,7 @@ describe('ROOT', () => {
 			await addPostCommentRequest(app, userToken, postId)
 
 			const getPostCommentsRes = await request(app.getHttpServer())
-				.get(RouteNames.postComments(postId))
+				.get('/' + RouteNames.POSTS.POST_ID(postId).COMMENTS.full())
 				.expect(HTTP_STATUSES.OK_200)
 
 			expect(getPostCommentsRes.body).toMatchObject({
@@ -105,7 +109,7 @@ describe('ROOT', () => {
 
 		it.skip('should return an array of objects matching the queries scheme', async () => {
 			// Create a blog
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
@@ -129,7 +133,10 @@ describe('ROOT', () => {
 			await addPostCommentRequest(app, userToken, postId)
 
 			const getPostCommentsRes = await request(app.getHttpServer())
-				.get(RouteNames.postComments(postId) + '?pageNumber=2&pageSize=2')
+				.get(
+					'/' +
+						RouteNames.POSTS.POST_ID(postId).COMMENTS.full('?pageNumber=2&pageSize=2'),
+				)
 				.expect(HTTP_STATUSES.OK_200)
 
 			expect(getPostCommentsRes.body).toMatchObject({
@@ -145,7 +152,7 @@ describe('ROOT', () => {
 
 		it.skip('create 6 comments then: like comment 1 by user 1, user 2; like comment 2 by user 2, user 3; dislike comment 3 by user 1; like comment 4 by user 1, user 4, user 2, user 3; like comment 5 by user 2, dislike by user 3; like comment 6 by user 1, dislike by user 2.', async () => {
 			// Create a blog
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
@@ -227,7 +234,7 @@ describe('ROOT', () => {
 				likeStatus: DBTypes.LikeStatuses,
 			) {
 				await request(app.getHttpServer())
-					.put(RouteNames.commentLikeStatus(commentId))
+					.put('/' + RouteNames.COMMENTS.COMMENT_ID(commentId).LIKE_STATUS.full)
 					.set('authorization', 'Bearer ' + userToken)
 					.send(JSON.stringify({ likeStatus }))
 					.set('Content-Type', 'application/json')
@@ -251,7 +258,7 @@ describe('ROOT', () => {
 			await setLikeStatus(user2Token, comment6Id, DBTypes.LikeStatuses.Dislike)
 
 			const getPostCommentsRes = await request(app.getHttpServer())
-				.get(RouteNames.postComments(postId, '?sortDirection=asc'))
+				.get('/' + RouteNames.POSTS.POST_ID(postId).COMMENTS.full('?sortDirection=asc'))
 				.set('authorization', 'Bearer ' + user1Token)
 				.expect(HTTP_STATUSES.OK_200)
 
@@ -312,18 +319,18 @@ describe('ROOT', () => {
 				DBTypes.LikeStatuses.Like,
 			)
 		})
-	})*/
+	})
 
-	/*describe('Creating a comment', () => {
+	describe('Creating a comment', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
-				.post(RouteNames.postComments('999'))
+				.post('/' + RouteNames.POSTS.POST_ID('999').COMMENTS.full())
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
 		it.skip('should not create a comment by wrong dto', async () => {
 			// Create a blog
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
@@ -341,6 +348,7 @@ describe('ROOT', () => {
 			const createdCommentOneRes = await addPostCommentRequest(app, userToken, postId, {
 				content: 'WRONG',
 			})
+
 			expect(createdCommentOneRes.status).toBe(HTTP_STATUSES.BAD_REQUEST_400)
 			expect(createdCommentOneRes.body).toMatchObject({
 				errorsMessages: expect.any(Array),
@@ -351,7 +359,7 @@ describe('ROOT', () => {
 
 		it.skip('should create a comment by correct dto', async () => {
 			// Create a blog
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
@@ -386,13 +394,13 @@ describe('ROOT', () => {
 			expect(createdCommentTwoRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
 			const getPostCommentsRes = await request(app.getHttpServer())
-				.get(RouteNames.postComments(postId))
+				.get('/' + RouteNames.POSTS.POST_ID(postId).COMMENTS.full())
 				.expect(HTTP_STATUSES.OK_200)
 			expect(getPostCommentsRes.body.items.length).toBe(2)
 		})
-	})*/
+	})
 
-	/*describe('Getting all posts', () => {
+	describe('Getting all posts', () => {
 		it.skip('should return an object with property items contains an empty array', async () => {
 			const successAnswer: GetPostsOutModel = {
 				pagesCount: 0,
@@ -402,17 +410,21 @@ describe('ROOT', () => {
 				items: [],
 			}
 
-			await request(app.getHttpServer()).get(RouteNames.posts).expect(HTTP_STATUSES.OK_200, successAnswer)
+			await request(app.getHttpServer())
+				.get('/' + RouteNames.POSTS.value)
+				.expect(HTTP_STATUSES.OK_200, successAnswer)
 		})
 
 		it.skip('should return an object with property items contains array with 2 items after creating 2 posts', async () => {
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
 			await addPostRequest(app, blogId)
 			await addPostRequest(app, blogId)
 
-			const getPostsRes = await request(app.getHttpServer()).get(RouteNames.posts).expect(HTTP_STATUSES.OK_200)
+			const getPostsRes = await request(app.getHttpServer())
+				.get('/' + RouteNames.POSTS.value)
+				.expect(HTTP_STATUSES.OK_200)
 
 			expect(getPostsRes.body.pagesCount).toBe(1)
 			expect(getPostsRes.body.page).toBe(1)
@@ -420,12 +432,12 @@ describe('ROOT', () => {
 			expect(getPostsRes.body.totalCount).toBe(2)
 			expect(getPostsRes.body.items.length).toBe(2)
 
-			checkPostObj(getPostsRes.body.items[0])
-			checkPostObj(getPostsRes.body.items[1])
+			checkPostObj(getPostsRes.body.items[0], 0, 0, DBTypes.LikeStatuses.None)
+			checkPostObj(getPostsRes.body.items[1], 0, 0, DBTypes.LikeStatuses.None)
 		})
 
 		it.skip('should return an array of objects matching the queries scheme', async () => {
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
 			await addPostRequest(app, blogId)
@@ -436,22 +448,26 @@ describe('ROOT', () => {
 			await addPostRequest(app, blogId)
 			await addPostRequest(app, blogId)
 
-			const getPostsRes = await request(app.getHttpServer()).get(RouteNames.posts + '?pageNumber=2&pageSize=2')
+			const getPostsRes = await request(app.getHttpServer()).get(
+				'/' + RouteNames.POSTS.value + '?pageNumber=2&pageSize=2',
+			)
 
 			expect(getPostsRes.body.page).toBe(2)
 			expect(getPostsRes.body.pagesCount).toBe(4)
 			expect(getPostsRes.body.totalCount).toBe(7)
 			expect(getPostsRes.body.items.length).toBe(2)
 		})
-	})*/
+	})
 
-	/*describe('Creating a post', () => {
+	describe('Creating a post', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
-			await request(app.getHttpServer()).post(RouteNames.posts).expect(HTTP_STATUSES.UNAUTHORIZED_401)
+			await request(app.getHttpServer())
+				.post('/' + RouteNames.POSTS.value)
+				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
 		it.skip('should not create a post by wrong dto', async () => {
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
 			const createdPostRes = await addPostRequest(app, blogId, { title: '' })
@@ -463,67 +479,71 @@ describe('ROOT', () => {
 		})
 
 		it.skip('should create a post by correct dto', async () => {
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
 			const createdPostRes = await addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
-			checkPostObj(createdPostRes.body)
+			checkPostObj(createdPostRes.body, 0, 0, DBTypes.LikeStatuses.None)
 
 			// Check if there are 2 posts after adding another one
 			const createdPost2Res = await addPostRequest(app, blogId)
 			expect(createdPost2Res.status).toBe(HTTP_STATUSES.CREATED_201)
 
-			const allPostsRes = await request(app.getHttpServer()).get(RouteNames.posts)
+			const allPostsRes = await request(app.getHttpServer()).get('/' + RouteNames.POSTS.value)
 			expect(allPostsRes.body.items.length).toBe(2)
 		})
-	})*/
+	})
 
-	/*describe('Getting a post', () => {
+	describe('Getting a post', () => {
 		it.skip('should return 404 if a post does not exists', async () => {
-			const getPostRes = await request(app.getHttpServer()).get(RouteNames.post('999'))
+			const getPostRes = await request(app.getHttpServer()).get(
+				'/' + RouteNames.POSTS.POST_ID('999').full,
+			)
 			expect(getPostRes.status).toBe(HTTP_STATUSES.NOT_FOUNT_404)
 		})
 
-		it('should return an existing post', async () => {
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+		it.skip('should return an existing post', async () => {
+			const createdBlogRes = await addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
-			const createdPostRes = await addPostRequest(app.getHttpServer(), blogId)
+			const createdPostRes = await addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const createdPostId = createdPostRes.body.id
 
 			const getPostRes = await request(app.getHttpServer()).get(
-				RouteNames.post(createdPostId),
+				'/' + RouteNames.POSTS.POST_ID(createdPostId).full,
 			)
 			expect(getPostRes.status).toBe(HTTP_STATUSES.OK_200)
 
 			checkPostObj(getPostRes.body, 0, 0, DBTypes.LikeStatuses.None)
 		})
-	})*/
+	})
 
-	/*describe('Updating a post', () => {
+	describe('Updating a post', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
-			await request(app.getHttpServer()).put(RouteNames.post('999')).expect(HTTP_STATUSES.UNAUTHORIZED_401)
+			await request(app.getHttpServer())
+				.put('/' + RouteNames.POSTS.POST_ID('999').full)
+				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
 		it.skip('should not update a non existing post', async () => {
 			await request(app.getHttpServer())
-				.post(RouteNames.post('999'))
+				.post('/' + RouteNames.POSTS.POST_ID('999').full)
 				.set('authorization', adminAuthorizationValue)
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
 
 		it.skip('should not update a post by wrong dto', async () => {
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
 			const createdPostRes = await addPostRequest(app, blogId)
 			const createdPostId = createdPostRes.body.id
 
 			await request(app.getHttpServer())
-				.put(RouteNames.post(createdPostId))
+				.put('/' + RouteNames.POSTS.POST_ID(createdPostId).full)
 				.send({})
 				.set('authorization', adminAuthorizationValue)
 				.set('Content-Type', 'application/json')
@@ -532,7 +552,7 @@ describe('ROOT', () => {
 		})
 
 		it.skip('should update a post by correct dto', async () => {
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
 			const createdPostRes = await addPostRequest(app, blogId)
@@ -547,36 +567,38 @@ describe('ROOT', () => {
 			}
 
 			await request(app.getHttpServer())
-				.put(RouteNames.post(createdPostId))
+				.put('/' + RouteNames.POSTS.POST_ID(createdPostId).full)
 				.send(updatePostDto)
 				.set('authorization', adminAuthorizationValue)
 				.set('Content-Type', 'application/json')
 				.set('Accept', 'application/json')
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 
-			const getPostRes = await request(app.getHttpServer()).get(RouteNames.post(createdPostId))
+			const getPostRes = await request(app.getHttpServer()).get(
+				'/' + RouteNames.POSTS.POST_ID(createdPostId).full,
+			)
 
 			expect(getPostRes.status).toBe(HTTP_STATUSES.OK_200)
 			expect(getPostRes.body.title).toBe(updatePostDto.title)
 			expect(getPostRes.body.shortDescription).toBe(updatePostDto.shortDescription)
 			expect(getPostRes.body.content).toBe(updatePostDto.content)
 		})
-	})*/
+	})
 
-	/*describe('Deleting a post', () => {
+	describe('Deleting a post', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
-			return request(app.getHttpServer()).put(RouteNames.posts)
+			return request(app.getHttpServer()).put('/' + RouteNames.POSTS.value)
 		})
 
 		it.skip('should not delete a non existing post', async () => {
 			await request(app.getHttpServer())
-				.delete(RouteNames.post('999'))
+				.delete('/' + RouteNames.POSTS.POST_ID('999').full)
 				.set('authorization', adminAuthorizationValue)
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
 
 		it.skip('should delete a post', async () => {
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
 			const createdPostRes = await addPostRequest(app, blogId)
@@ -584,18 +606,20 @@ describe('ROOT', () => {
 			const createdPostId = createdPostRes.body.id
 
 			await request(app.getHttpServer())
-				.delete(RouteNames.post(createdPostId))
+				.delete('/' + RouteNames.POSTS.POST_ID(createdPostId).full)
 				.set('authorization', adminAuthorizationValue)
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 
-			await request(app.getHttpServer()).get(RouteNames.post(createdPostId)).expect(HTTP_STATUSES.NOT_FOUNT_404)
+			await request(app.getHttpServer())
+				.get('/' + RouteNames.POSTS.POST_ID(createdPostId).full)
+				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
-	})*/
+	})
 
-	/*describe('Make a post like status', () => {
+	describe('Make a post like status', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
-				.put(RouteNames.postLikeStatus('999'))
+				.put('/' + RouteNames.POSTS.POST_ID('999').LIKE_STATUS.full)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
@@ -607,7 +631,7 @@ describe('ROOT', () => {
 			const userToken = loginUserRes.body.accessToken
 
 			await request(app.getHttpServer())
-				.put(RouteNames.postLikeStatus('999'))
+				.put('/' + RouteNames.POSTS.POST_ID('999').LIKE_STATUS.full)
 				.set('authorization', 'Bearer ' + userToken)
 				.send(JSON.stringify({ likeStatus: 'None' }))
 				.set('Content-Type', 'application/json')
@@ -623,14 +647,14 @@ describe('ROOT', () => {
 			const userToken = loginUserRes.body.accessToken
 
 			await request(app.getHttpServer())
-				.put(RouteNames.postLikeStatus('999'))
+				.put('/' + RouteNames.POSTS.POST_ID('999').LIKE_STATUS.full)
 				.set('authorization', 'Bearer ' + userToken)
 				.expect(HTTP_STATUSES.BAD_REQUEST_400)
 		})
 
 		it.skip('should return 204 if pass right body data to right address', async () => {
 			// Create a blog
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
@@ -647,7 +671,7 @@ describe('ROOT', () => {
 
 			// Set a like status to the post
 			await request(app.getHttpServer())
-				.put(RouteNames.postLikeStatus(postId))
+				.put('/' + RouteNames.POSTS.POST_ID(postId).LIKE_STATUS.full)
 				.set('authorization', 'Bearer ' + userToken)
 				.send(JSON.stringify({ likeStatus: DBTypes.LikeStatuses.Like }))
 				.set('Content-Type', 'application/json')
@@ -656,15 +680,15 @@ describe('ROOT', () => {
 
 			// Get the post again to check a returned object
 			const getPostRes = await request(app.getHttpServer())
-				.get(RouteNames.post(postId))
+				.get('/' + RouteNames.POSTS.POST_ID(postId).full)
 				.expect(HTTP_STATUSES.OK_200)
 
 			checkPostObj(getPostRes.body, 1, 0, DBTypes.LikeStatuses.None)
 		})
 
-		it('create post and make a few likes from different users', async () => {
+		it.skip('create post and make a few likes from different users', async () => {
 			// Create a blog
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
@@ -716,7 +740,7 @@ describe('ROOT', () => {
 
 			async function setLikeStatus(userToken: string, likeStatus: DBTypes.LikeStatuses) {
 				await request(app.getHttpServer())
-					.put(RouteNames.postLikeStatus(postId))
+					.put('/' + RouteNames.POSTS.POST_ID(postId).LIKE_STATUS.full)
 					.set('authorization', 'Bearer ' + userToken)
 					.send(JSON.stringify({ likeStatus }))
 					.set('Content-Type', 'application/json')
@@ -729,14 +753,14 @@ describe('ROOT', () => {
 
 			// Get the post again by an unauthorized user to check a returned object
 			let getPostRes = await request(app.getHttpServer())
-				.get(RouteNames.post(postId))
+				.get('/' + RouteNames.POSTS.POST_ID(postId).full)
 				.expect(HTTP_STATUSES.OK_200)
 
 			checkPostObj(getPostRes.body, 1, 0, DBTypes.LikeStatuses.None)
 
 			// Get the post again by an authorized user to check a returned object
 			getPostRes = await request(app.getHttpServer())
-				.get(RouteNames.post(postId))
+				.get('/' + RouteNames.POSTS.POST_ID(postId).full)
 				.set('authorization', 'Bearer ' + user1Token)
 				.set('Content-Type', 'application/json')
 				.set('Accept', 'application/json')
@@ -751,7 +775,7 @@ describe('ROOT', () => {
 
 			// Get the post again by an authorized user to check a returned object
 			getPostRes = await request(app.getHttpServer())
-				.get(RouteNames.post(postId))
+				.get('/' + RouteNames.POSTS.POST_ID(postId).full)
 				.set('authorization', 'Bearer ' + user2Token)
 				.set('Content-Type', 'application/json')
 				.set('Accept', 'application/json')
@@ -766,9 +790,9 @@ describe('ROOT', () => {
 			expect(getPostRes.body.extendedLikesInfo.newestLikes[2].userId).toBe(user2Id)
 		})
 
-		it('create 6 posts then: like post 1 by user 1, user 2; like post 2 by user 2, user 3; dislike post 3 by user 1; like post 4 by user 1, user 4, user 2, user 3; like post 5 by user 2, dislike by user 3; like post 6 by user 1, dislike by user 2. Get the posts by user 1 after all likes NewestLikes should be sorted in descending', async () => {
+		it.skip('create 6 posts then: like post 1 by user 1, user 2; like post 2 by user 2, user 3; dislike post 3 by user 1; like post 4 by user 1, user 4, user 2, user 3; like post 5 by user 2, dislike by user 3; like post 6 by user 1, dislike by user 2. Get the posts by user 1 after all likes NewestLikes should be sorted in descending', async () => {
 			// Create a blog
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
@@ -833,7 +857,7 @@ describe('ROOT', () => {
 				likeStatus: DBTypes.LikeStatuses,
 			) {
 				await request(app.getHttpServer())
-					.put(RouteNames.postLikeStatus(postId))
+					.put('/' + RouteNames.POSTS.POST_ID(postId).LIKE_STATUS.full)
 					.set('authorization', 'Bearer ' + userToken)
 					.send(JSON.stringify({ likeStatus }))
 					.set('Content-Type', 'application/json')
@@ -857,7 +881,7 @@ describe('ROOT', () => {
 
 			// Get the posts by user 1 after all likes NewestLikes should be sorted in descending
 			const getPostsRes = await request(app.getHttpServer())
-				.get(RouteNames.posts)
+				.get('/' + RouteNames.POSTS.value)
 				.set('authorization', 'Bearer ' + user1Token)
 				.set('Content-Type', 'application/json')
 				.set('Accept', 'application/json')
@@ -865,5 +889,5 @@ describe('ROOT', () => {
 
 			expect(getPostsRes.body.items.length).toBe(6)
 		})
-	})*/
+	})
 })

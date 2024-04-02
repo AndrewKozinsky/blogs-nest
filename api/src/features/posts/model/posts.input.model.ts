@@ -1,4 +1,4 @@
-import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common'
+import { ArgumentMetadata, BadRequestException, Injectable, PipeTransform } from '@nestjs/common'
 import { plainToInstance, Type } from 'class-transformer'
 import {
 	IsIn,
@@ -16,7 +16,7 @@ import {
 import { BlogsRepository } from '../../blogs/blogs.repository'
 import { GetBlogsQueries } from '../../blogs/model/blogs.input.model'
 
-@ValidatorConstraint({ name: 'login', async: true })
+@ValidatorConstraint({ name: 'blogId', async: true })
 @Injectable()
 export class BlogIdValidation implements ValidatorConstraintInterface {
 	constructor(private readonly blogsRepository: BlogsRepository) {}
@@ -25,7 +25,7 @@ export class BlogIdValidation implements ValidatorConstraintInterface {
 		const blog = await this.blogsRepository.getBlogById(value)
 
 		if (!blog) {
-			throw new Error('Incorrect blogId')
+			throw new BadRequestException([{ field: 'blogId', value: 'Incorrect blogId' }])
 		}
 
 		return true
@@ -153,5 +153,7 @@ export class GetPostCommentsQueriesPipe implements PipeTransform {
 
 export class CreatePostCommentDtoModel {
 	@IsString()
+	@MinLength(20, { message: 'Content is too short' })
+	@MaxLength(300, { message: 'Content is too long' })
 	content: string
 }

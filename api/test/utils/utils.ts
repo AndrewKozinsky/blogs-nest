@@ -34,7 +34,7 @@ export const userEmail = 'mail@email.com'
 export const userPassword = 'password'
 
 export async function addBlogRequest(app: any, blogDto: Partial<CreateBlogDtoModel> = {}) {
-	return request(app)
+	return request(app.getHttpServer())
 		.post('/' + RouteNames.BLOGS.value)
 		.send(createDtoAddBlog(blogDto))
 		.set('Content-Type', 'application/json')
@@ -49,7 +49,7 @@ export async function addBlogPostRequest(
 ) {
 	const addBlogPostDto = createDtoAddBlogPost(postDto)
 
-	return await request(app)
+	return await request(app.getHttpServer())
 		.post('/' + RouteNames.BLOGS.BLOG_ID(blogId).POSTS.full)
 		.send(addBlogPostDto)
 		.set('Content-Type', 'application/json')
@@ -74,7 +74,7 @@ export async function addPostRequest(
 	blogId: string,
 	postDto: Partial<CreatePostDtoModel> = {},
 ) {
-	return request(app)
+	return request(app.getHttpServer())
 		.post('/' + RouteNames.POSTS.value)
 		.set('authorization', adminAuthorizationValue)
 		.send(createDtoAddPost(blogId, postDto))
@@ -174,7 +174,7 @@ export function checkUserObj(userObj: any) {
 	)
 }
 
-/*export function checkUserDeviceObj(userDeviceObj: any) {
+export function checkUserDeviceObj(userDeviceObj: any) {
 	expect(userDeviceObj).toEqual({
 		ip: expect.any(String),
 		title: expect.any(String),
@@ -185,7 +185,7 @@ export function checkUserObj(userObj: any) {
 	expect(userDeviceObj.lastActiveDate).toMatch(
 		/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/,
 	)
-}*/
+}
 
 export function loginRequest(app: any, loginOrEmail: string, password: string) {
 	return request(app.getHttpServer())
@@ -199,7 +199,7 @@ export async function addPostCommentRequest(
 	postId: string,
 	commentDto: Partial<CreatePostCommentDtoModel> = {},
 ) {
-	return request(app)
+	return request(app.getHttpServer())
 		.post('/' + RouteNames.POSTS.POST_ID(postId).COMMENTS.full())
 		.send(createDtoAddPostComment(commentDto))
 		.set('Content-Type', 'application/json')

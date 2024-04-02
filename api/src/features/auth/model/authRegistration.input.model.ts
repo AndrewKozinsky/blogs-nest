@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import {
 	IsEmail,
 	IsString,
@@ -11,22 +11,6 @@ import {
 } from 'class-validator'
 import { AuthRepository } from '../auth.repository'
 
-@ValidatorConstraint({ name: 'email', async: true })
-@Injectable()
-export class IsEmailExistsValidation implements ValidatorConstraintInterface {
-	constructor(private readonly authRepository: AuthRepository) {}
-
-	async validate(value: string): Promise<boolean> {
-		const user = await this.authRepository.getUserByLoginOrEmail(value)
-
-		if (user) {
-			throw new Error('Email exists already')
-		}
-
-		return true
-	}
-}
-
 @ValidatorConstraint({ name: 'login', async: true })
 @Injectable()
 export class IsLoginExistsValidation implements ValidatorConstraintInterface {
@@ -36,7 +20,22 @@ export class IsLoginExistsValidation implements ValidatorConstraintInterface {
 		const user = await this.authRepository.getUserByLoginOrEmail(value)
 
 		if (user) {
-			throw new Error('Login exists already')
+			throw new BadRequestException([{ field: 'login', value: 'Login exists already' }])
+		}
+
+		return true
+	}
+}
+@ValidatorConstraint({ name: 'email', async: true })
+@Injectable()
+export class IsEmailExistsValidation implements ValidatorConstraintInterface {
+	constructor(private readonly authRepository: AuthRepository) {}
+
+	async validate(value: string): Promise<boolean> {
+		const user = await this.authRepository.getUserByLoginOrEmail(value)
+
+		if (user) {
+			throw new BadRequestException([{ field: 'email', value: 'Email exists already' }])
 		}
 
 		return true

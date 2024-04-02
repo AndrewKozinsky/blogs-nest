@@ -1,3 +1,4 @@
+import { INestApplication } from '@nestjs/common'
 import { describe } from 'node:test'
 import { HTTP_STATUSES } from '../src/settings/config'
 import RouteNames from '../src/settings/routeNames'
@@ -18,17 +19,17 @@ it.skip('123', () => {
 })
 
 describe('ROOT', () => {
-	let app: any
+	let app: INestApplication
 
 	beforeAll(async () => {
 		app = await createTestApp()
 		await clearAllDB(app)
 	})
 
-	/*describe('Getting all users', () => {
+	describe('Getting all users', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
-				.get(RouteNames.users)
+				.get('/' + RouteNames.USERS.value)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
@@ -42,7 +43,7 @@ describe('ROOT', () => {
 			}
 
 			await request(app.getHttpServer())
-				.get(RouteNames.users)
+				.get('/' + RouteNames.USERS.value)
 				.set('authorization', adminAuthorizationValue)
 				.expect(HTTP_STATUSES.OK_200, successAnswer)
 		})
@@ -52,7 +53,7 @@ describe('ROOT', () => {
 			await addUserByAdminRequest(app)
 
 			const getUsersRes = await request(app.getHttpServer())
-				.get(RouteNames.users)
+				.get('/' + RouteNames.USERS.value)
 				.set('authorization', adminAuthorizationValue)
 				.expect(HTTP_STATUSES.OK_200)
 
@@ -76,7 +77,7 @@ describe('ROOT', () => {
 			await addUserByAdminRequest(app)
 
 			const getUsersRes = await request(app.getHttpServer())
-				.get(RouteNames.users + '?pageNumber=2&pageSize=2')
+				.get('/' + RouteNames.USERS.value + '?pageNumber=2&pageSize=2')
 				.set('authorization', adminAuthorizationValue)
 
 			expect(getUsersRes.body.page).toBe(2)
@@ -85,7 +86,7 @@ describe('ROOT', () => {
 			expect(getUsersRes.body.items.length).toBe(2)
 		})
 
-		it('should return filtered an array of objects', async () => {
+		it.skip('should return filtered an array of objects', async () => {
 			await addUserByAdminRequest(app, { login: 'in-one-1', email: 'email-1@email.com' }) //
 			await addUserByAdminRequest(app, { login: 'in-two-1', email: 'email-2@email.com' }) //
 			await addUserByAdminRequest(app, { login: 'in-one-1', email: 'email-3@email.com' }) //
@@ -99,7 +100,8 @@ describe('ROOT', () => {
 
 			const getUsersRes = await request(app.getHttpServer())
 				.get(
-					RouteNames.users +
+					'/' +
+						RouteNames.USERS.value +
 						'?pageNumber=2&pageSize=2&searchLoginTerm=one&searchEmailTerm=.com',
 				)
 				.set('authorization', adminAuthorizationValue)
@@ -112,17 +114,17 @@ describe('ROOT', () => {
 			// ---
 
 			const getUsers2Res = await request(app.getHttpServer())
-				.get(RouteNames.users + '?pageNumber=2&pageSize=2')
+				.get('/' + RouteNames.USERS.value + '?pageNumber=2&pageSize=2')
 				.set('authorization', adminAuthorizationValue)
 			expect(getUsers2Res.body.items[0].email).toBe('email-8@email.com')
 			expect(getUsers2Res.body.items[1].email).toBe('email-7@email.ru')
 		})
-	})*/
+	})
 
-	/*describe('Creating an user', () => {
+	describe('Creating an user', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
-				.post(RouteNames.users)
+				.post('/' + RouteNames.USERS.value)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
@@ -146,21 +148,20 @@ describe('ROOT', () => {
 			expect(createdUser2Res.status).toBe(HTTP_STATUSES.CREATED_201)
 
 			const allUsersRes = await request(app.getHttpServer())
-				.get(RouteNames.users)
+				.get('/' + RouteNames.USERS.value)
 				.set('authorization', adminAuthorizationValue)
 			expect(allUsersRes.body.items.length).toBe(2)
 		})
-	})*/
+	})
 
-	/*
 	describe('Deleting an user', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
-			return request(app.getHttpServer()).put(RouteNames.users)
+			return request(app.getHttpServer()).put('/' + RouteNames.USERS.value)
 		})
 
 		it.skip('should not delete a non existing user', async () => {
 			await request(app.getHttpServer())
-				.delete(RouteNames.user('999'))
+				.delete('/' + RouteNames.USERS.USER_ID('999').full)
 				.set('authorization', adminAuthorizationValue)
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
@@ -171,15 +172,14 @@ describe('ROOT', () => {
 			const createdUserId = createdUserRes.body.id
 
 			await request(app.getHttpServer())
-				.delete(RouteNames.user(createdUserId))
+				.delete('/' + RouteNames.USERS.USER_ID(createdUserId).full)
 				.set('authorization', adminAuthorizationValue)
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 
 			await request(app.getHttpServer())
-				.get(RouteNames.user(createdUserId))
+				.get('/' + RouteNames.USERS.USER_ID(createdUserId).full)
 				.set('authorization', adminAuthorizationValue)
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
 	})
-	*/
 })

@@ -69,6 +69,7 @@ export class AuthService {
 		req: Request,
 	): Promise<LayerResult<{ newAccessToken: string; newRefreshToken: string }>> {
 		const deviceRefreshTokenStr = this.requestService.getDeviceRefreshStrTokenFromReq(req)
+
 		const deviceRefreshToken =
 			await this.authRepository.getDeviceRefreshTokenByTokenStr(deviceRefreshTokenStr)
 

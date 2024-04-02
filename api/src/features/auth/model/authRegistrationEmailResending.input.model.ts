@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import {
 	IsEmail,
 	Validate,
@@ -9,14 +9,16 @@ import { AuthRepository } from '../auth.repository'
 
 @ValidatorConstraint({ name: 'email', async: true })
 @Injectable()
-class IsEmailExistsValidation implements ValidatorConstraintInterface {
+export class IsEmailExistsValidationInAuthRegistrationEmailResendingDto
+	implements ValidatorConstraintInterface
+{
 	constructor(private readonly authRepository: AuthRepository) {}
 
 	async validate(value: string): Promise<boolean> {
 		const user = await this.authRepository.getUserByEmail(value)
 
 		if (!user || user.emailConfirmation.isConfirmed) {
-			throw new Error('Email is already confirmed')
+			throw new BadRequestException([{ field: 'email', value: 'Email is already confirmed' }])
 		}
 
 		return true
@@ -25,6 +27,6 @@ class IsEmailExistsValidation implements ValidatorConstraintInterface {
 
 export class AuthRegistrationEmailResendingDtoModel {
 	@IsEmail()
-	@Validate(IsEmailExistsValidation)
+	@Validate(IsEmailExistsValidationInAuthRegistrationEmailResendingDto)
 	email: string
 }

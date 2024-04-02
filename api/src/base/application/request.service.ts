@@ -6,9 +6,20 @@ import { config } from '../../settings/config'
 export class RequestService {
 	getDeviceRefreshStrTokenFromReq(req: Request): string {
 		try {
-			return req.cookies[config.refreshToken.name]
+			const cookiesObj = this.transformCookiesStringToObj(req.headers.cookie!)
+			return cookiesObj[config.refreshToken.name]
 		} catch (err: unknown) {
 			return ''
 		}
+	}
+	transformCookiesStringToObj(cookiesStr: string) {
+		const keyAndValueArr = cookiesStr.split('; ')
+
+		return keyAndValueArr.reduce((acc, itemObj) => {
+			const [key, value] = itemObj.split('=')
+
+			acc[key] = value
+			return acc
+		}, {})
 	}
 }

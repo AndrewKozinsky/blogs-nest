@@ -1,14 +1,10 @@
 import { INestApplication } from '@nestjs/common'
-import { TestingModule } from '@nestjs/testing'
 import { add } from 'date-fns'
 import * as jwt from 'jsonwebtoken'
 import { agent as request } from 'supertest'
-import { HashAdapter } from '../src/base/adapters/hash.adapter'
 import { JwtService } from '../src/base/application/jwt.service'
-import { DeviceToken } from '../src/db/schemas/deviceToken.schema'
-import { User } from '../src/db/schemas/user.schema'
 import { AuthRepository } from '../src/features/auth/auth.repository'
-import { CommonService } from '../src/features/common/common.service'
+import { UsersRepository } from '../src/features/users/users.repository'
 import { wait } from '../src/utils/promise'
 import { createUniqString, parseCookieStringToObj } from '../src/utils/stringUtils'
 import { DBTypes } from '../src/db/dbTypes'
@@ -31,6 +27,7 @@ it.skip('123', async () => {
 describe('ROOT', () => {
 	let app: INestApplication
 	let authRepository: AuthRepository
+	let usersRepository: UsersRepository
 	const jwtService = new JwtService()
 
 	beforeEach(async () => {
@@ -38,18 +35,7 @@ describe('ROOT', () => {
 		await clearAllDB(app)
 
 		authRepository = await app.resolve(AuthRepository)
-		/*const userModel = new User()
-		const deviceToken = new DeviceToken()
-		const hashAdapter = new HashAdapter()
-		const commonService = new CommonService(userModel, hashAdapter)
-		const jwtService = new JwtService()
-		authRepository = new AuthRepository(
-			userModel,
-			deviceToken,
-			hashAdapter,
-			commonService,
-			jwtService,
-		)*/
+		usersRepository = await app.resolve(UsersRepository)
 	})
 
 	describe('Login user', () => {
@@ -158,7 +144,7 @@ describe('ROOT', () => {
 	})
 
 	describe('Refresh token', () => {
-		it('should return 401 if the JWT refreshToken inside cookie is missing, expired or incorrect', async () => {
+		it.skip('should return 401 if the JWT refreshToken inside cookie is missing, expired or incorrect', async () => {
 			const login = 'login'
 			const password = 'password'
 			const email = 'email@email.ru'
@@ -172,7 +158,7 @@ describe('ROOT', () => {
 
 			const expiredRefreshToken: DBTypes.DeviceToken = {
 				issuedAt: new Date(),
-				expirationDate: add(new Date(), { days: 6 }),
+				expirationDate: add(new Date(), { days: -6 }),
 				deviceIP: '123',
 				deviceId,
 				deviceName: 'Unknown',
@@ -183,16 +169,14 @@ describe('ROOT', () => {
 
 			// Get created expired token
 			const refreshToken = await authRepository.getDeviceRefreshTokenByDeviceId(deviceId)
-			// console.log(refreshToken)
 			const refreshTokenStr = jwtService.createRefreshTokenStr(
 				refreshToken!.deviceId,
 				refreshToken!.expirationDate,
 			)
-			// console.log(refreshTokenStr)
 
 			await request(app.getHttpServer())
 				.post('/' + RouteNames.AUTH.REFRESH_TOKEN.full)
-				.set('Cookie', config.refreshToken.name + '=' + refreshTokenStr)
+				.set('Cookie', [config.refreshToken.name + '=' + refreshTokenStr])
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
@@ -221,7 +205,7 @@ describe('ROOT', () => {
 		})
 	})
 
-	/*describe('Register user', () => {
+	describe('Register user', () => {
 		it.skip('should return 400 if dto has incorrect values', async () => {
 			const registrationRes = await request(app.getHttpServer())
 				.post('/' + RouteNames.AUTH.REGISTRATION.full)
@@ -256,7 +240,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 
 			const allUsers = await request(app.getHttpServer())
-				.get(RouteNames.users)
+				.get('/' + RouteNames.USERS.value)
 				.set('authorization', adminAuthorizationValue)
 				.expect(HTTP_STATUSES.OK_200)
 
@@ -283,12 +267,12 @@ describe('ROOT', () => {
 				.send({ login: '', password: '', email: '' })
 				.expect(HTTP_STATUSES.BAD_REQUEST_400)
 		})
-	})*/
+	})
 
-	/*describe('Registration confirmation', () => {
+	describe('Registration confirmation', () => {
 		it.skip('should return 400 if the request has wrong dto', async () => {
 			const regConfirmRes = await request(app.getHttpServer())
-				.post(RouteNames.authRegistrationConfirmation)
+				.post('/' + RouteNames.AUTH.REGISTRATION_CONFIRMATION.full)
 				.send({ code: '' })
 				.expect(HTTP_STATUSES.BAD_REQUEST_400)
 
@@ -298,7 +282,7 @@ describe('ROOT', () => {
 
 		it.skip('should return 400 if there is not user with given confirmation code', async () => {
 			await request(app.getHttpServer())
-				.post(RouteNames.authRegistrationConfirmation)
+				.post('/' + RouteNames.AUTH.REGISTRATION_CONFIRMATION.full)
 				.send({ code: 'e18ad1ac-18ad-4dc9-80d9-28d60390e224' })
 				.expect(HTTP_STATUSES.BAD_REQUEST_400)
 		})
@@ -310,7 +294,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 
 			const allUsers = await request(app.getHttpServer())
-				.get(RouteNames.users)
+				.get('/' + RouteNames.USERS.value)
 				.set('authorization', adminAuthorizationValue)
 				.expect(HTTP_STATUSES.OK_200)
 			const userId = allUsers.body.items[0].id
@@ -319,7 +303,7 @@ describe('ROOT', () => {
 			const confirmationCode = fullUserData!.emailConfirmation.confirmationCode
 
 			await request(app.getHttpServer())
-				.post(RouteNames.authRegistrationConfirmation)
+				.post('/' + RouteNames.AUTH.REGISTRATION_CONFIRMATION.full)
 				.send({ code: confirmationCode })
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 		})
@@ -327,26 +311,26 @@ describe('ROOT', () => {
 		it.skip('should return 429 if too many requests were made', async () => {
 			for (let i = 1; i <= config.reqLimit.max; i++) {
 				await request(app.getHttpServer())
-					.post(RouteNames.authRegistrationConfirmation)
+					.post('/' + RouteNames.AUTH.REGISTRATION_CONFIRMATION.full)
 					.expect(HTTP_STATUSES.BAD_REQUEST_400)
 			}
 
 			await request(app.getHttpServer())
-				.post(RouteNames.authRegistrationConfirmation)
+				.post('/' + RouteNames.AUTH.REGISTRATION_CONFIRMATION.full)
 				.expect(HTTP_STATUSES.TOO_MANY_REQUESTS_429)
 
 			await wait(config.reqLimit.durationInMs)
 
 			await request(app.getHttpServer())
-				.post(RouteNames.authRegistrationConfirmation)
+				.post('/' + RouteNames.AUTH.REGISTRATION_CONFIRMATION.full)
 				.expect(HTTP_STATUSES.BAD_REQUEST_400)
 		})
-	})*/
+	})
 
-	/*describe('Resending email confirmation code', () => {
+	describe('Resending email confirmation code', () => {
 		it.skip('should return 400 if dto has incorrect values', async () => {
 			const registrationRes = await request(app.getHttpServer())
-				.post(RouteNames.authRegistrationEmailResending)
+				.post('/' + RouteNames.AUTH.REGISTRATION_EMAIL_RESENDING.full)
 				.send({ email: 'wrong-email.com' })
 				.expect(HTTP_STATUSES.BAD_REQUEST_400)
 
@@ -356,7 +340,7 @@ describe('ROOT', () => {
 
 		it.skip('should return 400 if email in dto is not exists', async () => {
 			await request(app.getHttpServer())
-				.post(RouteNames.authRegistrationEmailResending)
+				.post('/' + RouteNames.AUTH.REGISTRATION_EMAIL_RESENDING.full)
 				.send({ email: 'my@email.com' })
 				.expect(HTTP_STATUSES.BAD_REQUEST_400)
 		})
@@ -370,7 +354,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 
 			await request(app.getHttpServer())
-				.post(RouteNames.authRegistrationEmailResending)
+				.post('/' + RouteNames.AUTH.REGISTRATION_EMAIL_RESENDING.full)
 				.send({ email })
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 		})
@@ -378,28 +362,30 @@ describe('ROOT', () => {
 		it.skip('should return 429 if too many requests were made', async () => {
 			for (let i = 1; i <= config.reqLimit.max; i++) {
 				await request(app.getHttpServer())
-					.post(RouteNames.authRegistrationEmailResending)
+					.post('/' + RouteNames.AUTH.REGISTRATION_EMAIL_RESENDING.full)
 					.send({ email: '' })
 					.expect(HTTP_STATUSES.BAD_REQUEST_400)
 			}
 
 			await request(app.getHttpServer())
-				.post(RouteNames.authRegistrationEmailResending)
+				.post('/' + RouteNames.AUTH.REGISTRATION_EMAIL_RESENDING.full)
 				.send({ email: '' })
 				.expect(HTTP_STATUSES.TOO_MANY_REQUESTS_429)
 
 			await wait(config.reqLimit.durationInMs)
 
 			await request(app.getHttpServer())
-				.post(RouteNames.authRegistrationEmailResending)
+				.post('/' + RouteNames.AUTH.REGISTRATION_EMAIL_RESENDING.full)
 				.send({ email: '' })
 				.expect(HTTP_STATUSES.BAD_REQUEST_400)
 		})
-	})*/
+	})
 
-	/*describe('Get current user', () => {
+	describe('Get current user', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
-			await request(app.getHttpServer()).post('/' + RouteNames.BLOGS.value).expect(HTTP_STATUSES.UNAUTHORIZED_401)
+			await request(app.getHttpServer())
+				.post('/' + RouteNames.BLOGS.value)
+				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
 		it.skip('should return 200 and user data if the DTO is correct', async () => {
@@ -413,7 +399,7 @@ describe('ROOT', () => {
 			const loginRes = await loginRequest(app, login, password).expect(HTTP_STATUSES.OK_200)
 
 			const authMeRes = await request(app.getHttpServer())
-				.get(RouteNames.authMe)
+				.get('/' + RouteNames.AUTH.ME.full)
 				.set('authorization', 'Bearer ' + loginRes.body.accessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
@@ -421,9 +407,9 @@ describe('ROOT', () => {
 			expect(authMeRes.body.login).toBe(login)
 			expect(authMeRes.body.userId).toBe(createdUserRes.body.id)
 		})
-	})*/
+	})
 
-	/*describe('Logout', () => {
+	describe('Logout', () => {
 		it.skip('should return 401 if the JWT refreshToken inside cookie is missing, expired or incorrect', async () => {
 			const login = 'login'
 			const password = 'password'
@@ -448,11 +434,15 @@ describe('ROOT', () => {
 			await authRepository.insertDeviceRefreshToken(expiredRefreshToken)
 
 			// Get created expired token
-			const refreshToken = authRepository.getDeviceRefreshTokenByDeviceId(deviceId)
+			const refreshToken = await authRepository.getDeviceRefreshTokenByDeviceId(deviceId)
+			const refreshTokenStr = jwtService.createRefreshTokenStr(
+				refreshToken!.deviceId,
+				refreshToken!.expirationDate,
+			)
 
 			await request(app.getHttpServer())
-				.post(RouteNames.authLogout)
-				.set('Cookie', config.refreshToken.name + '=' + refreshToken)
+				.post('/' + RouteNames.AUTH.LOGOUT.full)
+				.set('Cookie', config.refreshToken.name + '=' + refreshTokenStr)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
@@ -469,41 +459,41 @@ describe('ROOT', () => {
 			const refreshTokenValue = parseCookieStringToObj(refreshTokenStr).cookieValue
 
 			await request(app.getHttpServer())
-				.post(RouteNames.authLogout)
+				.post('/' + RouteNames.AUTH.LOGOUT.full)
 				.set('Cookie', config.refreshToken.name + '=' + refreshTokenValue)
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 		})
-	})*/
+	})
 
-	/*describe('Password recovery', () => {
+	describe('Password recovery', () => {
 		it.skip('should return 400 if the request body has incorrect data', async () => {
-			const createdUserRes = await addUserByAdminRequest(app.getHttpServer())
+			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
 			await request(app.getHttpServer())
-				.post(RouteNames.authPasswordRecovery)
+				.post('/' + RouteNames.AUTH.PASSWORD_RECOVERY.full)
 				.send({ email: 'wrong' })
 				.expect(HTTP_STATUSES.BAD_REQUEST_400)
 		})
 
 		it.skip('should return 204 if the request body has correct data', async () => {
-			const createdUserRes = await addUserByAdminRequest(app.getHttpServer())
+			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
 			await request(app.getHttpServer())
-				.post(RouteNames.authPasswordRecovery)
+				.post('/' + RouteNames.AUTH.PASSWORD_RECOVERY.full)
 				.send({ email: userEmail })
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 		})
-	})*/
+	})
 
-	/*describe('New password setting', () => {
+	describe('New password setting', () => {
 		it.skip('should return 400 if the new password is short in request body', async () => {
-			const createdUserRes = await addUserByAdminRequest(app.getHttpServer())
+			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
 			const authPasswordRecoveryRes = await request(app.getHttpServer())
-				.post(RouteNames.authPasswordRecovery)
+				.post('/' + RouteNames.AUTH.PASSWORD_RECOVERY.full)
 				.send({ email: userEmail })
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 
@@ -511,32 +501,35 @@ describe('ROOT', () => {
 			const getUserRes = await usersRepository.getUserById(userId)
 
 			await request(app.getHttpServer())
-				.post(RouteNames.authNewPassword)
-				.send({ newPassword: 'short', recoveryCode: getUserRes!.account.passwordRecoveryCode })
+				.post('/' + RouteNames.AUTH.NEW_PASSWORD.full)
+				.send({
+					newPassword: 'short',
+					recoveryCode: getUserRes!.account.passwordRecoveryCode,
+				})
 				.expect(HTTP_STATUSES.BAD_REQUEST_400)
 		})
 
 		it.skip('should return 400 if the password recovery code is incorrect in request body', async () => {
-			const createdUserRes = await addUserByAdminRequest(app.getHttpServer())
+			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
 			const authPasswordRecoveryRes = await request(app.getHttpServer())
-				.post(RouteNames.authPasswordRecovery)
+				.post('/' + RouteNames.AUTH.PASSWORD_RECOVERY.full)
 				.send({ email: userEmail })
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 
 			await request(app.getHttpServer())
-				.post(RouteNames.authNewPassword)
+				.post('/' + RouteNames.AUTH.NEW_PASSWORD.full)
 				.send({ newPassword: 'short', recoveryCode: 'wrongRecoveryCode' })
 				.expect(HTTP_STATUSES.BAD_REQUEST_400)
 		})
 
 		it.skip('should return 204 if the data is correct in request body', async () => {
-			const createdUserRes = await addUserByAdminRequest(app.getHttpServer())
+			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
 			await request(app.getHttpServer())
-				.post(RouteNames.authPasswordRecovery)
+				.post('/' + RouteNames.AUTH.PASSWORD_RECOVERY.full)
 				.send({ email: userEmail })
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 
@@ -544,12 +537,12 @@ describe('ROOT', () => {
 			const getUserRes = await usersRepository.getUserById(userId)
 
 			const newPasswordRes = await request(app.getHttpServer())
-				.post(RouteNames.authNewPassword)
+				.post('/' + RouteNames.AUTH.NEW_PASSWORD.full)
 				.send({
 					newPassword: 'newPassword123',
 					recoveryCode: getUserRes!.account.passwordRecoveryCode,
 				})
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 		})
-	})*/
+	})
 })

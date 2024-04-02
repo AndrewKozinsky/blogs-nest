@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { addMilliseconds } from 'date-fns'
+import { add, addMilliseconds } from 'date-fns'
 import jwt, { decode } from 'jsonwebtoken'
 import { config } from '../../settings/config'
 import { DBTypes } from '../../db/dbTypes'
@@ -13,10 +13,15 @@ export class JwtService {
 		})
 	}
 
-	createRefreshTokenStr(deviceId: string, expirationDate: Date): string {
+	createRefreshTokenStr(deviceId: string, expirationDate?: Date): string {
+		const defaultExpDate = add(new Date(), {
+			seconds: config.refreshToken.lifeDurationInMs / 1000,
+		})
+
+		const expDate = expirationDate || defaultExpDate
+
 		return jwt.sign({ deviceId }, config.JWT_SECRET, {
-			// expiresIn: config.refreshToken.lifeDurationInMs / 1000 + 's',
-			expiresIn: (+expirationDate - +new Date()) / 1000 + 's',
+			expiresIn: (+expDate - +new Date()) / 1000 + 's',
 		})
 	}
 

@@ -44,8 +44,8 @@ describe('ROOT', () => {
 		})
 
 		it.skip('should return an object with property items contains array with 2 items after creating 2 blogs', async () => {
-			await addBlogRequest(app.getHttpServer())
-			await addBlogRequest(app.getHttpServer())
+			await addBlogRequest(app)
+			await addBlogRequest(app)
 
 			const getBlogsRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.BLOGS.value)
@@ -62,13 +62,13 @@ describe('ROOT', () => {
 		})
 
 		it.skip('should return an object with properties with specific values after creating 5 blogs', async () => {
-			await addBlogRequest(app.getHttpServer())
-			await addBlogRequest(app.getHttpServer())
-			await addBlogRequest(app.getHttpServer())
-			await addBlogRequest(app.getHttpServer())
-			await addBlogRequest(app.getHttpServer())
-			await addBlogRequest(app.getHttpServer())
-			await addBlogRequest(app.getHttpServer())
+			await addBlogRequest(app)
+			await addBlogRequest(app)
+			await addBlogRequest(app)
+			await addBlogRequest(app)
+			await addBlogRequest(app)
+			await addBlogRequest(app)
+			await addBlogRequest(app)
 
 			const getBlogsRes = await request(app.getHttpServer()).get(
 				'/' + RouteNames.BLOGS.value + '?pageNumber=2&pageSize=2',
@@ -101,13 +101,13 @@ describe('ROOT', () => {
 		})
 
 		it.skip('should create a blog by correct dto', async () => {
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
 			checkBlogObj(createdBlogRes.body)
 
 			// Check if there are 2 blogs after adding another one
-			const createdSecondBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdSecondBlogRes = await addBlogRequest(app)
 			expect(createdSecondBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
 			const allBlogsRes = await request(app.getHttpServer()).get('/' + RouteNames.BLOGS.value)
@@ -123,7 +123,7 @@ describe('ROOT', () => {
 		})
 
 		it.skip('should return an existing blog', async () => {
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			const createdBlogId = createdBlogRes.body.id
 
 			console.log('/' + RouteNames.BLOGS.BLOG_ID(createdBlogId).full)
@@ -143,7 +143,7 @@ describe('ROOT', () => {
 		})
 
 		it.skip('should return an object with property items contains an empty array', async () => {
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
 			const successAnswer: GetPostsOutModel = {
@@ -160,7 +160,7 @@ describe('ROOT', () => {
 		})
 
 		it.skip('should return an object with property items contains array with 2 items after creating 2 blog posts', async () => {
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
 			await addBlogPostRequest(app.getHttpServer(), blogId)
@@ -181,7 +181,7 @@ describe('ROOT', () => {
 		})
 
 		it.skip('should return an object with properties with specific values after creating 5 blog posts', async () => {
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
 			await addBlogPostRequest(app.getHttpServer(), blogId)
@@ -218,7 +218,7 @@ describe('ROOT', () => {
 		})
 
 		it.skip('should not update a blog by wrong dto', async () => {
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			const createdBlogId = createdBlogRes.body.id
 
 			await request(app.getHttpServer())
@@ -231,7 +231,7 @@ describe('ROOT', () => {
 		})
 
 		it.skip('should update a blog by correct dto', async () => {
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const createdBlogId = createdBlogRes.body.id
 
@@ -281,7 +281,7 @@ describe('ROOT', () => {
 		})
 
 		it.skip('create a blog post by wrong dto', async () => {
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
 			const addBlogPostRes = await addBlogPostRequest(
@@ -296,7 +296,7 @@ describe('ROOT', () => {
 		})
 
 		it.skip('should create a blog post by correct dto', async () => {
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
 			const createBlogPostRes = await addBlogPostRequest(
@@ -333,7 +333,7 @@ describe('ROOT', () => {
 		})
 
 		it.skip('should delete a blog', async () => {
-			const createdBlogRes = await addBlogRequest(app.getHttpServer())
+			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const createdBlogId = createdBlogRes.body.id
 

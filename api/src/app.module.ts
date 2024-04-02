@@ -8,7 +8,7 @@ import { RequestService } from './base/application/request.service'
 import { EmailManager } from './base/managers/email.manager'
 import { DbService } from './db/dbService'
 import { Comment, CommentSchema } from './db/schemas/comment.schema'
-import { CommentLike } from './db/schemas/commentLike.schema'
+import { CommentLike, CommentLikeSchema } from './db/schemas/commentLike.schema'
 import { DeviceToken, DeviceTokenSchema } from './db/schemas/deviceToken.schema'
 import { Post, PostSchema } from './db/schemas/post.schema'
 import { PostLike, PostLikeSchema } from './db/schemas/postLike.schema'
@@ -21,6 +21,8 @@ import {
 	IsEmailExistsValidation,
 	IsLoginExistsValidation,
 } from './features/auth/model/authRegistration.input.model'
+import { CodeCustomValidation } from './features/auth/model/authRegistrationConfirmation.input.model'
+import { IsEmailExistsValidationInAuthRegistrationEmailResendingDto } from './features/auth/model/authRegistrationEmailResending.input.model'
 import { IsRecoveryCodeExistsValidation } from './features/auth/model/newPassword.input.model'
 import { BlogsController } from './features/blogs/blogs.controller'
 import { BlogsQueryRepository } from './features/blogs/blogs.queryRepository'
@@ -66,7 +68,7 @@ const dbName = process.env.MONGO_DB_NAME
 			{ name: PostLike.name, schema: PostLikeSchema },
 			{ name: User.name, schema: UserSchema },
 			{ name: Comment.name, schema: CommentSchema },
-			{ name: CommentLike.name, schema: CommentSchema },
+			{ name: CommentLike.name, schema: CommentLikeSchema },
 			{ name: DeviceToken.name, schema: DeviceTokenSchema },
 			{ name: RateLimit.name, schema: RateLimitSchema },
 		]),
@@ -112,6 +114,8 @@ const dbName = process.env.MONGO_DB_NAME
 		IsEmailExistsValidation,
 		IsRecoveryCodeExistsValidation,
 		BlogIdValidation,
+		CodeCustomValidation,
+		IsEmailExistsValidationInAuthRegistrationEmailResendingDto,
 	],
 })
 export class AppModule implements NestModule {

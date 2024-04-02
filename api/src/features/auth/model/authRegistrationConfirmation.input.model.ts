@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import {
 	IsString,
 	MaxLength,
@@ -11,18 +11,20 @@ import { AuthRepository } from '../auth.repository'
 
 @ValidatorConstraint({ name: 'code', async: true })
 @Injectable()
-class CodeCustomValidation implements ValidatorConstraintInterface {
+export class CodeCustomValidation implements ValidatorConstraintInterface {
 	constructor(private readonly authRepository: AuthRepository) {}
 
 	async validate(value: string): Promise<boolean> {
-		const user = await this.authRepository.getUserByLoginOrEmail(value)
+		const user = await this.authRepository.getUserByConfirmationCode(value)
 
 		if (user?.emailConfirmation.isConfirmed) {
-			throw new Error('Email exists already')
+			throw new BadRequestException([{ field: 'code', value: 'Email exists already' }])
 		}
 
 		if (!user) {
-			throw new Error('Confirmation code is not exists')
+			throw new BadRequestException([
+				{ field: 'code', value: 'Confirmation code is not exists' },
+			])
 		}
 
 		return true

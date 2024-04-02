@@ -19,7 +19,6 @@ import { CheckAccessTokenGuard } from '../../infrastructure/guards/checkAccessTo
 import { CheckAdminAuthGuard } from '../../infrastructure/guards/checkAdminAuth.guard'
 import RouteNames from '../../settings/routeNames'
 import { LayerResultCode } from '../../types/resultCodes'
-import { GetBlogsQueries, GetBlogsQueriesPipe } from '../blogs/model/blogs.input.model'
 import { CommentLikeOperationsDtoModel } from '../commentLikes/models/commentLikeOperations.input.model'
 import { CommentsQueryRepository } from '../comments/comments.queryRepository'
 import {
@@ -158,7 +157,7 @@ export class PostsController {
 	// Make like/unlike/dislike/undislike operation
 	@UseGuards(CheckAccessTokenGuard)
 	@Put(':postId/like-status')
-	@HttpCode(HttpStatus.OK)
+	@HttpCode(HttpStatus.NO_CONTENT)
 	async setPostLikeStatus(
 		@Body() body: CommentLikeOperationsDtoModel,
 		@Param('postId') postId: string,

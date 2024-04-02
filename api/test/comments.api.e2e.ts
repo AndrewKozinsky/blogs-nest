@@ -1,10 +1,11 @@
+import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
 // import { app } from '../../src/app'
-// import { HTTP_STATUSES } from '../../src/config/config'
-// import RouteNames from '../../src/config/routeNames'
-// import { DBTypes } from '../../src/db/dbTypes'
+import { HTTP_STATUSES } from '../src/settings/config'
+import RouteNames from '../src/settings/routeNames'
+import { DBTypes } from '../src/db/dbTypes'
 // import { resetDbEveryTest } from './utils/common'
-/*import {
+import {
 	addBlogRequest,
 	addPostCommentRequest,
 	addPostRequest,
@@ -13,7 +14,7 @@ import { agent as request } from 'supertest'
 	loginRequest,
 	userEmail,
 	userPassword,
-} from './utils/utils'*/
+} from './utils/utils'
 
 import { describe } from 'node:test'
 import { createTestApp } from './utils/common'
@@ -24,56 +25,60 @@ it.skip('123', async () => {
 })
 
 describe('ROOT', () => {
-	let app: any
+	let app: INestApplication
 
 	beforeEach(async () => {
 		app = await createTestApp()
 		await clearAllDB(app)
 	})
 
-	/*describe('Getting a comment', () => {
-	it.skip('should return 404 if a comment does not exists', async () => {
-		const getCommentRes = await request(app).get(RouteNames.comment('999'))
+	describe('Getting a comment', () => {
+		it.skip('should return 404 if a comment does not exists', async () => {
+			const getCommentRes = await request(app.getHttpServer()).get(
+				'/' + RouteNames.COMMENTS.COMMENT_ID('999').full,
+			)
 
-		expect(getCommentRes.status).toBe(HTTP_STATUSES.NOT_FOUNT_404)
+			expect(getCommentRes.status).toBe(HTTP_STATUSES.NOT_FOUNT_404)
+		})
+
+		it.skip('should return an existing comment', async () => {
+			const createdBlogRes = await addBlogRequest(app)
+			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const blogId = createdBlogRes.body.id
+
+			const createdPostRes = await addPostRequest(app, blogId)
+			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const postId = createdPostRes.body.id
+
+			const createdUserRes = await addUserByAdminRequest(app)
+			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const loginUserRes = await loginRequest(app, userEmail, userPassword)
+			const userToken = loginUserRes.body.accessToken
+
+			const createdCommentRes = await addPostCommentRequest(app, userToken, postId)
+			const commentId = createdCommentRes.body.id
+
+			const getCommentRes = await request(app.getHttpServer())
+				.get('/' + RouteNames.COMMENTS.COMMENT_ID(commentId).full)
+				.set('authorization', 'Bearer ' + userToken)
+				.expect(HTTP_STATUSES.OK_200)
+
+			checkCommentObj(
+				getCommentRes.body,
+				createdUserRes.body.id,
+				createdUserRes.body.login,
+				0,
+				0,
+				DBTypes.LikeStatuses.None,
+			)
+		})
 	})
 
-	it.skip('should return an existing comment', async () => {
-		const createdBlogRes = await addBlogRequest(app)
-		expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const blogId = createdBlogRes.body.id
-
-		const createdPostRes = await addPostRequest(app, blogId)
-		expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const postId = createdPostRes.body.id
-
-		const createdUserRes = await addUserByAdminRequest(app)
-		expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-		const loginUserRes = await loginRequest(app, userEmail, userPassword)
-		const userToken = loginUserRes.body.accessToken
-
-		const createdCommentRes = await addPostCommentRequest(app, userToken, postId)
-		const commentId = createdCommentRes.body.id
-
-		const getCommentRes = await request(app)
-			.get(RouteNames.comment(commentId))
-			.set('authorization', 'Bearer ' + userToken)
-			.expect(HTTP_STATUSES.OK_200)
-
-		checkCommentObj(
-			getCommentRes.body,
-			createdUserRes.body.id,
-			createdUserRes.body.login,
-			0,
-			0,
-			DBTypes.LikeStatuses.None,
-		)
-	})
-})*/
-
-	/*describe('Updating a comment', () => {
+	describe('Updating a comment', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
-			await request(app).put(RouteNames.comment('999')).expect(HTTP_STATUSES.UNAUTHORIZED_401)
+			await request(app.getHttpServer())
+				.put('/' + RouteNames.COMMENTS.COMMENT_ID('999').full)
+				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
 		it.skip('should not update a non existing comment', async () => {
@@ -82,8 +87,8 @@ describe('ROOT', () => {
 			const loginUserRes = await loginRequest(app, userEmail, userPassword)
 			const userToken = loginUserRes.body.accessToken
 
-			await request(app)
-				.post(RouteNames.comment('999'))
+			await request(app.getHttpServer())
+				.post('/' + RouteNames.COMMENTS.COMMENT_ID('999').full)
 				.set('authorization', 'Bearer ' + userToken)
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
@@ -118,8 +123,8 @@ describe('ROOT', () => {
 			const commentId = createdCommentRes.body.id
 
 			// User two will try to update the comment
-			const updateCommentRes = await request(app)
-				.put(RouteNames.comment(commentId))
+			const updateCommentRes = await request(app.getHttpServer())
+				.put('/' + RouteNames.COMMENTS.COMMENT_ID(commentId).full)
 				.send(JSON.stringify({ content: 'new content min 20 characters' }))
 				.set('Content-Type', 'application/json')
 				.set('Accept', 'application/json')
@@ -146,8 +151,8 @@ describe('ROOT', () => {
 			const createdCommentRes = await addPostCommentRequest(app, userToken, postId)
 			const commentId = createdCommentRes.body.id
 
-			const updateCommentRes = await request(app)
-				.put(RouteNames.comment(commentId))
+			const updateCommentRes = await request(app.getHttpServer())
+				.put('/' + RouteNames.COMMENTS.COMMENT_ID(commentId).full)
 				.send(JSON.stringify({ content: 'WRONG' }))
 				.set('Content-Type', 'application/json')
 				.set('Accept', 'application/json')
@@ -174,19 +179,19 @@ describe('ROOT', () => {
 			const createdCommentRes = await addPostCommentRequest(app, userToken, postId)
 			const commentId = createdCommentRes.body.id
 
-			const updateCommentRes = await request(app)
-				.put(RouteNames.comment(commentId))
+			const updateCommentRes = await request(app.getHttpServer())
+				.put('/' + RouteNames.COMMENTS.COMMENT_ID(commentId).full)
 				.send(JSON.stringify({ content: 'right content right content' }))
 				.set('Content-Type', 'application/json')
 				.set('Accept', 'application/json')
 				.set('authorization', 'Bearer ' + userToken)
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 		})
-	})*/
+	})
 
-	/*describe('Deleting a comment', () => {
+	describe('Deleting a comment', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
-			return request(app).put(RouteNames.comment(''))
+			return request(app.getHttpServer()).put('/' + RouteNames.COMMENTS.COMMENT_ID('').full)
 		})
 
 		it.skip('should not delete a non existing comment', async () => {
@@ -196,8 +201,8 @@ describe('ROOT', () => {
 			const loginUserRes = await loginRequest(app, userEmail, userPassword)
 			const userToken = loginUserRes.body.accessToken
 
-			await request(app)
-				.delete(RouteNames.comment('notExist'))
+			await request(app.getHttpServer())
+				.delete('/' + RouteNames.COMMENTS.COMMENT_ID('notExist').full)
 				.set('authorization', 'Bearer ' + userToken)
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
@@ -232,8 +237,8 @@ describe('ROOT', () => {
 			const commentId = createdCommentRes.body.id
 
 			// User two will try to delete the comment
-			await request(app)
-				.delete(RouteNames.comment(commentId))
+			await request(app.getHttpServer())
+				.delete('/' + RouteNames.COMMENTS.COMMENT_ID(commentId).full)
 				.set('authorization', 'Bearer ' + userTwoToken)
 				.expect(HTTP_STATUSES.FORBIDDEN_403)
 		})
@@ -257,17 +262,17 @@ describe('ROOT', () => {
 			const createdCommentRes = await addPostCommentRequest(app, userToken, postId)
 			const commentId = createdCommentRes.body.id
 
-			await request(app)
-				.delete(RouteNames.comment(commentId))
+			await request(app.getHttpServer())
+				.delete('/' + RouteNames.COMMENTS.COMMENT_ID(commentId).full)
 				.set('authorization', 'Bearer ' + userToken)
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 		})
-	})*/
+	})
 
-	/*describe('Make a comment like status', () => {
+	describe('Make a comment like status', () => {
 		it.skip('should forbid a request from an unauthorized user', async () => {
-			await request(app)
-				.put(RouteNames.commentLikeStatus('999'))
+			await request(app.getHttpServer())
+				.put('/' + RouteNames.COMMENTS.COMMENT_ID('999').LIKE_STATUS.full)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
@@ -278,8 +283,8 @@ describe('ROOT', () => {
 			const loginUserRes = await loginRequest(app, userEmail, userPassword)
 			const userToken = loginUserRes.body.accessToken
 
-			await request(app)
-				.put(RouteNames.commentLikeStatus('999'))
+			await request(app.getHttpServer())
+				.put('/' + RouteNames.COMMENTS.COMMENT_ID('999').LIKE_STATUS.full)
 				.set('authorization', 'Bearer ' + userToken)
 				.send(JSON.stringify({ likeStatus: 'None' }))
 				.set('Content-Type', 'application/json')
@@ -294,8 +299,8 @@ describe('ROOT', () => {
 			const loginUserRes = await loginRequest(app, userEmail, userPassword)
 			const userToken = loginUserRes.body.accessToken
 
-			await request(app)
-				.put(RouteNames.commentLikeStatus('999'))
+			await request(app.getHttpServer())
+				.put('/' + RouteNames.COMMENTS.COMMENT_ID('999').LIKE_STATUS.full)
 				.set('authorization', 'Bearer ' + userToken)
 				.expect(HTTP_STATUSES.BAD_REQUEST_400)
 		})
@@ -322,8 +327,8 @@ describe('ROOT', () => {
 			const commentId = createdCommentRes.body.id
 
 			// Set a like status to the comment
-			await request(app)
-				.put(RouteNames.commentLikeStatus(commentId))
+			await request(app.getHttpServer())
+				.put('/' + RouteNames.COMMENTS.COMMENT_ID(commentId).LIKE_STATUS.full)
 				.set('authorization', 'Bearer ' + userToken)
 				.send(JSON.stringify({ likeStatus: DBTypes.LikeStatuses.Like }))
 				.set('Content-Type', 'application/json')
@@ -331,8 +336,8 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 
 			// Get the comment again by an unauthorized user to check a returned object
-			const getCommentRes = await request(app)
-				.get(RouteNames.comment(commentId))
+			const getCommentRes = await request(app.getHttpServer())
+				.get('/' + RouteNames.COMMENTS.COMMENT_ID(commentId).full)
 				.expect(HTTP_STATUSES.OK_200)
 
 			checkCommentObj(
@@ -345,8 +350,8 @@ describe('ROOT', () => {
 			)
 
 			// Get the comment again by an authorized user to check a returned object
-			const getComment2Res = await request(app)
-				.get(RouteNames.comment(commentId))
+			const getComment2Res = await request(app.getHttpServer())
+				.get('/' + RouteNames.COMMENTS.COMMENT_ID(commentId).full)
 				.set('authorization', 'Bearer ' + userToken)
 				.expect(HTTP_STATUSES.OK_200)
 
@@ -359,5 +364,5 @@ describe('ROOT', () => {
 				DBTypes.LikeStatuses.Like,
 			)
 		})
-	})*/
+	})
 })

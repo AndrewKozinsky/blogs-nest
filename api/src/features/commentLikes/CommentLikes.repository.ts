@@ -29,7 +29,11 @@ export class CommentLikesRepository {
 			status: likeStatus,
 		}
 
-		await this.CommentLikeModel.create(newCommentLike)
+		try {
+			await this.CommentLikeModel.create(newCommentLike)
+		} catch (err: unknown) {
+			console.log(err)
+		}
 	}
 
 	async updateCommentLike(

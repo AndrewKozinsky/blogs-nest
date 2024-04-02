@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import {
 	IsString,
 	MaxLength,
@@ -7,18 +7,20 @@ import {
 	ValidatorConstraint,
 	ValidatorConstraintInterface,
 } from 'class-validator'
-import { AuthRepository } from '../auth.repository'
+import { UsersRepository } from '../../users/users.repository'
 
 @ValidatorConstraint({ name: 'recoveryCode', async: true })
 @Injectable()
 export class IsRecoveryCodeExistsValidation implements ValidatorConstraintInterface {
-	constructor(private readonly authRepository: AuthRepository) {}
+	constructor(private readonly usersRepository: UsersRepository) {}
 
-	async validate(value: string): Promise<boolean> {
-		const user = await this.authRepository.getUserByLoginOrEmail(value)
+	async validate(recoveryCode: string): Promise<boolean> {
+		const user = await this.usersRepository.getUserByPasswordRecoveryCode(recoveryCode)
 
 		if (!user) {
-			throw new Error('Recovery code is not correct')
+			throw new BadRequestException([
+				{ field: 'recoveryCode', value: 'Recovery code is not correct' },
+			])
 		}
 
 		return true
