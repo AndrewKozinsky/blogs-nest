@@ -7,6 +7,7 @@ export function applyAppSettings(app: INestApplication) {
 	// Thus ensuring all endpoints are protected from receiving incorrect data.
 	app.useGlobalPipes(
 		new ValidationPipe({
+			transform: true,
 			stopAtFirstError: true,
 			exceptionFactory: (errors) => {
 				const errorsForResponse = []
