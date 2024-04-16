@@ -1,4 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
 import { MongooseModule } from '@nestjs/mongoose'
 import { EmailAdapter } from './base/adapters/email.adapter'
 import { HashAdapter } from './base/adapters/hash.adapter'
@@ -59,6 +60,7 @@ const dbName = process.env.MONGO_DB_NAME
 
 @Module({
 	imports: [
+		ConfigModule.forRoot(),
 		MongooseModule.forRoot(mongoURI, { dbName }),
 		// Ограничитель можно сделать отдельным пакетом Limit throller
 		// Схемы в папку feature
