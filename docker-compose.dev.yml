@@ -29,6 +29,7 @@ services:
     volumes:
       - ./api/src:/app/src
       - ./api/test:/app/test
+      - ./api/package.json:/app/package.json
     container_name: blogs-api
     command: yarn run start:dev
     restart: unless-stopped

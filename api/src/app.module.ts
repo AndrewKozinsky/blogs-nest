@@ -1,5 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
+import { CqrsModule } from '@nestjs/cqrs'
 import { MongooseModule } from '@nestjs/mongoose'
 import { EmailAdapter } from './base/adapters/email.adapter'
 import { HashAdapter } from './base/adapters/hash.adapter'
@@ -47,6 +48,8 @@ import { SecurityQueryRepository } from './features/security/security.queryRepos
 import { SecurityRepository } from './features/security/security.repository'
 import { SecurityService } from './features/security/security.service'
 import { TestsController } from './features/test/tests.controller'
+import { CreateUserUseCase } from './features/users/use-cases/createUser.useCase'
+import { DeleteUserUseCase } from './features/users/use-cases/deleteUser.useCase'
 import { UsersController } from './features/users/users.controller'
 import { UsersQueryRepository } from './features/users/users.queryRepository'
 import { UsersRepository } from './features/users/users.repository'
@@ -57,6 +60,8 @@ import { RouteNames } from './settings/routeNames'
 
 const mongoURI = process.env.MONGO_URL
 const dbName = process.env.MONGO_DB_NAME
+
+const useCases = [CreateUserUseCase, DeleteUserUseCase]
 
 @Module({
 	imports: [
@@ -74,6 +79,7 @@ const dbName = process.env.MONGO_DB_NAME
 			{ name: DeviceToken.name, schema: DeviceTokenSchema },
 			{ name: RateLimit.name, schema: RateLimitSchema },
 		]),
+		CqrsModule,
 	],
 	controllers: [
 		BlogsController,
@@ -118,6 +124,7 @@ const dbName = process.env.MONGO_DB_NAME
 		BlogIdValidation,
 		CodeCustomValidation,
 		IsEmailExistsValidationInAuthRegistrationEmailResendingDto,
+		...useCases,
 	],
 })
 export class AppModule implements NestModule {

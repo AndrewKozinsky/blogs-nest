@@ -12,23 +12,24 @@ import {
 	Res,
 	UseGuards,
 } from '@nestjs/common'
-import { Request, Response } from 'express'
+import { CommandBus } from '@nestjs/cqrs'
+import { Response } from 'express'
 import { CheckAdminAuthGuard } from '../../infrastructure/guards/checkAdminAuth.guard'
 import RouteNames from '../../settings/routeNames'
-import { GetPostsQueries, GetPostsQueriesPipe } from '../posts/model/posts.input.model'
 import {
 	CreateUserDtoModel,
 	GetUsersQueries,
 	GetUsersQueriesPipe,
 } from './models/users.input.model'
+import { CreateUserCommand, CreateUserUseCase } from './use-cases/createUser.useCase'
+import { DeleteUserCommand } from './use-cases/deleteUser.useCase'
 import { UsersQueryRepository } from './users.queryRepository'
-import { UsersService } from './users.service'
 
 @Controller(RouteNames.USERS.value)
 export class UsersController {
 	constructor(
+		private commandBus: CommandBus,
 		private usersQueryRepository: UsersQueryRepository,
-		private usersService: UsersService,
 	) {}
 
 	// Returns all users
@@ -45,17 +46,18 @@ export class UsersController {
 	@Post()
 	@HttpCode(HttpStatus.CREATED)
 	async createUser(@Body() body: CreateUserDtoModel) {
-		const createdUserId = await this.usersService.createUserByAdmin(body)
-
-		return await this.usersQueryRepository.getUser(createdUserId)
+		const createdUser = await this.commandBus.execute(new CreateUserCommand(body))
+		return createdUser
 	}
+
+	// ---------------------
 
 	// Delete user specified by id
 	@UseGuards(CheckAdminAuthGuard)
 	@Delete(':userId')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteUser(@Param('userId') userId: string) {
-		const isUserDeleted = await this.usersService.deleteUser(userId)
+		const isUserDeleted = await this.commandBus.execute(new DeleteUserCommand(userId))
 
 		if (!isUserDeleted) {
 			throw new NotFoundException()
