@@ -1,5 +1,5 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common'
-import { plainToInstance, Transform, Type } from 'class-transformer'
+import { plainToInstance, Type } from 'class-transformer'
 import {
 	IsIn,
 	IsInt,
@@ -11,9 +11,11 @@ import {
 	MaxLength,
 	MinLength,
 } from 'class-validator'
+import { Trim } from '../../../infrastructure/pipes/Trim.decorator'
 
 export class CreateBlogDtoModel {
 	@IsString({ message: 'Name must be a string' })
+	@Trim()
 	@MinLength(1, { message: 'Name is too short' })
 	@MaxLength(15, { message: 'Name is too long' })
 	name: string
@@ -32,16 +34,19 @@ export class CreateBlogDtoModel {
 
 export class CreateBlogPostDtoModel {
 	@IsString({ message: 'Title must be a string' })
+	@Trim()
 	@MinLength(1, { message: 'Title is too short' })
 	@MaxLength(30, { message: 'Title is too long' })
 	title: string
 
 	@IsString({ message: 'ShortDescription must be a string' })
+	@Trim()
 	@MinLength(1, { message: 'ShortDescription is too short' })
 	@MaxLength(100, { message: 'ShortDescription is too long' })
 	shortDescription: string
 
 	@IsString({ message: 'Content must be a string' })
+	@Trim()
 	@MinLength(1, { message: 'Content is too short' })
 	@MaxLength(1000, { message: 'Content is too long' })
 	content: string
@@ -49,6 +54,7 @@ export class CreateBlogPostDtoModel {
 
 export class UpdateBlogDtoModel {
 	@IsString({ message: 'Name must be a string' })
+	@Trim()
 	@MinLength(1, { message: 'Name is too short' })
 	@MaxLength(15, { message: 'Name is too long' })
 	name: string
