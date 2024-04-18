@@ -10,6 +10,7 @@ import {
 	Min,
 	MinLength,
 	Validate,
+	ValidationArguments,
 	ValidatorConstraint,
 	ValidatorConstraintInterface,
 } from 'class-validator'
@@ -24,13 +25,15 @@ export class BlogIdValidation implements ValidatorConstraintInterface {
 	async validate(value: string): Promise<boolean> {
 		const blog = await this.blogsRepository.getBlogById(value)
 
-		if (!blog) {
-			throw new BadRequestException([{ field: 'blogId', message: 'Incorrect blogId' }])
-		}
+		return !!blog
+	}
 
-		return true
+	defaultMessage(validationArguments?: ValidationArguments): string {
+		return 'Incorrect blogId'
 	}
 }
+
+function validate() {}
 
 export class CreatePostDtoModel {
 	@IsString({ message: 'Title must be a string' })
@@ -38,6 +41,7 @@ export class CreatePostDtoModel {
 	@MaxLength(30, { message: 'Title is too long' })
 	title: string
 
+	// ERROR
 	@IsString({ message: 'ShortDescription must be a string' })
 	@MinLength(1, { message: 'ShortDescription is too short' })
 	@MaxLength(100, { message: 'ShortDescription is too long' })
@@ -61,6 +65,7 @@ export class UpdatePostDtoModel {
 	@MaxLength(30, { message: 'Title is too long' })
 	title: string
 
+	// ERROR
 	@IsString({ message: 'ShortDescription must be a string' })
 	@MinLength(1, { message: 'ShortDescription is too short' })
 	@MaxLength(100, { message: 'ShortDescription is too long' })
