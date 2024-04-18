@@ -45,7 +45,6 @@ import { CommentLikesRepository } from './features/commentLikes/CommentLikes.rep
 import { CommentsController } from './features/comments/comments.controller'
 import { CommentsQueryRepository } from './features/comments/comments.queryRepository'
 import { CommentsRepository } from './features/comments/comments.repository'
-import { CommentsService } from './features/comments/comments.service'
 import { DeleteCommentUseCase } from './features/comments/use-cases/DeleteCommentUseCase'
 import { SetCommentLikeStatusUseCase } from './features/comments/use-cases/SetCommentLikeStatusUseCase'
 import { UpdateCommentUseCase } from './features/comments/use-cases/UpdateCommentUseCase'
@@ -57,6 +56,11 @@ import { PostsController } from './features/posts/posts.controller'
 import { PostsQueryRepository } from './features/posts/posts.queryRepository'
 import { PostsRepository } from './features/posts/posts.repository'
 import { PostsService } from './features/posts/posts.service'
+import { CreatePostCommentUseCase } from './features/posts/use-cases/createPostCommentUseCase'
+import { CreatePostUseCase } from './features/posts/use-cases/createPostUseCase'
+import { DeletePostUseCase } from './features/posts/use-cases/deletePostUseCase'
+import { SetPostLikeStatusUseCase } from './features/posts/use-cases/setPostLikeStatusUseCase'
+import { UpdatePostUseCase } from './features/posts/use-cases/updatePostUseCase'
 import { SecurityController } from './features/security/security.controller'
 import { SecurityQueryRepository } from './features/security/security.queryRepository'
 import { SecurityRepository } from './features/security/security.repository'
@@ -94,6 +98,11 @@ const useCases = [
 	UpdateCommentUseCase,
 	DeleteCommentUseCase,
 	SetCommentLikeStatusUseCase,
+	CreatePostUseCase,
+	UpdatePostUseCase,
+	DeletePostUseCase,
+	CreatePostCommentUseCase,
+	SetPostLikeStatusUseCase,
 ]
 
 @Module({
@@ -136,7 +145,6 @@ const useCases = [
 		HashAdapter,
 		CommentsQueryRepository,
 		CommentLikesRepository,
-		CommentsService,
 		UsersQueryRepository,
 		UsersService,
 		DbService,

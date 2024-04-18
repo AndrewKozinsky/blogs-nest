@@ -6,7 +6,6 @@ http {
     server {
         listen 80;
         listen 443;
-        server_name blogs.andrewkozinsky.ru www.blogs.andrewkozinsky.ru;
 
         location / {
             proxy_pass http://api:3000;

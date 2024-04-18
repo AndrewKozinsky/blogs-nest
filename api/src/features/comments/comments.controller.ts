@@ -19,7 +19,6 @@ import RouteNames from '../../settings/routeNames'
 import { LayerResultCode } from '../../types/resultCodes'
 import { CommentLikeOperationsDtoModel } from '../commentLikes/models/commentLikeOperations.input.model'
 import { CommentsQueryRepository } from './comments.queryRepository'
-import { CommentsService } from './comments.service'
 import { UpdateCommentDtoModel } from './model/comments.input.model'
 import { DeleteCommentUseCase } from './use-cases/DeleteCommentUseCase'
 import { SetCommentLikeStatusUseCase } from './use-cases/SetCommentLikeStatusUseCase'
@@ -29,7 +28,6 @@ import { UpdateCommentUseCase } from './use-cases/UpdateCommentUseCase'
 export class CommentsController {
 	constructor(
 		private commentsQueryRepository: CommentsQueryRepository,
-		private commentsService: CommentsService,
 		private updateCommentUseCase: UpdateCommentUseCase,
 		private deleteCommentUseCase: DeleteCommentUseCase,
 		private setCommentLikeStatusUseCase: SetCommentLikeStatusUseCase,

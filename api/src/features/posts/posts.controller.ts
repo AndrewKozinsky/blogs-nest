@@ -33,6 +33,11 @@ import {
 import { PostsQueryRepository } from './posts.queryRepository'
 import { PostsService } from './posts.service'
 import { Request, Response } from 'express'
+import { CreatePostCommentUseCase } from './use-cases/createPostCommentUseCase'
+import { CreatePostUseCase } from './use-cases/createPostUseCase'
+import { DeletePostUseCase } from './use-cases/deletePostUseCase'
+import { SetPostLikeStatusUseCase } from './use-cases/setPostLikeStatusUseCase'
+import { UpdatePostUseCase } from './use-cases/updatePostUseCase'
 
 @Controller(RouteNames.POSTS.value)
 export class PostsController {
@@ -40,6 +45,11 @@ export class PostsController {
 		private postsQueryRepository: PostsQueryRepository,
 		private postsService: PostsService,
 		private commentsQueryRepository: CommentsQueryRepository,
+		private createPostUseCase: CreatePostUseCase,
+		private updatePostUseCase: UpdatePostUseCase,
+		private deletePostUseCase: DeletePostUseCase,
+		private createPostCommentUseCase: CreatePostCommentUseCase,
+		private setPostLikeStatusUseCase: SetPostLikeStatusUseCase,
 	) {}
 
 	// Returns all posts
@@ -62,7 +72,7 @@ export class PostsController {
 	@UseGuards(CheckAdminAuthGuard)
 	async createNewPost(@Body() body: CreatePostDtoModel, @Req() req: Request) {
 		const { user } = req
-		const createPostId = await this.postsService.createPost(body)
+		const createPostId = await this.createPostUseCase.execute(body)
 
 		return await this.postsQueryRepository.getPost(user?.id, createPostId)
 	}
@@ -87,7 +97,7 @@ export class PostsController {
 	@Put(':postId')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async updatePost(@Body() body: UpdatePostDtoModel, @Param('postId') postId: string) {
-		const isPostUpdated = await this.postsService.updatePost(postId, body)
+		const isPostUpdated = await this.updatePostUseCase.execute(postId, body)
 
 		if (!isPostUpdated) {
 			throw new NotFoundException()
@@ -99,7 +109,7 @@ export class PostsController {
 	@Delete(':postId')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async deletePost(@Param('postId') postId: string) {
-		const isPostDeleted = await this.postsService.deletePost(postId)
+		const isPostDeleted = await this.deletePostUseCase.execute(postId)
 
 		if (!isPostDeleted) {
 			throw new NotFoundException()
@@ -140,7 +150,11 @@ export class PostsController {
 	) {
 		const { user } = req
 
-		const createdCommentId = await this.postsService.createPostComment(postId, body, req.user!)
+		const createdCommentId = await this.createPostCommentUseCase.execute(
+			postId,
+			body,
+			req.user!,
+		)
 
 		if (createdCommentId === 'postNotExist') {
 			throw new NotFoundException()
@@ -163,7 +177,7 @@ export class PostsController {
 		@Param('postId') postId: string,
 		@Req() req: Request,
 	) {
-		const setLikeStatus = await this.postsService.setPostLikeStatus(
+		const setLikeStatus = await this.setPostLikeStatusUseCase.execute(
 			req.user!,
 			postId,
 			body.likeStatus,

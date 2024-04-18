@@ -23,7 +23,8 @@ export class PostsService {
 		private postLikesRepository: PostLikesRepository,
 	) {}
 
-	async createPost(dto: CreatePostDtoModel): Promise<string> {
+	// DELETE
+	/*async createPost(dto: CreatePostDtoModel): Promise<string> {
 		const blog = await this.blogsRepository.getBlogById(dto.blogId)
 
 		const newPostDto: PostOutModel = {
@@ -43,17 +44,20 @@ export class PostsService {
 		}
 
 		return await this.postsRepository.createPost(newPostDto)
-	}
+	}*/
 
-	async updatePost(postId: string, updatePostDto: UpdatePostDtoModel) {
+	// DELETE
+	/*async updatePost(postId: string, updatePostDto: UpdatePostDtoModel) {
 		return this.postsRepository.updatePost(postId, updatePostDto)
-	}
+	}*/
 
-	async deletePost(postId: string): Promise<boolean> {
+	// DELETE
+	/*async deletePost(postId: string): Promise<boolean> {
 		return this.postsRepository.deletePost(postId)
-	}
+	}*/
 
-	async createPostComment(
+	// DELETE
+	/*async createPostComment(
 		postId: string,
 		commentDto: CreatePostCommentDtoModel,
 		user: UserServiceModel,
@@ -66,9 +70,10 @@ export class PostsService {
 		if (!post) return 'postNotExist'
 
 		return await this.commentsRepository.createPostComment(user, postId, commentDto)
-	}
+	}*/
 
-	async setPostLikeStatus(
+	// DELETE
+	/*async setPostLikeStatus(
 		user: UserServiceModel,
 		postId: string,
 		likeStatus: DBTypes.LikeStatuses,
@@ -92,5 +97,5 @@ export class PostsService {
 		return {
 			code: LayerResultCode.Success,
 		}
-	}
+	}*/
 }
