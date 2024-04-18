@@ -37,7 +37,10 @@ import { SetNewPasswordUseCase } from './features/auth/use-cases/setNewPassword.
 import { BlogsController } from './features/blogs/blogs.controller'
 import { BlogsQueryRepository } from './features/blogs/blogs.queryRepository'
 import { BlogsRepository } from './features/blogs/blogs.repository'
-import { BlogsService } from './features/blogs/blogs.service'
+import { CreateBlogPostUseCase } from './features/blogs/use-cases/CreateBlogPostUseCase'
+import { CreateBlogUseCase } from './features/blogs/use-cases/CreateBlogUseCase'
+import { DeleteBlogUseCase } from './features/blogs/use-cases/DeleteBlogUseCase'
+import { UpdateBlogUseCase } from './features/blogs/use-cases/UpdateBlogUseCase'
 import { CommentLikesRepository } from './features/commentLikes/CommentLikes.repository'
 import { CommentsController } from './features/comments/comments.controller'
 import { CommentsQueryRepository } from './features/comments/comments.queryRepository'
@@ -81,6 +84,10 @@ const useCases = [
 	LogoutUseCase,
 	RecoveryPasswordUseCase,
 	SetNewPasswordUseCase,
+	CreateBlogUseCase,
+	CreateBlogPostUseCase,
+	UpdateBlogUseCase,
+	DeleteBlogUseCase,
 ]
 
 @Module({
@@ -111,7 +118,6 @@ const useCases = [
 		SecurityController,
 	],
 	providers: [
-		BlogsService,
 		BlogsRepository,
 		BlogsQueryRepository,
 		PostsQueryRepository,

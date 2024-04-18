@@ -20,7 +20,6 @@ import RouteNames from '../../settings/routeNames'
 import { PostsQueryRepository } from '../posts/posts.queryRepository'
 import { BlogsQueryRepository } from './blogs.queryRepository'
 import { BlogsRepository } from './blogs.repository'
-import { BlogsService } from './blogs.service'
 import {
 	CreateBlogDtoModel,
 	CreateBlogPostDtoModel,
@@ -30,14 +29,21 @@ import {
 	GetBlogsQueriesPipe,
 	UpdateBlogDtoModel,
 } from './model/blogs.input.model'
+import { CreateBlogPostUseCase } from './use-cases/CreateBlogPostUseCase'
+import { CreateBlogUseCase } from './use-cases/CreateBlogUseCase'
+import { DeleteBlogUseCase } from './use-cases/DeleteBlogUseCase'
+import { UpdateBlogUseCase } from './use-cases/UpdateBlogUseCase'
 
 @Controller(RouteNames.BLOGS.value)
 export class BlogsController {
 	constructor(
-		private blogsService: BlogsService,
 		private blogsRepository: BlogsRepository,
 		private blogsQueryRepository: BlogsQueryRepository,
 		private postsQueryRepository: PostsQueryRepository,
+		private createBlogUseCase: CreateBlogUseCase,
+		private createBlogPostUseCase: CreateBlogPostUseCase,
+		private updateBlogUseCase: UpdateBlogUseCase,
+		private deleteBlogUseCase: DeleteBlogUseCase,
 	) {}
 
 	// Returns blogs with paging
@@ -52,7 +58,7 @@ export class BlogsController {
 	@Post()
 	@HttpCode(HttpStatus.CREATED)
 	async createNewBlog(@Body() body: CreateBlogDtoModel) {
-		const createdBlogId = await this.blogsService.createBlog(body)
+		const createdBlogId = await this.createBlogUseCase.execute(body)
 		return await this.blogsQueryRepository.getBlog(createdBlogId)
 	}
 
@@ -95,7 +101,7 @@ export class BlogsController {
 			throw new NotFoundException()
 		}
 
-		const createPostInsertedId = await this.blogsService.createBlogPost(blogId, body)
+		const createPostInsertedId = await this.createBlogPostUseCase.execute(blogId, body)
 		return await this.postsQueryRepository.getPost(user?.id, createPostInsertedId)
 	}
 
@@ -116,7 +122,7 @@ export class BlogsController {
 	@Put(':blogId')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async updateBlog(@Param('blogId') blogId: string, @Body() body: UpdateBlogDtoModel) {
-		const isBlogUpdated = await this.blogsService.updateBlog(blogId, body)
+		const isBlogUpdated = await this.updateBlogUseCase.execute(blogId, body)
 
 		if (!isBlogUpdated) {
 			throw new NotFoundException()
@@ -128,7 +134,7 @@ export class BlogsController {
 	@Delete(':blogId')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteBlog(@Param('blogId') blogId: string) {
-		const isBlogDeleted = await this.blogsService.deleteBlog(blogId)
+		const isBlogDeleted = await this.deleteBlogUseCase.execute(blogId)
 
 		if (!isBlogDeleted) {
 			throw new NotFoundException()
