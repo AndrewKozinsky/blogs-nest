@@ -21,7 +21,7 @@ import {
 	GetUsersQueries,
 	GetUsersQueriesPipe,
 } from './models/users.input.model'
-import { CreateUserCommand, CreateUserUseCase } from './use-cases/createUser.useCase'
+import { CreateUserCommand } from './use-cases/createUser.useCase'
 import { DeleteUserCommand } from './use-cases/deleteUser.useCase'
 import { UsersQueryRepository } from './users.queryRepository'
 
@@ -49,8 +49,6 @@ export class UsersController {
 		const createdUser = await this.commandBus.execute(new CreateUserCommand(body))
 		return createdUser
 	}
-
-	// ---------------------
 
 	// Delete user specified by id
 	@UseGuards(CheckAdminAuthGuard)

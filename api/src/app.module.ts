@@ -18,7 +18,6 @@ import { RateLimit, RateLimitSchema } from './db/schemas/rateLimit.schema'
 import { User, UserSchema } from './db/schemas/user.schema'
 import { AuthController } from './features/auth/auth.controller'
 import { AuthRepository } from './features/auth/auth.repository'
-import { AuthService } from './features/auth/auth.service'
 import {
 	IsEmailExistsValidation,
 	IsLoginExistsValidation,
@@ -26,6 +25,15 @@ import {
 import { CodeCustomValidation } from './features/auth/model/authRegistrationConfirmation.input.model'
 import { IsEmailExistsValidationInAuthRegistrationEmailResendingDto } from './features/auth/model/authRegistrationEmailResending.input.model'
 import { IsRecoveryCodeExistsValidation } from './features/auth/model/newPassword.input.model'
+import { ConfirmEmailAfterRegistrationUseCase } from './features/auth/use-cases/confirmEmailAfterRegistration.useCase'
+import { GenerateAccessAndRefreshTokensUseCase } from './features/auth/use-cases/generateAccessAndRefreshTokens.useCase'
+import { GetCurrentUserUseCase } from './features/auth/use-cases/getCurrentUser.useCase'
+import { LoginUseCase } from './features/auth/use-cases/login.useCase'
+import { LogoutUseCase } from './features/auth/use-cases/logout.useCase'
+import { RecoveryPasswordUseCase } from './features/auth/use-cases/recoveryPassword.useCase'
+import { RegistrationUseCase } from './features/auth/use-cases/registration.useCase'
+import { RegistrationEmailResendingUseCase } from './features/auth/use-cases/registrationEmailResending.useCase'
+import { SetNewPasswordUseCase } from './features/auth/use-cases/setNewPassword.useCase'
 import { BlogsController } from './features/blogs/blogs.controller'
 import { BlogsQueryRepository } from './features/blogs/blogs.queryRepository'
 import { BlogsRepository } from './features/blogs/blogs.repository'
@@ -61,7 +69,19 @@ import { RouteNames } from './settings/routeNames'
 const mongoURI = process.env.MONGO_URL
 const dbName = process.env.MONGO_DB_NAME
 
-const useCases = [CreateUserUseCase, DeleteUserUseCase]
+const useCases = [
+	CreateUserUseCase,
+	DeleteUserUseCase,
+	LoginUseCase,
+	GenerateAccessAndRefreshTokensUseCase,
+	RegistrationUseCase,
+	RegistrationEmailResendingUseCase,
+	ConfirmEmailAfterRegistrationUseCase,
+	GetCurrentUserUseCase,
+	LogoutUseCase,
+	RecoveryPasswordUseCase,
+	SetNewPasswordUseCase,
+]
 
 @Module({
 	imports: [
@@ -108,7 +128,6 @@ const useCases = [CreateUserUseCase, DeleteUserUseCase]
 		UsersQueryRepository,
 		UsersService,
 		DbService,
-		AuthService,
 		JwtService,
 		RequestService,
 		AuthRepository,

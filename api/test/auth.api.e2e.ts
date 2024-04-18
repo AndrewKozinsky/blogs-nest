@@ -30,16 +30,19 @@ describe('ROOT', () => {
 	let usersRepository: UsersRepository
 	const jwtService = new JwtService()
 
-	beforeEach(async () => {
+	beforeAll(async () => {
 		app = await createTestApp()
-		await clearAllDB(app)
 
 		authRepository = await app.resolve(AuthRepository)
 		usersRepository = await app.resolve(UsersRepository)
 	})
 
+	beforeEach(async () => {
+		await clearAllDB(app)
+	})
+
 	describe('Login user', () => {
-		it.skip('should return 400 if to pass wrong dto', async () => {
+		it('should return 400 if to pass wrong dto', async () => {
 			const loginRes = await request(app.getHttpServer())
 				.post('/' + RouteNames.AUTH.LOGIN.full)
 				.send({ loginOrEmail: '', password: 'password' })
@@ -50,7 +53,7 @@ describe('ROOT', () => {
 			expect(loginRes.body.errorsMessages[0].field).toBe('loginOrEmail')
 		})
 
-		it.skip('should return 401 if the login is wrong', async () => {
+		it('should return 401 if the login is wrong', async () => {
 			const login = 'login'
 			const password = 'password'
 			const email = 'email@email.ru'
@@ -64,7 +67,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
-		it.skip('should return 401 if the password is wrong', async () => {
+		it('should return 401 if the password is wrong', async () => {
 			const login = 'login'
 			const password = 'password'
 			const email = 'email@email.ru'
@@ -78,7 +81,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
-		it.skip('should return 401 if user email is not verified', async () => {
+		it('should return 401 if user email is not verified', async () => {
 			const login = 'login_new'
 			const password = 'password_new'
 			const email = 'email@email.ru'
@@ -91,7 +94,7 @@ describe('ROOT', () => {
 			await loginRequest(app, login, password).expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
-		it.skip('should return 200 and object with token and JWT refreshToken in cookie if the DTO is correct and user has verified email', async () => {
+		it('should return 200 and object with token and JWT refreshToken in cookie if the DTO is correct and user has verified email', async () => {
 			const login = 'login'
 			const password = 'password'
 			const email = 'email@email.ru'
@@ -144,7 +147,7 @@ describe('ROOT', () => {
 	})
 
 	describe('Refresh token', () => {
-		it.skip('should return 401 if the JWT refreshToken inside cookie is missing, expired or incorrect', async () => {
+		it('should return 401 if the JWT refreshToken inside cookie is missing, expired or incorrect', async () => {
 			const login = 'login'
 			const password = 'password'
 			const email = 'email@email.ru'
@@ -180,7 +183,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
-		it.skip('should return 200 if the JWT refreshToken inside cookie is valid', async () => {
+		it('should return 200 if the JWT refreshToken inside cookie is valid', async () => {
 			const login = 'login'
 			const password = 'password'
 			const email = 'email@email.ru'
@@ -206,7 +209,7 @@ describe('ROOT', () => {
 	})
 
 	describe('Register user', () => {
-		it.skip('should return 400 if dto has incorrect values', async () => {
+		it('should return 400 if dto has incorrect values', async () => {
 			const registrationRes = await request(app.getHttpServer())
 				.post('/' + RouteNames.AUTH.REGISTRATION.full)
 				.send({ login: '', password: '', email: 'wrong-email.com' })
