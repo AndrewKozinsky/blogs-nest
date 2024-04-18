@@ -17,14 +17,16 @@ import { CheckDeviceRefreshTokenGuard } from '../../infrastructure/guards/checkD
 import RouteNames from '../../settings/routeNames'
 import { LayerResultCode } from '../../types/resultCodes'
 import { SecurityQueryRepository } from './security.queryRepository'
-import { SecurityService } from './security.service'
+import { TerminateAllDeviceRefreshTokensApartThisUseCase } from './use-cases/terminateAllDeviceRefreshTokensApartThisUseCase'
+import { TerminateSpecifiedDeviceRefreshTokenUseCase } from './use-cases/terminateSpecifiedDeviceRefreshTokenUseCase'
 
 @Controller(RouteNames.SECURITY.value)
 export class SecurityController {
 	constructor(
 		private requestService: RequestService,
 		private securityQueryRepository: SecurityQueryRepository,
-		private securityService: SecurityService,
+		private terminateAllDeviceRefreshTokensApartThisUseCase: TerminateAllDeviceRefreshTokensApartThisUseCase,
+		private terminateSpecifiedDeviceRefreshTokenUseCase: TerminateSpecifiedDeviceRefreshTokenUseCase,
 	) {}
 
 	// Returns all devices with active sessions for current user
@@ -45,7 +47,7 @@ export class SecurityController {
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async terminateUserDevicesExceptOne(@Req() req: Request) {
 		const refreshTokenFromCookie = this.requestService.getDeviceRefreshStrTokenFromReq(req)
-		await this.securityService.terminateAllDeviceRefreshTokensApartThis(refreshTokenFromCookie)
+		await this.terminateAllDeviceRefreshTokensApartThisUseCase.execute(refreshTokenFromCookie)
 	}
 
 	// Terminate specified device session
@@ -54,7 +56,7 @@ export class SecurityController {
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async terminateUserDevice(@Param('deviceId') deviceId: string, @Req() req: Request) {
 		const refreshTokenFromCookie = this.requestService.getDeviceRefreshStrTokenFromReq(req)
-		const terminateDeviceRes = await this.securityService.terminateSpecifiedDeviceRefreshToken(
+		const terminateDeviceRes = await this.terminateSpecifiedDeviceRefreshTokenUseCase.execute(
 			refreshTokenFromCookie,
 			deviceId,
 		)

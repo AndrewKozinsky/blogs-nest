@@ -22,7 +22,9 @@ export function createDockerConfig(env: 'dev' | 'serverCheck' | 'server'): Confi
 							}
 						: undefined,
 				volumes:
-					env === 'server' ? undefined : ['./nginx/nginx.conf.dev:/etc/nginx/nginx.conf'],
+					env === 'server'
+						? ['./nginx/nginx.conf.server:/etc/nginx/nginx.conf']
+						: ['./nginx/nginx.conf.dev:/etc/nginx/nginx.conf'],
 			},
 			mongo: {
 				image: env === 'server' ? 'mongo:4.4.6' : 'mongo:6.0.13',

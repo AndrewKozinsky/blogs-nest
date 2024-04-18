@@ -1,25 +1,18 @@
 import { Injectable } from '@nestjs/common'
-import { JwtService } from '../../base/application/jwt.service'
-import { LayerResult, LayerResultCode } from '../../types/resultCodes'
-import { AuthRepository } from '../auth/auth.repository'
-import { SecurityRepository } from './security.repository'
+import { JwtService } from '../../../base/application/jwt.service'
+import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
+import { AuthRepository } from '../../auth/auth.repository'
+import { SecurityRepository } from '../security.repository'
 
 @Injectable()
-export class SecurityService {
+export class TerminateSpecifiedDeviceRefreshTokenUseCase {
 	constructor(
 		private jwtService: JwtService,
 		private securityRepository: SecurityRepository,
 		private authRepository: AuthRepository,
 	) {}
 
-	async terminateAllDeviceRefreshTokensApartThis(refreshTokenStr: string) {
-		const refreshToken = this.jwtService.getRefreshTokenDataFromTokenStr(refreshTokenStr)
-		const { deviceId } = refreshToken!
-
-		await this.securityRepository.terminateAllDeviceRefreshTokensApartThis(deviceId)
-	}
-
-	async terminateSpecifiedDeviceRefreshToken(
+	async execute(
 		currentDeviceTokenStr: string,
 		deletionDeviceId: string,
 	): Promise<LayerResult<null>> {

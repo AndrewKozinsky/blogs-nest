@@ -55,7 +55,6 @@ import { BlogIdValidation } from './features/posts/model/posts.input.model'
 import { PostsController } from './features/posts/posts.controller'
 import { PostsQueryRepository } from './features/posts/posts.queryRepository'
 import { PostsRepository } from './features/posts/posts.repository'
-import { PostsService } from './features/posts/posts.service'
 import { CreatePostCommentUseCase } from './features/posts/use-cases/createPostCommentUseCase'
 import { CreatePostUseCase } from './features/posts/use-cases/createPostUseCase'
 import { DeletePostUseCase } from './features/posts/use-cases/deletePostUseCase'
@@ -64,7 +63,8 @@ import { UpdatePostUseCase } from './features/posts/use-cases/updatePostUseCase'
 import { SecurityController } from './features/security/security.controller'
 import { SecurityQueryRepository } from './features/security/security.queryRepository'
 import { SecurityRepository } from './features/security/security.repository'
-import { SecurityService } from './features/security/security.service'
+import { TerminateAllDeviceRefreshTokensApartThisUseCase } from './features/security/use-cases/terminateAllDeviceRefreshTokensApartThisUseCase'
+import { TerminateSpecifiedDeviceRefreshTokenUseCase } from './features/security/use-cases/terminateSpecifiedDeviceRefreshTokenUseCase'
 import { TestsController } from './features/test/tests.controller'
 import { CreateUserUseCase } from './features/users/use-cases/createUser.useCase'
 import { DeleteUserUseCase } from './features/users/use-cases/deleteUser.useCase'
@@ -103,6 +103,8 @@ const useCases = [
 	DeletePostUseCase,
 	CreatePostCommentUseCase,
 	SetPostLikeStatusUseCase,
+	TerminateAllDeviceRefreshTokensApartThisUseCase,
+	TerminateSpecifiedDeviceRefreshTokenUseCase,
 ]
 
 @Module({
@@ -137,7 +139,6 @@ const useCases = [
 		BlogsQueryRepository,
 		PostsQueryRepository,
 		CommonService,
-		PostsService,
 		PostsRepository,
 		PostLikesRepository,
 		UsersRepository,
@@ -155,7 +156,6 @@ const useCases = [
 		BrowserService,
 		EmailAdapter,
 		SecurityQueryRepository,
-		SecurityService,
 		SecurityRepository,
 		IsLoginExistsValidation,
 		IsEmailExistsValidation,

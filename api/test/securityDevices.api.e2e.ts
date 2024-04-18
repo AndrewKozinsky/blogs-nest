@@ -28,21 +28,24 @@ describe('ROOT', () => {
 	let authRepository: AuthRepository
 	const jwtService = new JwtService()
 
-	beforeEach(async () => {
+	beforeAll(async () => {
 		app = await createTestApp()
-		await clearAllDB(app)
 
 		authRepository = await app.resolve(AuthRepository)
 	})
 
+	beforeEach(async () => {
+		await clearAllDB(app)
+	})
+
 	describe('Getting all user devices', () => {
-		it.skip('should forbid a request if there is not refresh token', async () => {
+		it('should forbid a request if there is not refresh token', async () => {
 			await request(app.getHttpServer())
 				.get('/' + RouteNames.SECURITY.DEVICES.full)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
-		it.skip('should return an array of devices data if a refreshToken inside cookie is valid', async () => {
+		it('should return an array of devices data if a refreshToken inside cookie is valid', async () => {
 			const login = 'login'
 			const password = 'password'
 			const email = 'email@email.ru'
@@ -64,13 +67,13 @@ describe('ROOT', () => {
 	})
 
 	describe('Terminate specified device session', () => {
-		it.skip('should forbid a request from a user without a device refresh token', async () => {
+		it('should forbid a request from a user without a device refresh token', async () => {
 			return request(app.getHttpServer())
 				.delete('/' + RouteNames.SECURITY.DEVICES.DEVICE_ID('999').full)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
-		it.skip('should forbid a request from a user with an expired device refresh token', async () => {
+		it('should forbid a request from a user with an expired device refresh token', async () => {
 			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const userId = createdUserRes.body.id
@@ -98,7 +101,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
-		it.skip('should return 404 if client tries to terminate a non existed device', async () => {
+		it('should return 404 if client tries to terminate a non existed device', async () => {
 			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
@@ -114,7 +117,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
 
-		it.skip('should return 403 if a client tries to terminate a device which does not belong to him', async () => {
+		it('should return 403 if a client tries to terminate a device which does not belong to him', async () => {
 			// Create a user 1
 			const createdUser_1_Res = await addUserByAdminRequest(app)
 			expect(createdUser_1_Res.status).toBe(HTTP_STATUSES.CREATED_201)
@@ -155,7 +158,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.FORBIDDEN_403)
 		})
 
-		it.skip('should return 204 if a client tries to terminate his device', async () => {
+		it('should return 204 if a client tries to terminate his device', async () => {
 			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
@@ -178,13 +181,13 @@ describe('ROOT', () => {
 	})
 
 	describe('Terminate this device session', () => {
-		it.skip('should forbid a request from a user without a device refresh token', async () => {
+		it('should forbid a request from a user without a device refresh token', async () => {
 			return request(app.getHttpServer())
 				.delete('/' + RouteNames.SECURITY.DEVICES.full)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
-		it.skip('should forbid a request from a user with an expired device refresh token', async () => {
+		it('should forbid a request from a user with an expired device refresh token', async () => {
 			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const userId = createdUserRes.body.id
@@ -212,7 +215,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
-		it.skip('should return 204 if a client tries to terminate current device', async () => {
+		it('should return 204 if a client tries to terminate current device', async () => {
 			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 

@@ -31,7 +31,6 @@ import {
 	UpdatePostDtoModel,
 } from './model/posts.input.model'
 import { PostsQueryRepository } from './posts.queryRepository'
-import { PostsService } from './posts.service'
 import { Request, Response } from 'express'
 import { CreatePostCommentUseCase } from './use-cases/createPostCommentUseCase'
 import { CreatePostUseCase } from './use-cases/createPostUseCase'
@@ -43,7 +42,6 @@ import { UpdatePostUseCase } from './use-cases/updatePostUseCase'
 export class PostsController {
 	constructor(
 		private postsQueryRepository: PostsQueryRepository,
-		private postsService: PostsService,
 		private commentsQueryRepository: CommentsQueryRepository,
 		private createPostUseCase: CreatePostUseCase,
 		private updatePostUseCase: UpdatePostUseCase,
