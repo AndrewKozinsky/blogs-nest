@@ -1,4 +1,5 @@
-version: "3"
+version: '3'
+
 services:
   nginx:
     image: nginx:1.19.7-alpine
@@ -9,14 +10,18 @@ services:
     environment:
       VIRTUAL_HOST: blogs.andrewkozinsky.ru
       LETSENCRYPT_HOST: blogs.andrewkozinsky.ru
+    volumes:
+      - ./nginx/nginx.conf.server:/etc/nginx/nginx.conf
+
   mongo:
-    image: mongo:4.4.6
+    image: mongo:6.0.13
     restart: unless-stopped
     container_name: blogs-mongo
     ports:
-      - 27017:27017
+      - '27017:27017'
     volumes:
       - dbdata6:/data/db
+
   api:
     build:
       context: api/
@@ -30,8 +35,10 @@ services:
       MONGO_URL: mongodb://blogs-mongo:27017
       MONGO_DB_NAME: blogs
       JWT_SECRET: 123
+
 volumes:
-  dbdata6: {}
+  dbdata6:
+
 networks:
   default:
     external:

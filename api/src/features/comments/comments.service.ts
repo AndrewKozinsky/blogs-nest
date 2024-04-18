@@ -17,7 +17,8 @@ export class CommentsService {
 		return this.commentsRepository.getComment(commentId)
 	}*/
 
-	async updateComment(
+	// DELETE
+	/*async updateComment(
 		user: UserServiceModel,
 		commentId: string,
 		updateCommentDto: UpdateCommentDtoModel,
@@ -30,9 +31,10 @@ export class CommentsService {
 		}
 
 		return this.commentsRepository.updateComment(commentId, updateCommentDto)
-	}
+	}*/
 
-	async deleteComment(user: UserServiceModel, commentId: string): Promise<'notOwner' | boolean> {
+	// DELETE
+	/*async deleteComment(user: UserServiceModel, commentId: string): Promise<'notOwner' | boolean> {
 		const comment = await this.commentsRepository.getComment(commentId)
 		if (!comment) return false
 
@@ -41,9 +43,10 @@ export class CommentsService {
 		}
 
 		return this.commentsRepository.deleteComment(commentId)
-	}
+	}*/
 
-	async setCommentLikeStatus(
+	// DELETE
+	/*async setCommentLikeStatus(
 		user: UserServiceModel,
 		commentId: string,
 		likeStatus: DBTypes.LikeStatuses,
@@ -70,5 +73,5 @@ export class CommentsService {
 		return {
 			code: LayerResultCode.Success,
 		}
-	}
+	}*/
 }

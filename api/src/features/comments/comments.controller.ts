@@ -21,12 +21,18 @@ import { CommentLikeOperationsDtoModel } from '../commentLikes/models/commentLik
 import { CommentsQueryRepository } from './comments.queryRepository'
 import { CommentsService } from './comments.service'
 import { UpdateCommentDtoModel } from './model/comments.input.model'
+import { DeleteCommentUseCase } from './use-cases/DeleteCommentUseCase'
+import { SetCommentLikeStatusUseCase } from './use-cases/SetCommentLikeStatusUseCase'
+import { UpdateCommentUseCase } from './use-cases/UpdateCommentUseCase'
 
 @Controller(RouteNames.COMMENTS.value)
 export class CommentsController {
 	constructor(
 		private commentsQueryRepository: CommentsQueryRepository,
 		private commentsService: CommentsService,
+		private updateCommentUseCase: UpdateCommentUseCase,
+		private deleteCommentUseCase: DeleteCommentUseCase,
+		private setCommentLikeStatusUseCase: SetCommentLikeStatusUseCase,
 	) {}
 
 	// Return comment by id
@@ -57,7 +63,7 @@ export class CommentsController {
 		@Body() body: UpdateCommentDtoModel,
 		@Req() req: Request,
 	) {
-		const updateCommentStatus = await this.commentsService.updateComment(
+		const updateCommentStatus = await this.updateCommentUseCase.execute(
 			req.user!,
 			commentId,
 			body,
@@ -77,7 +83,7 @@ export class CommentsController {
 	@Delete(':commentId')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteComment(@Param('commentId') commentId: string, @Req() req: Request) {
-		const deleteCommentStatus = await this.commentsService.deleteComment(req.user!, commentId)
+		const deleteCommentStatus = await this.deleteCommentUseCase.execute(req.user!, commentId)
 
 		if (deleteCommentStatus === 'notOwner') {
 			throw new ForbiddenException()
@@ -97,7 +103,7 @@ export class CommentsController {
 		@Body() body: CommentLikeOperationsDtoModel,
 		@Req() req: Request,
 	) {
-		const setLikeStatus = await this.commentsService.setCommentLikeStatus(
+		const setLikeStatus = await this.setCommentLikeStatusUseCase.execute(
 			req.user!,
 			commentId,
 			body.likeStatus,

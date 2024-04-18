@@ -46,6 +46,9 @@ import { CommentsController } from './features/comments/comments.controller'
 import { CommentsQueryRepository } from './features/comments/comments.queryRepository'
 import { CommentsRepository } from './features/comments/comments.repository'
 import { CommentsService } from './features/comments/comments.service'
+import { DeleteCommentUseCase } from './features/comments/use-cases/DeleteCommentUseCase'
+import { SetCommentLikeStatusUseCase } from './features/comments/use-cases/SetCommentLikeStatusUseCase'
+import { UpdateCommentUseCase } from './features/comments/use-cases/UpdateCommentUseCase'
 import { CommonService } from './features/common/common.service'
 import { Blog, BlogSchema } from './db/schemas/blog.schema'
 import { PostLikesRepository } from './features/postLikes/postLikes.repository'
@@ -88,6 +91,9 @@ const useCases = [
 	CreateBlogPostUseCase,
 	UpdateBlogUseCase,
 	DeleteBlogUseCase,
+	UpdateCommentUseCase,
+	DeleteCommentUseCase,
+	SetCommentLikeStatusUseCase,
 ]
 
 @Module({

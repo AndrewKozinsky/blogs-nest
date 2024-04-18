@@ -25,13 +25,16 @@ it.skip('123', async () => {
 describe('ROOT', () => {
 	let app: INestApplication
 
-	beforeEach(async () => {
+	beforeAll(async () => {
 		app = await createTestApp()
+	})
+
+	beforeEach(async () => {
 		await clearAllDB(app)
 	})
 
 	describe('Getting a comment', () => {
-		it.skip('should return 404 if a comment does not exists', async () => {
+		it('should return 404 if a comment does not exists', async () => {
 			const getCommentRes = await request(app.getHttpServer()).get(
 				'/' + RouteNames.COMMENTS.COMMENT_ID('999').full,
 			)
@@ -39,7 +42,7 @@ describe('ROOT', () => {
 			expect(getCommentRes.status).toBe(HTTP_STATUSES.NOT_FOUNT_404)
 		})
 
-		it.skip('should return an existing comment', async () => {
+		it('should return an existing comment', async () => {
 			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
@@ -73,13 +76,13 @@ describe('ROOT', () => {
 	})
 
 	describe('Updating a comment', () => {
-		it.skip('should forbid a request from an unauthorized user', async () => {
+		it('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
 				.put('/' + RouteNames.COMMENTS.COMMENT_ID('999').full)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
-		it.skip('should not update a non existing comment', async () => {
+		it('should not update a non existing comment', async () => {
 			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const loginUserRes = await loginRequest(app, userEmail, userPassword)
@@ -91,7 +94,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
 
-		it.skip('should not update a comment if the user is not owner', async () => {
+		it('should not update a comment if the user is not owner', async () => {
 			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
@@ -130,7 +133,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.FORBIDDEN_403)
 		})
 
-		it.skip('should not update a comment by wrong dto', async () => {
+		it('should not update a comment by wrong dto', async () => {
 			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
@@ -158,7 +161,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.BAD_REQUEST_400)
 		})
 
-		it.skip('should update a comment by correct dto', async () => {
+		it('should update a comment by correct dto', async () => {
 			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
@@ -188,11 +191,11 @@ describe('ROOT', () => {
 	})
 
 	describe('Deleting a comment', () => {
-		it.skip('should forbid a request from an unauthorized user', async () => {
+		it('should forbid a request from an unauthorized user', async () => {
 			return request(app.getHttpServer()).put('/' + RouteNames.COMMENTS.COMMENT_ID('').full)
 		})
 
-		it.skip('should not delete a non existing comment', async () => {
+		it('should not delete a non existing comment', async () => {
 			// User will create a comment
 			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
@@ -205,7 +208,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
 
-		it.skip('should not delete a comment if the user is not owner', async () => {
+		it('should not delete a comment if the user is not owner', async () => {
 			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
@@ -241,7 +244,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.FORBIDDEN_403)
 		})
 
-		it.skip('should delete an existing comment', async () => {
+		it('should delete an existing comment', async () => {
 			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
@@ -268,13 +271,13 @@ describe('ROOT', () => {
 	})
 
 	describe('Make a comment like status', () => {
-		it.skip('should forbid a request from an unauthorized user', async () => {
+		it('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
 				.put('/' + RouteNames.COMMENTS.COMMENT_ID('999').LIKE_STATUS.full)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
-		it.skip('should return 404 if a comment does not exists', async () => {
+		it('should return 404 if a comment does not exists', async () => {
 			// User will create a comment
 			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
@@ -290,7 +293,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
 
-		it.skip('should return 400 if requst body does not exist', async () => {
+		it('should return 400 if requst body does not exist', async () => {
 			// User will create a comment
 			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
@@ -303,7 +306,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.BAD_REQUEST_400)
 		})
 
-		it.skip('should return 204 if pass right body data to right address', async () => {
+		it('should return 204 if pass right body data to right address', async () => {
 			// Create a blog
 			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)

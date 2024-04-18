@@ -25,7 +25,7 @@ export function createDockerConfig(env: 'dev' | 'serverCheck' | 'server'): Confi
 					env === 'server' ? undefined : ['./nginx/nginx.conf.dev:/etc/nginx/nginx.conf'],
 			},
 			mongo: {
-				image: 'mongo:6.0.13',
+				image: env === 'server' ? 'mongo:4.4.6' : 'mongo:6.0.13',
 				restart: 'unless-stopped',
 				container_name: 'blogs-mongo',
 				ports: ['27017:27017'],
