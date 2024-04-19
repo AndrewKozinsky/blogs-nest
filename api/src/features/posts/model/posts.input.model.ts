@@ -29,11 +29,9 @@ export class BlogIdValidation implements ValidatorConstraintInterface {
 	}
 
 	defaultMessage(validationArguments?: ValidationArguments): string {
-		return 'Incorrect blogId'
+		return 'Incorrect blogId 2'
 	}
 }
-
-function validate() {}
 
 export class CreatePostDtoModel {
 	@IsString({ message: 'Title must be a string' })
