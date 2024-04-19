@@ -14,6 +14,7 @@ import {
 	ValidatorConstraint,
 	ValidatorConstraintInterface,
 } from 'class-validator'
+import { Trim } from '../../../infrastructure/pipes/Trim.decorator'
 import { BlogsRepository } from '../../blogs/blogs.repository'
 import { GetBlogsQueries } from '../../blogs/model/blogs.input.model'
 
@@ -29,23 +30,25 @@ export class BlogIdValidation implements ValidatorConstraintInterface {
 	}
 
 	defaultMessage(validationArguments?: ValidationArguments): string {
-		return 'Incorrect blogId 2'
+		return 'Incorrect blogId'
 	}
 }
 
 export class CreatePostDtoModel {
 	@IsString({ message: 'Title must be a string' })
+	@Trim()
 	@MinLength(1, { message: 'Title is too short' })
 	@MaxLength(30, { message: 'Title is too long' })
 	title: string
 
-	// ERROR
 	@IsString({ message: 'ShortDescription must be a string' })
+	@Trim()
 	@MinLength(1, { message: 'ShortDescription is too short' })
 	@MaxLength(100, { message: 'ShortDescription is too long' })
 	shortDescription: string
 
 	@IsString({ message: 'Content must be a string' })
+	@Trim()
 	@MinLength(1, { message: 'Content is too short' })
 	@MaxLength(1000, { message: 'Content is too long' })
 	content: string
@@ -59,17 +62,20 @@ export class CreatePostDtoModel {
 
 export class UpdatePostDtoModel {
 	@IsString({ message: 'Title must be a string' })
+	@Trim()
 	@MinLength(1, { message: 'Title is too short' })
 	@MaxLength(30, { message: 'Title is too long' })
 	title: string
 
 	// ERROR
 	@IsString({ message: 'ShortDescription must be a string' })
+	@Trim()
 	@MinLength(1, { message: 'ShortDescription is too short' })
 	@MaxLength(100, { message: 'ShortDescription is too long' })
 	shortDescription: string
 
 	@IsString({ message: 'Content must be a string' })
+	@Trim()
 	@MinLength(1, { message: 'Content is too short' })
 	@MaxLength(1000, { message: 'Content is too long' })
 	content: string

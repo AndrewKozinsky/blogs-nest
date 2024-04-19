@@ -21,6 +21,7 @@ export class CreateBlogDtoModel {
 	name: string
 
 	@IsString({ message: 'Description must be a string' })
+	@Trim()
 	@MinLength(1, { message: 'Description is too short' })
 	@MaxLength(500, { message: 'Description is too long' })
 	description: string
@@ -60,6 +61,7 @@ export class UpdateBlogDtoModel {
 	name: string
 
 	@IsString({ message: 'Description must be a string' })
+	@Trim()
 	@MinLength(1, { message: 'Description is too short' })
 	@MaxLength(500, { message: 'Description is too long' })
 	description: string
