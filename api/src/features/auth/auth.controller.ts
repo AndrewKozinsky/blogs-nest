@@ -31,15 +31,9 @@ import { GenerateAccessAndRefreshTokensCommand } from './use-cases/generateAcces
 import { GetCurrentUserCommand } from './use-cases/getCurrentUser.useCase'
 import { LoginCommand } from './use-cases/login.useCase'
 import { LogoutCommand } from './use-cases/logout.useCase'
-import {
-	RecoveryPasswordCommand,
-	RecoveryPasswordUseCase,
-} from './use-cases/recoveryPassword.useCase'
+import { RecoveryPasswordCommand } from './use-cases/recoveryPassword.useCase'
 import { RegistrationCommand } from './use-cases/registration.useCase'
-import {
-	RegistrationEmailResendingCommand,
-	RegistrationEmailResendingUseCase,
-} from './use-cases/registrationEmailResending.useCase'
+import { RegistrationEmailResendingCommand } from './use-cases/registrationEmailResending.useCase'
 import { SetNewPasswordCommand } from './use-cases/setNewPassword.useCase'
 
 @Controller(RouteNames.AUTH.value)

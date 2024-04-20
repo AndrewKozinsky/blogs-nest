@@ -16,14 +16,13 @@ import { Post, PostSchema } from './db/schemas/post.schema'
 import { PostLike, PostLikeSchema } from './db/schemas/postLike.schema'
 import { RateLimit, RateLimitSchema } from './db/schemas/rateLimit.schema'
 import { User, UserSchema } from './db/schemas/user.schema'
-import { AuthController } from './features/auth/auth.controller'
+import { AuthModule } from './features/auth/auth.module'
 import { AuthRepository } from './features/auth/auth.repository'
 import {
 	IsEmailExistsValidation,
 	IsLoginExistsValidation,
 } from './features/auth/model/authRegistration.input.model'
 import { CodeCustomValidation } from './features/auth/model/authRegistrationConfirmation.input.model'
-import { IsEmailExistsValidationInAuthRegistrationEmailResendingDto } from './features/auth/model/authRegistrationEmailResending.input.model'
 import { IsRecoveryCodeExistsValidation } from './features/auth/model/newPassword.input.model'
 import { ConfirmEmailAfterRegistrationUseCase } from './features/auth/use-cases/confirmEmailAfterRegistration.useCase'
 import { GenerateAccessAndRefreshTokensUseCase } from './features/auth/use-cases/generateAccessAndRefreshTokens.useCase'
@@ -124,6 +123,7 @@ const useCases = [
 			{ name: RateLimit.name, schema: RateLimitSchema },
 		]),
 		CqrsModule,
+		AuthModule,
 	],
 	controllers: [
 		BlogsController,
@@ -131,10 +131,11 @@ const useCases = [
 		PostsController,
 		UsersController,
 		TestsController,
-		AuthController,
+
 		SecurityController,
 	],
 	providers: [
+		AuthRepository,
 		BlogsRepository,
 		BlogsQueryRepository,
 		PostsQueryRepository,
@@ -151,7 +152,6 @@ const useCases = [
 		DbService,
 		JwtService,
 		RequestService,
-		AuthRepository,
 		EmailManager,
 		BrowserService,
 		EmailAdapter,
@@ -162,7 +162,6 @@ const useCases = [
 		IsRecoveryCodeExistsValidation,
 		BlogIdValidation,
 		CodeCustomValidation,
-		IsEmailExistsValidationInAuthRegistrationEmailResendingDto,
 		...useCases,
 	],
 })
