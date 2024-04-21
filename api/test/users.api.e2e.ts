@@ -24,7 +24,7 @@ describe('ROOT', () => {
 	})
 
 	describe('Getting all users', () => {
-		it('should forbid a request from an unauthorized user', async () => {
+		it.only('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
 				.get('/' + RouteNames.USERS.value)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)

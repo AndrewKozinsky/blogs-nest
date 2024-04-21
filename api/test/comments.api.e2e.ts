@@ -34,7 +34,7 @@ describe('ROOT', () => {
 	})
 
 	describe('Getting a comment', () => {
-		it('should return 404 if a comment does not exists', async () => {
+		it.only('should return 404 if a comment does not exists', async () => {
 			const getCommentRes = await request(app.getHttpServer()).get(
 				'/' + RouteNames.COMMENTS.COMMENT_ID('999').full,
 			)

@@ -1,4 +1,4 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
+import { Injectable } from '@nestjs/common'
 import { EmailManager } from '../../../base/managers/email.manager'
 import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
 import { CommonService } from '../../common/common.service'
@@ -6,12 +6,8 @@ import { UsersService } from '../../users/users.service'
 import { AuthRepository } from '../auth.repository'
 import { AuthRegistrationDtoModel } from '../model/authRegistration.input.model'
 
-export class RegistrationCommand {
-	constructor(public dto: AuthRegistrationDtoModel) {}
-}
-
-@CommandHandler(RegistrationCommand)
-export class RegistrationUseCase implements ICommandHandler<RegistrationCommand> {
+@Injectable()
+export class RegistrationUseCase {
 	constructor(
 		private authRepository: AuthRepository,
 		private commonService: CommonService,
@@ -19,9 +15,7 @@ export class RegistrationUseCase implements ICommandHandler<RegistrationCommand>
 		private emailManager: EmailManager,
 	) {}
 
-	async execute(command: RegistrationCommand): Promise<LayerResult<null>> {
-		const { dto } = command
-
+	async execute(dto: AuthRegistrationDtoModel): Promise<LayerResult<null>> {
 		const userByEmail = await this.authRepository.getUserByLoginOrEmail(dto.email)
 		if (userByEmail) {
 			return { code: LayerResultCode.BadRequest }

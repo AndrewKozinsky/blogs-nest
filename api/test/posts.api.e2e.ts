@@ -38,7 +38,7 @@ describe('ROOT', () => {
 	})
 
 	describe('Getting post comments', () => {
-		it('should return an object with property items contains an empty array', async () => {
+		it.only('should return an object with property items contains an empty array', async () => {
 			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id

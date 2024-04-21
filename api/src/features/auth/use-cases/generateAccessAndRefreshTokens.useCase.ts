@@ -1,4 +1,5 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
+import { Injectable } from '@nestjs/common'
+import { ICommandHandler } from '@nestjs/cqrs'
 import { Request } from 'express'
 import { JwtService } from '../../../base/application/jwt.service'
 import { RequestService } from '../../../base/application/request.service'
@@ -6,14 +7,8 @@ import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
 import { UsersRepository } from '../../users/users.repository'
 import { AuthRepository } from '../auth.repository'
 
-export class GenerateAccessAndRefreshTokensCommand {
-	constructor(public req: Request) {}
-}
-
-@CommandHandler(GenerateAccessAndRefreshTokensCommand)
-export class GenerateAccessAndRefreshTokensUseCase
-	implements ICommandHandler<GenerateAccessAndRefreshTokensCommand>
-{
+@Injectable()
+export class GenerateAccessAndRefreshTokensUseCase {
 	constructor(
 		private authRepository: AuthRepository,
 		private jwtService: JwtService,
@@ -22,10 +17,8 @@ export class GenerateAccessAndRefreshTokensUseCase
 	) {}
 
 	async execute(
-		command: GenerateAccessAndRefreshTokensCommand,
+		req: Request,
 	): Promise<LayerResult<{ newAccessToken: string; newRefreshToken: string }>> {
-		const { req } = command
-
 		const deviceRefreshTokenStr = this.requestService.getDeviceRefreshStrTokenFromReq(req)
 
 		const deviceRefreshToken =

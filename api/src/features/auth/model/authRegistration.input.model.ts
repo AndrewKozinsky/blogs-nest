@@ -26,6 +26,7 @@ export class IsLoginExistsValidation implements ValidatorConstraintInterface {
 		return true
 	}
 }
+
 @ValidatorConstraint({ name: 'email', async: true })
 @Injectable()
 export class IsEmailExistsValidation implements ValidatorConstraintInterface {
@@ -42,6 +43,7 @@ export class IsEmailExistsValidation implements ValidatorConstraintInterface {
 	}
 }
 
+@Injectable()
 export class AuthRegistrationDtoModel {
 	@IsString({ message: 'Login must be a string' })
 	@MinLength(3, { message: 'Login is too short' })

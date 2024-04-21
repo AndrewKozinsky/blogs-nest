@@ -16,6 +16,7 @@ import { PostLikesRepository } from './postLikes/postLikes.repository'
 import { DeleteCommentUseCase } from './comments/use-cases/DeleteCommentUseCase'
 import { SetCommentLikeStatusUseCase } from './comments/use-cases/SetCommentLikeStatusUseCase'
 import { UpdateCommentUseCase } from './comments/use-cases/UpdateCommentUseCase'
+import { BlogIdValidation } from './posts/model/posts.input.model'
 import { PostsController } from './posts/posts.controller'
 import { PostsQueryRepository } from './posts/posts.queryRepository'
 import { PostsRepository } from './posts/posts.repository'
@@ -72,6 +73,7 @@ const useCases = [
 		CommentLikesRepository,
 		CommentsQueryRepository,
 		CommentsRepository,
+		BlogIdValidation,
 		...useCases,
 	],
 })

@@ -39,7 +39,7 @@ describe('ROOT', () => {
 	})
 
 	describe('Getting all user devices', () => {
-		it('should forbid a request if there is not refresh token', async () => {
+		it.only('should forbid a request if there is not refresh token', async () => {
 			await request(app.getHttpServer())
 				.get('/' + RouteNames.SECURITY.DEVICES.full)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)

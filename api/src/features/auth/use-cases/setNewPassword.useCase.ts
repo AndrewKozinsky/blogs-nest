@@ -1,33 +1,12 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
-import { BrowserService } from '../../../base/application/browser.service'
-import { JwtService } from '../../../base/application/jwt.service'
-import { RequestService } from '../../../base/application/request.service'
-import { EmailManager } from '../../../base/managers/email.manager'
+import { Injectable } from '@nestjs/common'
 import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
-import { createUniqString } from '../../../utils/stringUtils'
-import { CommonService } from '../../common/common.service'
-import { UserServiceModel } from '../../users/models/users.service.model'
 import { UsersRepository } from '../../users/users.repository'
-import { UsersService } from '../../users/users.service'
-import { AuthRepository } from '../auth.repository'
-import { MeOutModel } from '../model/auth.output.model'
-import { AuthRegistrationDtoModel } from '../model/authRegistration.input.model'
-import { AuthRegistrationConfirmationDtoModel } from '../model/authRegistrationConfirmation.input.model'
 
-export class SetNewPasswordCommand {
-	constructor(
-		public passRecoveryCode: string,
-		public newPassword: string,
-	) {}
-}
-
-@CommandHandler(SetNewPasswordCommand)
-export class SetNewPasswordUseCase implements ICommandHandler<SetNewPasswordCommand> {
+@Injectable()
+export class SetNewPasswordUseCase {
 	constructor(private usersRepository: UsersRepository) {}
 
-	async execute(command: SetNewPasswordCommand): Promise<LayerResult<null>> {
-		const { passRecoveryCode, newPassword } = command
-
+	async execute(passRecoveryCode: string, newPassword: string): Promise<LayerResult<null>> {
 		const user = await this.usersRepository.getUserByPasswordRecoveryCode(passRecoveryCode)
 
 		if (!user) {

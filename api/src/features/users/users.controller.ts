@@ -21,8 +21,8 @@ import {
 	GetUsersQueries,
 	GetUsersQueriesPipe,
 } from './models/users.input.model'
-import { CreateUserCommand } from './use-cases/createUser.useCase'
-import { DeleteUserCommand } from './use-cases/deleteUser.useCase'
+import { CreateUserUseCase } from './use-cases/createUser.useCase'
+import { DeleteUserUseCase } from './use-cases/deleteUser.useCase'
 import { UsersQueryRepository } from './users.queryRepository'
 
 @Controller(RouteNames.USERS.value)
@@ -30,6 +30,8 @@ export class UsersController {
 	constructor(
 		private commandBus: CommandBus,
 		private usersQueryRepository: UsersQueryRepository,
+		private createUserUseCase: CreateUserUseCase,
+		private deleteUserUseCase: DeleteUserUseCase,
 	) {}
 
 	// Returns all users
@@ -46,7 +48,7 @@ export class UsersController {
 	@Post()
 	@HttpCode(HttpStatus.CREATED)
 	async createUser(@Body() body: CreateUserDtoModel) {
-		const createdUser = await this.commandBus.execute(new CreateUserCommand(body))
+		const createdUser = await this.createUserUseCase.execute(body)
 		return createdUser
 	}
 
@@ -55,7 +57,7 @@ export class UsersController {
 	@Delete(':userId')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteUser(@Param('userId') userId: string) {
-		const isUserDeleted = await this.commandBus.execute(new DeleteUserCommand(userId))
+		const isUserDeleted = await this.deleteUserUseCase.execute(userId)
 
 		if (!isUserDeleted) {
 			throw new NotFoundException()

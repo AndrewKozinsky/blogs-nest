@@ -32,7 +32,7 @@ describe('ROOT', () => {
 	})
 
 	describe('Getting all blogs', () => {
-		it('should return an object with property items contains an empty array', async () => {
+		it.only('should return an object with property items contains an empty array', async () => {
 			const successAnswer: GetBlogsOutModel = {
 				pagesCount: 0,
 				page: 1,

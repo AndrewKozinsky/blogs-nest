@@ -1,6 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-import { CqrsModule } from '@nestjs/cqrs'
 import { MongooseModule } from '@nestjs/mongoose'
 import { HashAdapter } from './base/adapters/hash.adapter'
 import { BrowserService } from './base/application/browser.service'
@@ -32,7 +31,6 @@ const dbName = process.env.MONGO_DB_NAME
 			{ name: User.name, schema: UserSchema },
 			{ name: RateLimit.name, schema: RateLimitSchema },
 		]),
-		CqrsModule,
 		AuthModule,
 		BlogsModule,
 		UsersModule,

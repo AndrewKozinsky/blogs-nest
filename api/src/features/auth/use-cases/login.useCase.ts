@@ -1,4 +1,4 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
+import { Injectable } from '@nestjs/common'
 import { Request } from 'express'
 import { BrowserService } from '../../../base/application/browser.service'
 import { JwtService } from '../../../base/application/jwt.service'
@@ -7,15 +7,8 @@ import { UserServiceModel } from '../../users/models/users.service.model'
 import { AuthRepository } from '../auth.repository'
 import { AuthLoginDtoModel } from '../model/authLogin.input.model'
 
-export class LoginCommand {
-	constructor(
-		public req: Request,
-		public body: AuthLoginDtoModel,
-	) {}
-}
-
-@CommandHandler(LoginCommand)
-export class LoginUseCase implements ICommandHandler<LoginCommand> {
+@Injectable()
+export class LoginUseCase {
 	constructor(
 		private authRepository: AuthRepository,
 		private jwtService: JwtService,
@@ -23,10 +16,9 @@ export class LoginUseCase implements ICommandHandler<LoginCommand> {
 	) {}
 
 	async execute(
-		command: LoginCommand,
+		req: Request,
+		body: AuthLoginDtoModel,
 	): Promise<LayerResult<{ refreshTokenStr: string; user: UserServiceModel }>> {
-		const { req, body } = command
-
 		const getUserRes = await this.authRepository.getConfirmedUserByLoginOrEmailAndPassword(body)
 
 		if (getUserRes.code !== LayerResultCode.Success || !getUserRes.data) {
