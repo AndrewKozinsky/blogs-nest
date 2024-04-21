@@ -7,11 +7,11 @@ import { DBTypes } from '../../src/db/dbTypes'
 import {
 	CreateBlogDtoModel,
 	CreateBlogPostDtoModel,
-} from '../../src/features/blogs/model/blogs.input.model'
+} from '../../src/features/blogs/blogs/model/blogs.input.model'
 import {
 	CreatePostCommentDtoModel,
 	CreatePostDtoModel,
-} from '../../src/features/posts/model/posts.input.model'
+} from '../../src/features/blogs/posts/model/posts.input.model'
 import { CreateUserDtoModel } from '../../src/features/users/models/users.input.model'
 // import { HTTP_STATUSES } from '../../../src/config/config'
 // import RouteNames from '../../../src/config/routeNames'
