@@ -25,6 +25,10 @@ export class GenerateAccessAndRefreshTokensUseCase {
 			await this.authRepository.getDeviceRefreshTokenByTokenStr(deviceRefreshTokenStr)
 
 		if (!deviceRefreshToken || !this.jwtService.isRefreshTokenStrValid(deviceRefreshTokenStr)) {
+			console.log('---------------------')
+			console.log(deviceRefreshToken)
+			console.log(this.jwtService.isRefreshTokenStrValid(deviceRefreshTokenStr))
+			console.log('/////////////////////////////')
 			return {
 				code: LayerResultCode.Unauthorized,
 			}

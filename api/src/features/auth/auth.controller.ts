@@ -86,7 +86,7 @@ export class AuthController {
 		const { newAccessToken, newRefreshToken } = generateTokensRes.data!
 
 		res.cookie(config.refreshToken.name, newRefreshToken, {
-			// maxAge: config.refreshToken.lifeDurationInMs,
+			maxAge: config.refreshToken.lifeDurationInMs,
 			httpOnly: true,
 			secure: true,
 		})
