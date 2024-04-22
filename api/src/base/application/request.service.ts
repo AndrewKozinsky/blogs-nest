@@ -7,7 +7,6 @@ export class RequestService {
 	getDeviceRefreshStrTokenFromReq(req: Request): string {
 		try {
 			const cookiesObj = this.transformCookiesStringToObj(req.headers.cookie!)
-			console.log({ cookies_obj: cookiesObj })
 			return cookiesObj[config.refreshToken.name]
 		} catch (err) {
 			throw new Error()

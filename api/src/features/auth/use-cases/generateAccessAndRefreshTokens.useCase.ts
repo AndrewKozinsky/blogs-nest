@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common'
 import { JwtService } from '../../../base/application/jwt.service'
-import { RequestService } from '../../../base/application/request.service'
 import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
 import { UsersRepository } from '../../users/users.repository'
 import { AuthRepository } from '../auth.repository'
@@ -10,7 +9,6 @@ export class GenerateAccessAndRefreshTokensUseCase {
 	constructor(
 		private authRepository: AuthRepository,
 		private jwtService: JwtService,
-		private requestService: RequestService,
 		private usersRepository: UsersRepository,
 	) {}
 
@@ -19,7 +17,6 @@ export class GenerateAccessAndRefreshTokensUseCase {
 	): Promise<LayerResult<{ newAccessToken: string; newRefreshToken: string }>> {
 		const deviceRefreshTokenObj =
 			await this.authRepository.getDeviceRefreshTokenByTokenStr(deviceRefreshTokenStr)
-		console.log({ deviceRefreshTokenObj: deviceRefreshTokenObj })
 
 		if (
 			!deviceRefreshTokenObj ||
@@ -31,10 +28,8 @@ export class GenerateAccessAndRefreshTokensUseCase {
 		}
 
 		const user = await this.usersRepository.getUserById(deviceRefreshTokenObj.userId)
-		console.log({ user })
 
 		if (!user) {
-			console.log('401')
 			return {
 				code: LayerResultCode.Unauthorized,
 			}

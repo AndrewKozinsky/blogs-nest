@@ -78,7 +78,6 @@ export class AuthController {
 	@Post(RouteNames.AUTH.REFRESH_TOKEN.value)
 	async refreshToken(@Req() req: Request, @Res() res: Response, @RefreshToken() token: string) {
 		const generateTokensRes = await this.generateAccessAndRefreshTokensUseCase.execute(token)
-		console.log({ generateTokensRes: generateTokensRes })
 
 		if (generateTokensRes.code === LayerResultCode.Unauthorized) {
 			throw new UnauthorizedException()
