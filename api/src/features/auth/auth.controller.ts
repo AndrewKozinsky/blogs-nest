@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common'
 import { Request, Response } from 'express'
 import { JwtService } from '../../base/application/jwt.service'
-import { RequestService } from '../../base/application/request.service'
+import { RefreshToken, RequestService } from '../../base/application/request.service'
 import { CheckAccessTokenGuard } from '../../infrastructure/guards/checkAccessToken.guard'
 import { CheckDeviceRefreshTokenGuard } from '../../infrastructure/guards/checkDeviceRefreshToken.guard'
 import { config } from '../../settings/config'
@@ -76,8 +76,9 @@ export class AuthController {
 	// Generate the new pair of access and refresh tokens
 	// (in cookie client must send correct refreshToken that will be revoked after refreshing)
 	@Post(RouteNames.AUTH.REFRESH_TOKEN.value)
-	async refreshToken(@Req() req: Request, @Res() res: Response) {
-		const generateTokensRes = await this.generateAccessAndRefreshTokensUseCase.execute(req)
+	async refreshToken(@Req() req: Request, @Res() res: Response, @RefreshToken() token: string) {
+		const generateTokensRes = await this.generateAccessAndRefreshTokensUseCase.execute(token)
+		console.log({ generateTokensRes: generateTokensRes })
 
 		if (generateTokensRes.code === LayerResultCode.Unauthorized) {
 			throw new UnauthorizedException()

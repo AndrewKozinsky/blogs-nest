@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common'
-import { Request } from 'express'
 import { JwtService } from '../../../base/application/jwt.service'
 import { RequestService } from '../../../base/application/request.service'
 import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
@@ -16,35 +15,41 @@ export class GenerateAccessAndRefreshTokensUseCase {
 	) {}
 
 	async execute(
-		req: Request,
+		deviceRefreshTokenStr: string,
 	): Promise<LayerResult<{ newAccessToken: string; newRefreshToken: string }>> {
-		const deviceRefreshTokenStr = this.requestService.getDeviceRefreshStrTokenFromReq(req)
-
-		const deviceRefreshToken =
+		const deviceRefreshTokenObj =
 			await this.authRepository.getDeviceRefreshTokenByTokenStr(deviceRefreshTokenStr)
+		console.log({ deviceRefreshTokenObj: deviceRefreshTokenObj })
 
-		if (!deviceRefreshToken || !this.jwtService.isRefreshTokenStrValid(deviceRefreshTokenStr)) {
+		if (
+			!deviceRefreshTokenObj ||
+			!this.jwtService.isRefreshTokenStrValid(deviceRefreshTokenStr)
+		) {
 			return {
 				code: LayerResultCode.Unauthorized,
 			}
 		}
 
-		const userRes = await this.usersRepository.getUserById(deviceRefreshToken.userId)
+		const user = await this.usersRepository.getUserById(deviceRefreshTokenObj.userId)
+		console.log({ user })
 
-		if (!userRes) {
+		if (!user) {
+			console.log('401')
 			return {
 				code: LayerResultCode.Unauthorized,
 			}
 		}
 
-		await this.authRepository.updateDeviceRefreshTokenDate(deviceRefreshToken.deviceId)
+		await this.authRepository.updateDeviceRefreshTokenDate(deviceRefreshTokenObj.deviceId)
 
-		const newRefreshToken = this.jwtService.createRefreshTokenStr(deviceRefreshToken.deviceId)
+		const newRefreshToken = this.jwtService.createRefreshTokenStr(
+			deviceRefreshTokenObj.deviceId,
+		)
 
 		return {
 			code: LayerResultCode.Success,
 			data: {
-				newAccessToken: this.jwtService.createAccessTokenStr(deviceRefreshToken.userId),
+				newAccessToken: this.jwtService.createAccessTokenStr(deviceRefreshTokenObj.userId),
 				newRefreshToken,
 			},
 		}
