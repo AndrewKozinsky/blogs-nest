@@ -42,7 +42,7 @@ describe('ROOT', () => {
 	})
 
 	describe('Login user', () => {
-		it.only('should return 400 if to pass wrong dto', async () => {
+		it('should return 400 if to pass wrong dto', async () => {
 			const loginRes = await request(app.getHttpServer())
 				.post('/' + RouteNames.AUTH.LOGIN.full)
 				.send({ loginOrEmail: '', password: 'password' })
@@ -183,7 +183,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
-		it('should return 200 if the JWT refreshToken inside cookie is valid', async () => {
+		it.only('should return 200 if the JWT refreshToken inside cookie is valid', async () => {
 			const login = 'login'
 			const password = 'password'
 			const email = 'email@email.ru'

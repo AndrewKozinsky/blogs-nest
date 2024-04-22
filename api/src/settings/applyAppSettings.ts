@@ -1,5 +1,6 @@
 import { BadRequestException, INestApplication, ValidationPipe } from '@nestjs/common'
 import { useContainer } from 'class-validator'
+import { loginRequest } from '../../test/utils/utils'
 import { AppModule } from '../app.module'
 import { HttpExceptionFilter } from '../infrastructure/exception-filters/exception.filter'
 

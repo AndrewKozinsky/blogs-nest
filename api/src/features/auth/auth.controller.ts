@@ -73,7 +73,8 @@ export class AuthController {
 		})
 	}
 
-	// Generate the new pair of access and refresh tokens (in cookie client must send correct refreshToken that will be revoked after refreshing)
+	// Generate the new pair of access and refresh tokens
+	// (in cookie client must send correct refreshToken that will be revoked after refreshing)
 	@Post(RouteNames.AUTH.REFRESH_TOKEN.value)
 	async refreshToken(@Req() req: Request, @Res() res: Response) {
 		const generateTokensRes = await this.generateAccessAndRefreshTokensUseCase.execute(req)
@@ -85,7 +86,7 @@ export class AuthController {
 		const { newAccessToken, newRefreshToken } = generateTokensRes.data!
 
 		res.cookie(config.refreshToken.name, newRefreshToken, {
-			maxAge: config.refreshToken.lifeDurationInMs,
+			// maxAge: config.refreshToken.lifeDurationInMs,
 			httpOnly: true,
 			secure: true,
 		})
