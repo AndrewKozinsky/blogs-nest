@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common'
-import { ICommandHandler } from '@nestjs/cqrs'
 import { Request } from 'express'
 import { JwtService } from '../../../base/application/jwt.service'
 import { RequestService } from '../../../base/application/request.service'
@@ -19,16 +18,16 @@ export class GenerateAccessAndRefreshTokensUseCase {
 	async execute(
 		req: Request,
 	): Promise<LayerResult<{ newAccessToken: string; newRefreshToken: string }>> {
+		console.log('7777777777777777777777')
 		const deviceRefreshTokenStr = this.requestService.getDeviceRefreshStrTokenFromReq(req)
+		console.log(deviceRefreshTokenStr)
 
 		const deviceRefreshToken =
 			await this.authRepository.getDeviceRefreshTokenByTokenStr(deviceRefreshTokenStr)
 
+		console.log(deviceRefreshToken)
+		console.log('88888888888888888')
 		if (!deviceRefreshToken || !this.jwtService.isRefreshTokenStrValid(deviceRefreshTokenStr)) {
-			console.log('---------------------')
-			console.log(deviceRefreshToken)
-			console.log(this.jwtService.isRefreshTokenStrValid(deviceRefreshTokenStr))
-			console.log('/////////////////////////////')
 			return {
 				code: LayerResultCode.Unauthorized,
 			}
