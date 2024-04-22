@@ -18,15 +18,11 @@ export class GenerateAccessAndRefreshTokensUseCase {
 	async execute(
 		req: Request,
 	): Promise<LayerResult<{ newAccessToken: string; newRefreshToken: string }>> {
-		console.log('7777777777777777777777')
 		const deviceRefreshTokenStr = this.requestService.getDeviceRefreshStrTokenFromReq(req)
-		console.log(deviceRefreshTokenStr)
 
 		const deviceRefreshToken =
 			await this.authRepository.getDeviceRefreshTokenByTokenStr(deviceRefreshTokenStr)
 
-		console.log(deviceRefreshToken)
-		console.log('88888888888888888')
 		if (!deviceRefreshToken || !this.jwtService.isRefreshTokenStrValid(deviceRefreshTokenStr)) {
 			return {
 				code: LayerResultCode.Unauthorized,

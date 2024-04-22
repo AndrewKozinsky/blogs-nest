@@ -1,4 +1,5 @@
 import {
+	BadRequestException,
 	Body,
 	Controller,
 	Delete,
@@ -12,10 +13,10 @@ import {
 	Res,
 	UseGuards,
 } from '@nestjs/common'
-import { CommandBus } from '@nestjs/cqrs'
 import { Response } from 'express'
 import { CheckAdminAuthGuard } from '../../infrastructure/guards/checkAdminAuth.guard'
 import RouteNames from '../../settings/routeNames'
+import { LayerResultCode } from '../../types/resultCodes'
 import {
 	CreateUserDtoModel,
 	GetUsersQueries,
@@ -28,7 +29,6 @@ import { UsersQueryRepository } from './users.queryRepository'
 @Controller(RouteNames.USERS.value)
 export class UsersController {
 	constructor(
-		private commandBus: CommandBus,
 		private usersQueryRepository: UsersQueryRepository,
 		private createUserUseCase: CreateUserUseCase,
 		private deleteUserUseCase: DeleteUserUseCase,
@@ -48,8 +48,13 @@ export class UsersController {
 	@Post()
 	@HttpCode(HttpStatus.CREATED)
 	async createUser(@Body() body: CreateUserDtoModel) {
-		const createdUser = await this.createUserUseCase.execute(body)
-		return createdUser
+		const createdUserStatus = await this.createUserUseCase.execute(body)
+
+		if (createdUserStatus.code !== LayerResultCode.Success) {
+			throw new BadRequestException([{ field: 'email', message: 'User already registered' }])
+		}
+
+		if (createdUserStatus) return createdUserStatus.data
 	}
 
 	// Delete user specified by id
