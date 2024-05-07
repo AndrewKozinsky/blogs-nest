@@ -13,13 +13,12 @@ import {
 } from '@nestjs/common'
 import { Request, Response } from 'express'
 import { JwtService } from '../../base/application/jwt.service'
-import { RefreshToken, RequestService } from '../../base/application/request.service'
+import { RequestService } from '../../base/application/request.service'
 import { CheckAccessTokenGuard } from '../../infrastructure/guards/checkAccessToken.guard'
 import { CheckDeviceRefreshTokenGuard } from '../../infrastructure/guards/checkDeviceRefreshToken.guard'
 import { config } from '../../settings/config'
 import RouteNames from '../../settings/routeNames'
 import { LayerResult, LayerResultCode } from '../../types/resultCodes'
-import { AuthRepository } from './auth.repository'
 import { AuthLoginDtoModel } from './model/authLogin.input.model'
 import { AuthRegistrationDtoModel } from './model/authRegistration.input.model'
 import { AuthRegistrationConfirmationDtoModel } from './model/authRegistrationConfirmation.input.model'
@@ -75,9 +74,12 @@ export class AuthController {
 
 	// Generate the new pair of access and refresh tokens
 	// (in cookie client must send correct refreshToken that will be revoked after refreshing)
+	@UseGuards(CheckDeviceRefreshTokenGuard)
 	@Post(RouteNames.AUTH.REFRESH_TOKEN.value)
-	async refreshToken(@Req() req: Request, @Res() res: Response, @RefreshToken() token: string) {
-		const generateTokensRes = await this.generateAccessAndRefreshTokensUseCase.execute(token)
+	async refreshToken(@Req() req: Request, @Res() res: Response) {
+		const generateTokensRes = await this.generateAccessAndRefreshTokensUseCase.execute(
+			req.deviceRefreshToken,
+		)
 
 		if (generateTokensRes.code === LayerResultCode.Unauthorized) {
 			throw new UnauthorizedException()
@@ -144,7 +146,10 @@ export class AuthController {
 	@Post(RouteNames.AUTH.LOGOUT.value)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async logout(@Req() req: Request, @Res() res: Response) {
-		const refreshTokenFromCookie = this.requestService.getDeviceRefreshStrTokenFromReq(req)
+		const refreshTokenFromCookie = this.requestService.getRefreshTokenStrFromReq(req)
+		if (!refreshTokenFromCookie) {
+			throw new UnauthorizedException()
+		}
 
 		const logoutServiceRes = await this.logoutUseCase.execute(refreshTokenFromCookie)
 

@@ -65,9 +65,10 @@ export class JwtService {
 		}
 	}
 
-	isRefreshTokenStrValid(refreshTokenStr: string) {
+	// Check if token string is valid
+	isRefreshTokenStrValid(refreshTokenStr: null | string) {
 		try {
-			jwt.verify(refreshTokenStr, config.JWT_SECRET)
+			const tokenPayload = jwt.verify(refreshTokenStr, config.JWT_SECRET)
 			return true
 		} catch (error) {
 			console.log(error)
@@ -75,14 +76,15 @@ export class JwtService {
 		}
 	}
 
-	getTokenExpirationDate(tokenStr: string): null | Date {
+	getTokenStrExpirationDate(tokenStr: string): null | Date {
 		try {
-			const res = decode(tokenStr)
-			if (typeof res === 'string' || !res) {
+			const tokenPayload = decode(tokenStr)
+
+			if (!tokenPayload || typeof tokenPayload === 'string') {
 				return null
 			}
 
-			return new Date(res.exp! * 1000)
+			return new Date(tokenPayload.exp * 1000)
 		} catch (error) {
 			console.log(error)
 			return null

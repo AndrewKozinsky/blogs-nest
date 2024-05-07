@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { JwtService } from '../../../base/application/jwt.service'
+import { DBTypes } from '../../../db/dbTypes'
 import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
 import { UsersRepository } from '../../users/users.repository'
 import { AuthRepository } from '../auth.repository'
@@ -13,38 +14,30 @@ export class GenerateAccessAndRefreshTokensUseCase {
 	) {}
 
 	async execute(
-		deviceRefreshTokenStr: string,
+		deviceRefreshToken: null | DBTypes.DeviceToken,
 	): Promise<LayerResult<{ newAccessToken: string; newRefreshToken: string }>> {
-		const deviceRefreshTokenObj =
-			await this.authRepository.getDeviceRefreshTokenByTokenStr(deviceRefreshTokenStr)
-
-		if (
-			!deviceRefreshTokenObj ||
-			!this.jwtService.isRefreshTokenStrValid(deviceRefreshTokenStr)
-		) {
+		if (!deviceRefreshToken) {
 			return {
 				code: LayerResultCode.Unauthorized,
 			}
 		}
 
-		const user = await this.usersRepository.getUserById(deviceRefreshTokenObj.userId)
-
+		// Throw en error if the user was removed
+		const user = await this.usersRepository.getUserById(deviceRefreshToken.userId)
 		if (!user) {
 			return {
 				code: LayerResultCode.Unauthorized,
 			}
 		}
 
-		await this.authRepository.updateDeviceRefreshTokenDate(deviceRefreshTokenObj.deviceId)
+		await this.authRepository.updateDeviceRefreshTokenDate(deviceRefreshToken.deviceId)
 
-		const newRefreshToken = this.jwtService.createRefreshTokenStr(
-			deviceRefreshTokenObj.deviceId,
-		)
+		const newRefreshToken = this.jwtService.createRefreshTokenStr(deviceRefreshToken.deviceId)
 
 		return {
 			code: LayerResultCode.Success,
 			data: {
-				newAccessToken: this.jwtService.createAccessTokenStr(deviceRefreshTokenObj.userId),
+				newAccessToken: this.jwtService.createAccessTokenStr(deviceRefreshToken.userId),
 				newRefreshToken,
 			},
 		}

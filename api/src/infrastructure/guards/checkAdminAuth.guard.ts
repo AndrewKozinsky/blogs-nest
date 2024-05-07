@@ -1,6 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common'
 import { Observable } from 'rxjs'
-import { loginRequest } from '../../../test/utils/utils'
 
 @Injectable()
 export class CheckAdminAuthGuard implements CanActivate {

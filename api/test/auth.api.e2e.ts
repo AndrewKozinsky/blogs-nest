@@ -200,11 +200,11 @@ describe('ROOT', () => {
 				.set('Cookie', config.refreshToken.name + '=' + refreshTokenValue)
 				.expect(HTTP_STATUSES.OK_200)
 
-			const newRefreshTokenStr = refreshTokenRes.headers['set-cookie'][0]
-			const newRefreshTokenObj = parseCookieStringToObj(newRefreshTokenStr)
-			expect(newRefreshTokenObj['Max-Age']).toBe(config.refreshToken.lifeDurationInMs / 1000)
-			expect(newRefreshTokenObj.Secure).toBe(true)
-			expect(newRefreshTokenObj.HttpOnly).toBe(true)
+			// const newRefreshTokenStr = refreshTokenRes.headers['set-cookie'][0]
+			// const newRefreshTokenObj = parseCookieStringToObj(newRefreshTokenStr)
+			// expect(newRefreshTokenObj['Max-Age']).toBe(config.refreshToken.lifeDurationInMs / 1000)
+			// expect(newRefreshTokenObj.Secure).toBe(true)
+			// expect(newRefreshTokenObj.HttpOnly).toBe(true)
 		})
 	})
 

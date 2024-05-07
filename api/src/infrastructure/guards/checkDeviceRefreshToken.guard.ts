@@ -15,15 +15,15 @@ export class CheckDeviceRefreshTokenGuard implements CanActivate {
 		const request = context.switchToHttp().getRequest()
 
 		try {
-			const refreshTokenStr = this.requestService.getDeviceRefreshStrTokenFromReq(request)
+			const refreshTokenStr = this.requestService.getRefreshTokenStrFromReq(request)
 
-			if (!this.jwtService.isRefreshTokenStrValid(refreshTokenStr)) {
+			if (!refreshTokenStr || !this.jwtService.isRefreshTokenStrValid(refreshTokenStr)) {
 				throw new UnauthorizedException()
 			}
 
 			// Check if refreshTokenStr has another expiration date
 			const refreshTokenStrExpirationDate =
-				this.jwtService.getTokenExpirationDate(refreshTokenStr)
+				this.jwtService.getTokenStrExpirationDate(refreshTokenStr)
 
 			const deviceRefreshToken =
 				await this.authRepository.getDeviceRefreshTokenByTokenStr(refreshTokenStr)
@@ -36,6 +36,8 @@ export class CheckDeviceRefreshTokenGuard implements CanActivate {
 				refreshTokenStrExpirationDate!.toLocaleString() ===
 				deviceRefreshToken!.expirationDate.toLocaleString()
 			) {
+				request.deviceRefreshToken = deviceRefreshToken
+
 				return true
 			}
 

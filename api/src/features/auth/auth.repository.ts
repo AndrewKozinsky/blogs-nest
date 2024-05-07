@@ -191,8 +191,8 @@ export class AuthRepository {
 
 	async getDeviceRefreshTokenByTokenStr(tokenStr: string): Promise<null | DBTypes.DeviceToken> {
 		try {
-			const refreshToken = this.jwtService.getRefreshTokenDataFromTokenStr(tokenStr)
-			return this.getDeviceRefreshTokenByDeviceId(refreshToken!.deviceId)
+			const refreshTokenPayload = this.jwtService.getRefreshTokenDataFromTokenStr(tokenStr)
+			return this.getDeviceRefreshTokenByDeviceId(refreshTokenPayload!.deviceId)
 		} catch (err: unknown) {
 			return null
 		}

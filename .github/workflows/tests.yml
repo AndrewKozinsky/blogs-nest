@@ -1,0 +1,13 @@
+name: Tests & Deploy
+
+on:
+  push: # действие и ветка в GH для запуска workflow
+    Branches: ["develop"]
+
+jobs:
+  tests:
+    name: Tests # Название работы в нашем pipeline
+    runs-on: ["develop"]
+
+    steps:
+      - name: Checkout

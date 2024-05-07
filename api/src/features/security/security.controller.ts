@@ -33,7 +33,7 @@ export class SecurityController {
 	@UseGuards(CheckDeviceRefreshTokenGuard)
 	@Get('devices')
 	async getUserDevices(@Req() req: Request, @Res() res: Response) {
-		const refreshTokenFromCookie = this.requestService.getDeviceRefreshStrTokenFromReq(req)
+		const refreshTokenFromCookie = this.requestService.getRefreshTokenStrFromReq(req) as string
 
 		const userDevices =
 			await this.securityQueryRepository.getUserDevices(refreshTokenFromCookie)
@@ -46,7 +46,9 @@ export class SecurityController {
 	@Delete('devices')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async terminateUserDevicesExceptOne(@Req() req: Request) {
-		const refreshTokenFromCookie = this.requestService.getDeviceRefreshStrTokenFromReq(req)
+		const refreshTokenFromCookie = this.requestService.getRefreshTokenStrFromReq(req)
+		if (!refreshTokenFromCookie) return
+
 		await this.terminateAllDeviceRefreshTokensApartThisUseCase.execute(refreshTokenFromCookie)
 	}
 
@@ -55,7 +57,11 @@ export class SecurityController {
 	@Delete('devices/:deviceId')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async terminateUserDevice(@Param('deviceId') deviceId: string, @Req() req: Request) {
-		const refreshTokenFromCookie = this.requestService.getDeviceRefreshStrTokenFromReq(req)
+		const refreshTokenFromCookie = this.requestService.getRefreshTokenStrFromReq(req)
+		if (!refreshTokenFromCookie) {
+			throw new ForbiddenException()
+		}
+
 		const terminateDeviceRes = await this.terminateSpecifiedDeviceRefreshTokenUseCase.execute(
 			refreshTokenFromCookie,
 			deviceId,

@@ -14,6 +14,7 @@ declare global {
 	namespace Express {
 		export interface Request {
 			user: null | UserServiceModel
+			deviceRefreshToken: undefined | null | DBTypes.DeviceToken
 		}
 	}
 }

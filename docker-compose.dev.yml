@@ -18,6 +18,18 @@ services:
       - 27017:27017
     volumes:
       - dbdata6:/data/db
+
+  postgres:
+    image: postgres:16.2
+    restart: unless-stopped
+    container_name: postgres-pg-admin__postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: blogs
+      POSTGRES_USER: blogs-user
+
   api:
     build:
       context: api/
@@ -35,5 +47,7 @@ services:
       MONGO_URL: mongodb://blogs-mongo:27017
       MONGO_DB_NAME: blogs
       JWT_SECRET: 123
+
 volumes:
   dbdata6: {}
+  postgres:
