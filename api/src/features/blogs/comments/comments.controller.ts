@@ -18,7 +18,7 @@ import { CheckAccessTokenGuard } from '../../../infrastructure/guards/checkAcces
 import RouteNames from '../../../settings/routeNames'
 import { LayerResultCode } from '../../../types/resultCodes'
 import { CommentLikeOperationsDtoModel } from '../commentLikes/models/commentLikeOperations.input.model'
-import { CommentsQueryRepository } from './comments.queryRepository'
+import { CommentsMongoQueryRepository } from './comments.mongo.queryRepository'
 import { UpdateCommentDtoModel } from './model/comments.input.model'
 import { DeleteCommentUseCase } from './use-cases/DeleteCommentUseCase'
 import { SetCommentLikeStatusUseCase } from './use-cases/SetCommentLikeStatusUseCase'
@@ -27,7 +27,7 @@ import { UpdateCommentUseCase } from './use-cases/UpdateCommentUseCase'
 @Controller(RouteNames.COMMENTS.value)
 export class CommentsController {
 	constructor(
-		private commentsQueryRepository: CommentsQueryRepository,
+		private commentsQueryRepository: CommentsMongoQueryRepository,
 		private updateCommentUseCase: UpdateCommentUseCase,
 		private deleteCommentUseCase: DeleteCommentUseCase,
 		private setCommentLikeStatusUseCase: SetCommentLikeStatusUseCase,

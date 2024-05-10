@@ -66,7 +66,7 @@ export class JwtService {
 	}
 
 	// Check if token string is valid
-	isRefreshTokenStrValid(refreshTokenStr: null | string) {
+	isRefreshTokenStrValid(refreshTokenStr: string = '') {
 		try {
 			const tokenPayload = jwt.verify(refreshTokenStr, config.JWT_SECRET)
 			return true
@@ -84,6 +84,7 @@ export class JwtService {
 				return null
 			}
 
+			// @ts-ignore
 			return new Date(tokenPayload.exp * 1000)
 		} catch (error) {
 			console.log(error)

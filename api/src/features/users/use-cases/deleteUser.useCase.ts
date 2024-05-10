@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common'
-import { UsersRepository } from '../users.repository'
+import { UsersMongoRepository } from '../users.mongo.repository'
 
 @Injectable()
 export class DeleteUserUseCase {
-	constructor(private usersRepository: UsersRepository) {}
+	constructor(private usersRepository: UsersMongoRepository) {}
 
 	async execute(userId: string) {
 		return this.usersRepository.deleteUser(userId)

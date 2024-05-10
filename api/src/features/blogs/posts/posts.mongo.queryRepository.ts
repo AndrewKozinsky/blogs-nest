@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common'
 import { DBTypes } from '../../../db/dbTypes'
 import { Post, PostDocument } from '../../../db/schemas/post.schema'
 import { PostLike } from '../../../db/schemas/postLike.schema'
-import { PostLikesRepository } from '../postLikes/postLikes.repository'
-import { UsersRepository } from '../../users/users.repository'
+import { PostLikesMongoRepository } from '../postLikes/postLikes.mongo.repository'
+import { UsersMongoRepository } from '../../users/users.mongo.repository'
 import { GetPostsQueries } from './model/posts.input.model'
 import {
 	GetPostOutModel,
@@ -16,12 +16,12 @@ import { FilterQuery, Model } from 'mongoose'
 import { ObjectId } from 'mongodb'
 
 @Injectable()
-export class PostsQueryRepository {
+export class PostsMongoQueryRepository {
 	constructor(
 		@InjectModel(Post.name) private PostModel: Model<Post>,
 		@InjectModel(PostLike.name) private PostLikeModel: Model<PostLike>,
-		private postLikesRepository: PostLikesRepository,
-		private usersRepository: UsersRepository,
+		private postLikesRepository: PostLikesMongoRepository,
+		private usersRepository: UsersMongoRepository,
 	) {}
 
 	async getPosts(

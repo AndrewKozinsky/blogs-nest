@@ -4,13 +4,13 @@ import { BrowserService } from '../../../base/application/browser.service'
 import { JwtService } from '../../../base/application/jwt.service'
 import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
 import { UserServiceModel } from '../../users/models/users.service.model'
-import { AuthRepository } from '../auth.repository'
+import { AuthMongoRepository } from '../auth.mongo.repository'
 import { AuthLoginDtoModel } from '../model/authLogin.input.model'
 
 @Injectable()
 export class LoginUseCase {
 	constructor(
-		private authRepository: AuthRepository,
+		private authRepository: AuthMongoRepository,
 		private jwtService: JwtService,
 		private browserService: BrowserService,
 	) {}

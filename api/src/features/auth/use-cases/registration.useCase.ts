@@ -3,13 +3,13 @@ import { EmailManager } from '../../../base/managers/email.manager'
 import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
 import { CommonService } from '../../common/common.service'
 import { UsersService } from '../../users/users.service'
-import { AuthRepository } from '../auth.repository'
+import { AuthMongoRepository } from '../auth.mongo.repository'
 import { AuthRegistrationDtoModel } from '../model/authRegistration.input.model'
 
 @Injectable()
 export class RegistrationUseCase {
 	constructor(
-		private authRepository: AuthRepository,
+		private authRepository: AuthMongoRepository,
 		private commonService: CommonService,
 		private usersService: UsersService,
 		private emailManager: EmailManager,

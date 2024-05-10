@@ -7,12 +7,12 @@ import {
 	ValidatorConstraint,
 	ValidatorConstraintInterface,
 } from 'class-validator'
-import { AuthRepository } from '../auth.repository'
+import { AuthMongoRepository } from '../auth.mongo.repository'
 
 @ValidatorConstraint({ name: 'code', async: true })
 @Injectable()
 export class CodeCustomValidation implements ValidatorConstraintInterface {
-	constructor(private readonly authRepository: AuthRepository) {}
+	constructor(private readonly authRepository: AuthMongoRepository) {}
 
 	async validate(value: string): Promise<boolean> {
 		const user = await this.authRepository.getUserByConfirmationCode(value)

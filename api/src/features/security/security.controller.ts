@@ -16,7 +16,7 @@ import { RequestService } from '../../base/application/request.service'
 import { CheckDeviceRefreshTokenGuard } from '../../infrastructure/guards/checkDeviceRefreshToken.guard'
 import RouteNames from '../../settings/routeNames'
 import { LayerResultCode } from '../../types/resultCodes'
-import { SecurityQueryRepository } from './security.queryRepository'
+import { SecurityMongoQueryRepository } from './security.mongo.queryRepository'
 import { TerminateAllDeviceRefreshTokensApartThisUseCase } from './use-cases/terminateAllDeviceRefreshTokensApartThisUseCase'
 import { TerminateSpecifiedDeviceRefreshTokenUseCase } from './use-cases/terminateSpecifiedDeviceRefreshTokenUseCase'
 
@@ -24,7 +24,7 @@ import { TerminateSpecifiedDeviceRefreshTokenUseCase } from './use-cases/termina
 export class SecurityController {
 	constructor(
 		private requestService: RequestService,
-		private securityQueryRepository: SecurityQueryRepository,
+		private securityQueryRepository: SecurityMongoQueryRepository,
 		private terminateAllDeviceRefreshTokensApartThisUseCase: TerminateAllDeviceRefreshTokensApartThisUseCase,
 		private terminateSpecifiedDeviceRefreshTokenUseCase: TerminateSpecifiedDeviceRefreshTokenUseCase,
 	) {}

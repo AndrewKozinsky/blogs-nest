@@ -2,14 +2,14 @@ import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { DeviceToken, DeviceTokenDocument } from '../../db/schemas/deviceToken.schema'
-import { AuthRepository } from '../auth/auth.repository'
+import { AuthMongoRepository } from '../auth/auth.mongo.repository'
 import { GetUserDevicesOutModel, UserDeviceOutModel } from './model/security.output.model'
 
 @Injectable()
-export class SecurityQueryRepository {
+export class SecurityMongoQueryRepository {
 	constructor(
 		@InjectModel(DeviceToken.name) private DeviceTokenModel: Model<DeviceToken>,
-		private authRepository: AuthRepository,
+		private authRepository: AuthMongoRepository,
 	) {}
 
 	async getUserDevices(refreshToken: string): Promise<GetUserDevicesOutModel> {

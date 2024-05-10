@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common'
-import { BlogsRepository } from '../blogs.repository'
+import { BlogsMongoRepository } from '../blogs.mongo.repository'
 import { CreateBlogDtoModel } from '../model/blogs.input.model'
 import { CreateBlogOutModel } from '../model/blogs.output.model'
 
 @Injectable()
 export class CreateBlogUseCase {
-	constructor(private blogsRepository: BlogsRepository) {}
+	constructor(private blogsRepository: BlogsMongoRepository) {}
 
 	async execute(body: CreateBlogDtoModel) {
 		const newBlog: CreateBlogOutModel = {

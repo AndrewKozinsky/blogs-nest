@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common'
 import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
-import { AuthRepository } from '../auth.repository'
+import { AuthMongoRepository } from '../auth.mongo.repository'
 
 @Injectable()
 export class ConfirmEmailAfterRegistrationUseCase {
-	constructor(private authRepository: AuthRepository) {}
+	constructor(private authRepository: AuthMongoRepository) {}
 
 	async execute(confirmationCode: string): Promise<LayerResult<null>> {
 		const user = await this.authRepository.getUserByConfirmationCode(confirmationCode)

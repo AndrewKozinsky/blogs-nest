@@ -11,8 +11,6 @@ import { RateLimit, RateLimitSchema } from '../../db/schemas/rateLimit.schema'
 import { User, UserSchema } from '../../db/schemas/user.schema'
 import { TestsController } from './tests.controller'
 
-const useCases = []
-
 @Module({
 	imports: [
 		MongooseModule.forFeature([
@@ -29,6 +27,6 @@ const useCases = []
 		]),
 	],
 	controllers: [TestsController],
-	providers: [DbService, ...useCases],
+	providers: [DbService],
 })
 export class TestsModule {}

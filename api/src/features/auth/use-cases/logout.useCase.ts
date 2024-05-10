@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common'
 import { JwtService } from '../../../base/application/jwt.service'
 import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
-import { AuthRepository } from '../auth.repository'
+import { AuthMongoRepository } from '../auth.mongo.repository'
 
 @Injectable()
 export class LogoutUseCase {
 	constructor(
-		private authRepository: AuthRepository,
+		private authRepository: AuthMongoRepository,
 		private jwtService: JwtService,
 	) {}
 

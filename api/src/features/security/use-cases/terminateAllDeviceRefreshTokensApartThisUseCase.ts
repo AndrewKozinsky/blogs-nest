@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common'
 import { JwtService } from '../../../base/application/jwt.service'
-import { SecurityRepository } from '../security.repository'
+import { SecurityMongoRepository } from '../security.mongo.repository'
 
 @Injectable()
 export class TerminateAllDeviceRefreshTokensApartThisUseCase {
 	constructor(
 		private jwtService: JwtService,
-		private securityRepository: SecurityRepository,
+		private securityRepository: SecurityMongoRepository,
 	) {}
 
 	async execute(refreshTokenStr: string) {

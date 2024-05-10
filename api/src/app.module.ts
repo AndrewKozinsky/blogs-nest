@@ -13,7 +13,7 @@ import { CommonService } from './features/common/common.service'
 import { SecurityModule } from './features/security/security.module'
 import { TestsModule } from './features/test/tests.module'
 import { UsersModule } from './features/users/users.module'
-import { UsersRepository } from './features/users/users.repository'
+import { UsersMongoRepository } from './features/users/users.mongo.repository'
 import { RequestsLimiterMiddleware } from './infrastructure/middlewares/requestsLimiter.middleware'
 import { SetReqUserMiddleware } from './infrastructure/middlewares/setReqUser.middleware'
 import { RouteNames } from './settings/routeNames'
@@ -40,7 +40,7 @@ const dbName = process.env.MONGO_DB_NAME
 	controllers: [],
 	providers: [
 		CommonService,
-		UsersRepository,
+		UsersMongoRepository,
 		HashAdapter,
 		JwtService,
 		RequestService,

@@ -16,7 +16,7 @@ import { UserServiceModel } from '../users/models/users.service.model'
 import { DeviceRefreshTokenServiceModel } from './model/auth.service.model'
 
 @Injectable()
-export class AuthRepository {
+export class AuthMongoRepository {
 	constructor(
 		@InjectModel(User.name) private UserModel: Model<User>,
 		@InjectModel(DeviceToken.name) private DeviceTokenModel: Model<DeviceToken>,

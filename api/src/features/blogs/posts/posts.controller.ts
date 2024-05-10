@@ -20,7 +20,7 @@ import { CheckAdminAuthGuard } from '../../../infrastructure/guards/checkAdminAu
 import RouteNames from '../../../settings/routeNames'
 import { LayerResultCode } from '../../../types/resultCodes'
 import { CommentLikeOperationsDtoModel } from '../commentLikes/models/commentLikeOperations.input.model'
-import { CommentsQueryRepository } from '../comments/comments.queryRepository'
+import { CommentsMongoQueryRepository } from '../comments/comments.mongo.queryRepository'
 import {
 	CreatePostCommentDtoModel,
 	CreatePostDtoModel,
@@ -30,7 +30,7 @@ import {
 	GetPostsQueriesPipe,
 	UpdatePostDtoModel,
 } from './model/posts.input.model'
-import { PostsQueryRepository } from './posts.queryRepository'
+import { PostsMongoQueryRepository } from './posts.mongo.queryRepository'
 import { Request, Response } from 'express'
 import { CreatePostCommentUseCase } from './use-cases/createPostCommentUseCase'
 import { CreatePostUseCase } from './use-cases/createPostUseCase'
@@ -41,8 +41,8 @@ import { UpdatePostUseCase } from './use-cases/updatePostUseCase'
 @Controller(RouteNames.POSTS.value)
 export class PostsController {
 	constructor(
-		private postsQueryRepository: PostsQueryRepository,
-		private commentsQueryRepository: CommentsQueryRepository,
+		private postsQueryRepository: PostsMongoQueryRepository,
+		private commentsQueryRepository: CommentsMongoQueryRepository,
 		private createPostUseCase: CreatePostUseCase,
 		private updatePostUseCase: UpdatePostUseCase,
 		private deletePostUseCase: DeletePostUseCase,

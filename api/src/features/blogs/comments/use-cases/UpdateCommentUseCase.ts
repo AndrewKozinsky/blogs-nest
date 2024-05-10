@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common'
 import { UserServiceModel } from '../../../users/models/users.service.model'
-import { CommentsRepository } from '../comments.repository'
+import { CommentsMongoRepository } from '../comments.mongo.repository'
 import { UpdateCommentDtoModel } from '../model/comments.input.model'
 
 @Injectable()
 export class UpdateCommentUseCase {
-	constructor(private commentsRepository: CommentsRepository) {}
+	constructor(private commentsRepository: CommentsMongoRepository) {}
 
 	async execute(
 		user: UserServiceModel,

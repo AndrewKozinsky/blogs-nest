@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
 import { JwtService } from '../src/base/application/jwt.service'
-import { AuthRepository } from '../src/features/auth/auth.repository'
+import { AuthMongoRepository } from '../src/features/auth/auth.mongo.repository'
 import { HTTP_STATUSES, config } from '../src/settings/config'
 import { DBTypes } from '../src/db/dbTypes'
 import { createUniqString, parseCookieStringToObj } from '../src/utils/stringUtils'
@@ -25,13 +25,13 @@ it.skip('123', () => {
 
 describe('ROOT', () => {
 	let app: INestApplication
-	let authRepository: AuthRepository
+	let authRepository: AuthMongoRepository
 	const jwtService = new JwtService()
 
 	beforeAll(async () => {
 		app = await createTestApp()
 
-		authRepository = await app.resolve(AuthRepository)
+		authRepository = await app.resolve(AuthMongoRepository)
 	})
 
 	beforeEach(async () => {

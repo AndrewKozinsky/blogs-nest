@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common'
 import { DBTypes } from '../../../db/dbTypes'
 import { Comment, CommentDocument } from '../../../db/schemas/comment.schema'
 import { Post } from '../../../db/schemas/post.schema'
-import { CommentLikesRepository } from '../commentLikes/CommentLikes.repository'
+import { CommentLikesMongoRepository } from '../commentLikes/CommentLikes.mongo.repository'
 import { GetPostCommentsQueries } from '../posts/model/posts.input.model'
-import { UsersRepository } from '../../users/users.repository'
+import { UsersMongoRepository } from '../../users/users.mongo.repository'
 import { CommentOutModel, GetCommentOutModel } from './model/comments.output.model'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
@@ -29,12 +29,12 @@ type GetPostCommentsResult =
 	  }
 
 @Injectable()
-export class CommentsQueryRepository {
+export class CommentsMongoQueryRepository {
 	constructor(
 		@InjectModel(Post.name) private PostModel: Model<Post>,
 		@InjectModel(Comment.name) private CommentModel: Model<Comment>,
-		private commentLikesRepository: CommentLikesRepository,
-		private usersRepository: UsersRepository,
+		private commentLikesRepository: CommentLikesMongoRepository,
+		private usersRepository: UsersMongoRepository,
 	) {}
 
 	async getComment(

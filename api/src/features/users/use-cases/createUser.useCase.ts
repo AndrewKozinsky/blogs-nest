@@ -1,19 +1,19 @@
 import { Injectable } from '@nestjs/common'
 import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
-import { AuthRepository } from '../../auth/auth.repository'
+import { AuthMongoRepository } from '../../auth/auth.mongo.repository'
 import { CommonService } from '../../common/common.service'
 import { CreateUserDtoModel } from '../models/users.input.model'
 import { UserOutModel } from '../models/users.output.model'
-import { UsersQueryRepository } from '../users.queryRepository'
-import { UsersRepository } from '../users.repository'
+import { UsersMongoQueryRepository } from '../users.mongo.queryRepository'
+import { UsersMongoRepository } from '../users.mongo.repository'
 
 @Injectable()
 export class CreateUserUseCase {
 	constructor(
-		private usersRepository: UsersRepository,
+		private usersRepository: UsersMongoRepository,
 		private commonService: CommonService,
-		private usersQueryRepository: UsersQueryRepository,
-		private authRepository: AuthRepository,
+		private usersQueryRepository: UsersMongoQueryRepository,
+		private authRepository: AuthMongoRepository,
 	) {}
 
 	async execute(data: CreateUserDtoModel): Promise<LayerResult<UserOutModel>> {

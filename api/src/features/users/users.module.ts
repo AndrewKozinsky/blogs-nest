@@ -5,13 +5,13 @@ import { HashAdapter } from '../../base/adapters/hash.adapter'
 import { JwtService } from '../../base/application/jwt.service'
 import { DeviceToken } from '../../db/schemas/deviceToken.schema'
 import { User, UserSchema } from '../../db/schemas/user.schema'
-import { AuthRepository } from '../auth/auth.repository'
+import { AuthMongoRepository } from '../auth/auth.mongo.repository'
 import { CommonService } from '../common/common.service'
 import { CreateUserUseCase } from './use-cases/createUser.useCase'
 import { DeleteUserUseCase } from './use-cases/deleteUser.useCase'
 import { UsersController } from './users.controller'
-import { UsersQueryRepository } from './users.queryRepository'
-import { UsersRepository } from './users.repository'
+import { UsersMongoQueryRepository } from './users.mongo.queryRepository'
+import { UsersMongoRepository } from './users.mongo.repository'
 
 const useCases = [DeleteUserUseCase, CreateUserUseCase]
 
@@ -24,12 +24,12 @@ const useCases = [DeleteUserUseCase, CreateUserUseCase]
 	],
 	controllers: [UsersController],
 	providers: [
-		UsersQueryRepository,
+		UsersMongoQueryRepository,
 		CommandBus,
-		UsersRepository,
+		UsersMongoRepository,
 		CommonService,
 		HashAdapter,
-		AuthRepository,
+		AuthMongoRepository,
 		JwtService,
 		...useCases,
 	],

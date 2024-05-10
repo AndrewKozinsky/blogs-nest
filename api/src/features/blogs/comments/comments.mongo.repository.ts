@@ -10,7 +10,7 @@ import { CommentServiceModel } from './model/comments.service.model'
 import { Comment } from '../../../db/schemas/comment.schema'
 
 @Injectable()
-export class CommentsRepository {
+export class CommentsMongoRepository {
 	constructor(@InjectModel(Comment.name) private CommentModel: Model<Comment>) {}
 
 	async getComment(commentId: string) {

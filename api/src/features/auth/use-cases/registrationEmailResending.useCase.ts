@@ -2,13 +2,13 @@ import { Injectable } from '@nestjs/common'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { EmailManager } from '../../../base/managers/email.manager'
 import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
-import { AuthRepository } from '../auth.repository'
+import { AuthMongoRepository } from '../auth.mongo.repository'
 import { AuthRegistrationEmailResendingDtoModel } from '../model/authRegistrationEmailResending.input.model'
 
 @Injectable()
 export class RegistrationEmailResendingUseCase {
 	constructor(
-		private authRepository: AuthRepository,
+		private authRepository: AuthMongoRepository,
 		private emailManager: EmailManager,
 	) {}
 

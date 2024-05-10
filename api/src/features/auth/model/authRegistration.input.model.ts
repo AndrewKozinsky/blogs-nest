@@ -9,12 +9,12 @@ import {
 	ValidatorConstraint,
 	ValidatorConstraintInterface,
 } from 'class-validator'
-import { AuthRepository } from '../auth.repository'
+import { AuthMongoRepository } from '../auth.mongo.repository'
 
 @ValidatorConstraint({ name: 'login', async: true })
 @Injectable()
 export class IsLoginExistsValidation implements ValidatorConstraintInterface {
-	constructor(private readonly authRepository: AuthRepository) {}
+	constructor(private readonly authRepository: AuthMongoRepository) {}
 
 	async validate(value: string): Promise<boolean> {
 		const user = await this.authRepository.getUserByLoginOrEmail(value)
@@ -30,7 +30,7 @@ export class IsLoginExistsValidation implements ValidatorConstraintInterface {
 @ValidatorConstraint({ name: 'email', async: true })
 @Injectable()
 export class IsEmailExistsValidation implements ValidatorConstraintInterface {
-	constructor(private readonly authRepository: AuthRepository) {}
+	constructor(private readonly authRepository: AuthMongoRepository) {}
 
 	async validate(value: string): Promise<boolean> {
 		const user = await this.authRepository.getUserByLoginOrEmail(value)

@@ -15,13 +15,13 @@ import {
 	ValidatorConstraintInterface,
 } from 'class-validator'
 import { Trim } from '../../../../infrastructure/pipes/Trim.decorator'
-import { BlogsRepository } from '../../blogs/blogs.repository'
+import { BlogsMongoRepository } from '../../blogs/blogs.mongo.repository'
 import { GetBlogsQueries } from '../../blogs/model/blogs.input.model'
 
 @ValidatorConstraint({ name: 'blogId', async: true })
 @Injectable()
 export class BlogIdValidation implements ValidatorConstraintInterface {
-	constructor(private readonly blogsRepository: BlogsRepository) {}
+	constructor(private readonly blogsRepository: BlogsMongoRepository) {}
 
 	async validate(value: string): Promise<boolean> {
 		const blog = await this.blogsRepository.getBlogById(value)

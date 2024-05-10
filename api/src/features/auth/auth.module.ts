@@ -10,10 +10,10 @@ import { EmailManager } from '../../base/managers/email.manager'
 import { DeviceToken, DeviceTokenSchema } from '../../db/schemas/deviceToken.schema'
 import { User, UserSchema } from '../../db/schemas/user.schema'
 import { CommonService } from '../common/common.service'
-import { UsersRepository } from '../users/users.repository'
+import { UsersMongoRepository } from '../users/users.mongo.repository'
 import { UsersService } from '../users/users.service'
 import { AuthController } from './auth.controller'
-import { AuthRepository } from './auth.repository'
+import { AuthMongoRepository } from './auth.mongo.repository'
 import {
 	AuthRegistrationDtoModel,
 	IsEmailExistsValidation,
@@ -55,11 +55,11 @@ const useCases = [
 	providers: [
 		JwtService,
 		CommandBus,
-		AuthRepository,
+		AuthMongoRepository,
 		HashAdapter,
 		CommonService,
 		RequestService,
-		UsersRepository,
+		UsersMongoRepository,
 		BrowserService,
 		EmailManager,
 		EmailAdapter,

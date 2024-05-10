@@ -1,13 +1,13 @@
 import { Injectable, NestMiddleware } from '@nestjs/common'
 import { NextFunction, Request, Response } from 'express'
 import { JwtService } from '../../base/application/jwt.service'
-import { UsersRepository } from '../../features/users/users.repository'
+import { UsersMongoRepository } from '../../features/users/users.mongo.repository'
 
 @Injectable()
 export class SetReqUserMiddleware implements NestMiddleware {
 	constructor(
 		private jwtService: JwtService,
-		private usersRepository: UsersRepository,
+		private usersRepository: UsersMongoRepository,
 	) {}
 
 	async use(req: Request, res: Response, next: NextFunction) {

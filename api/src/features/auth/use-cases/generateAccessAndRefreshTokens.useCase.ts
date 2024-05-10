@@ -2,15 +2,15 @@ import { Injectable } from '@nestjs/common'
 import { JwtService } from '../../../base/application/jwt.service'
 import { DBTypes } from '../../../db/dbTypes'
 import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
-import { UsersRepository } from '../../users/users.repository'
-import { AuthRepository } from '../auth.repository'
+import { UsersMongoRepository } from '../../users/users.mongo.repository'
+import { AuthMongoRepository } from '../auth.mongo.repository'
 
 @Injectable()
 export class GenerateAccessAndRefreshTokensUseCase {
 	constructor(
-		private authRepository: AuthRepository,
+		private authRepository: AuthMongoRepository,
 		private jwtService: JwtService,
-		private usersRepository: UsersRepository,
+		private usersRepository: UsersMongoRepository,
 	) {}
 
 	async execute(

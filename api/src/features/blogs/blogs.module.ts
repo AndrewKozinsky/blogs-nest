@@ -7,25 +7,25 @@ import { CommentLike, CommentLikeSchema } from '../../db/schemas/commentLike.sch
 import { Post, PostSchema } from '../../db/schemas/post.schema'
 import { PostLike, PostLikeSchema } from '../../db/schemas/postLike.schema'
 import { User, UserSchema } from '../../db/schemas/user.schema'
-import { CommentLikesRepository } from './commentLikes/CommentLikes.repository'
+import { BlogsMongoQueryRepository } from './blogs/blogs.queryRepository'
+import { CommentLikesMongoRepository } from './commentLikes/CommentLikes.mongo.repository'
 import { CommentsController } from './comments/comments.controller'
-import { CommentsQueryRepository } from './comments/comments.queryRepository'
-import { CommentsRepository } from './comments/comments.repository'
+import { CommentsMongoQueryRepository } from './comments/comments.mongo.queryRepository'
+import { CommentsMongoRepository } from './comments/comments.mongo.repository'
 import { CommonService } from '../common/common.service'
-import { PostLikesRepository } from './postLikes/postLikes.repository'
+import { PostLikesMongoRepository } from './postLikes/postLikes.mongo.repository'
 import { DeleteCommentUseCase } from './comments/use-cases/DeleteCommentUseCase'
 import { SetCommentLikeStatusUseCase } from './comments/use-cases/SetCommentLikeStatusUseCase'
 import { UpdateCommentUseCase } from './comments/use-cases/UpdateCommentUseCase'
 import { BlogIdValidation } from './posts/model/posts.input.model'
 import { PostsController } from './posts/posts.controller'
-import { PostsQueryRepository } from './posts/posts.queryRepository'
-import { PostsRepository } from './posts/posts.repository'
+import { PostsMongoQueryRepository } from './posts/posts.mongo.queryRepository'
+import { PostsMongoRepository } from './posts/posts.mongo.repository'
 import { CreatePostCommentUseCase } from './posts/use-cases/createPostCommentUseCase'
 import { CreatePostUseCase } from './posts/use-cases/createPostUseCase'
-import { UsersRepository } from '../users/users.repository'
+import { UsersMongoRepository } from '../users/users.mongo.repository'
 import { BlogsController } from './blogs/blogs.controller'
-import { BlogsQueryRepository } from './blogs/blogs.queryRepository'
-import { BlogsRepository } from './blogs/blogs.repository'
+import { BlogsMongoRepository } from './blogs/blogs.mongo.repository'
 import { CreateBlogPostUseCase } from './blogs/use-cases/CreateBlogPostUseCase'
 import { CreateBlogUseCase } from './blogs/use-cases/CreateBlogUseCase'
 import { DeleteBlogUseCase } from './blogs/use-cases/DeleteBlogUseCase'
@@ -62,17 +62,17 @@ const useCases = [
 	],
 	controllers: [BlogsController, PostsController, CommentsController],
 	providers: [
-		BlogsQueryRepository,
-		BlogsRepository,
-		PostsQueryRepository,
-		PostLikesRepository,
-		UsersRepository,
+		BlogsMongoQueryRepository,
+		BlogsMongoRepository,
+		PostsMongoQueryRepository,
+		PostLikesMongoRepository,
+		UsersMongoRepository,
 		CommonService,
 		HashAdapter,
-		PostsRepository,
-		CommentLikesRepository,
-		CommentsQueryRepository,
-		CommentsRepository,
+		PostsMongoRepository,
+		CommentLikesMongoRepository,
+		CommentsMongoQueryRepository,
+		CommentsMongoRepository,
 		BlogIdValidation,
 		...useCases,
 	],

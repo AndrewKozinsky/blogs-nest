@@ -17,9 +17,9 @@ import {
 import { Request, Response } from 'express'
 import { CheckAdminAuthGuard } from '../../../infrastructure/guards/checkAdminAuth.guard'
 import RouteNames from '../../../settings/routeNames'
-import { PostsQueryRepository } from '../posts/posts.queryRepository'
-import { BlogsQueryRepository } from './blogs.queryRepository'
-import { BlogsRepository } from './blogs.repository'
+import { PostsMongoQueryRepository } from '../posts/posts.mongo.queryRepository'
+import { BlogsMongoRepository } from './blogs.mongo.repository'
+import { BlogsMongoQueryRepository } from './blogs.queryRepository'
 import {
 	CreateBlogDtoModel,
 	CreateBlogPostDtoModel,
@@ -39,11 +39,11 @@ export class BlogsController {
 	constructor(
 		private deleteBlogUseCase: DeleteBlogUseCase,
 		private updateBlogUseCase: UpdateBlogUseCase,
-		private postsQueryRepository: PostsQueryRepository,
+		private postsQueryRepository: PostsMongoQueryRepository,
 		private createBlogPostUseCase: CreateBlogPostUseCase,
-		private blogsRepository: BlogsRepository,
+		private blogsRepository: BlogsMongoRepository,
 		private createBlogUseCase: CreateBlogUseCase,
-		private blogsQueryRepository: BlogsQueryRepository,
+		private blogsQueryRepository: BlogsMongoQueryRepository,
 	) {}
 
 	// Returns blogs with paging

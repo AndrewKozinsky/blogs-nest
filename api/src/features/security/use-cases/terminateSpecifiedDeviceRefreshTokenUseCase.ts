@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common'
 import { JwtService } from '../../../base/application/jwt.service'
 import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
-import { AuthRepository } from '../../auth/auth.repository'
-import { SecurityRepository } from '../security.repository'
+import { AuthMongoRepository } from '../../auth/auth.mongo.repository'
+import { SecurityMongoRepository } from '../security.mongo.repository'
 
 @Injectable()
 export class TerminateSpecifiedDeviceRefreshTokenUseCase {
 	constructor(
 		private jwtService: JwtService,
-		private securityRepository: SecurityRepository,
-		private authRepository: AuthRepository,
+		private securityRepository: SecurityMongoRepository,
+		private authRepository: AuthMongoRepository,
 	) {}
 
 	async execute(

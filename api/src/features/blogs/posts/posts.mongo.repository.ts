@@ -8,7 +8,7 @@ import { CreatePostOutModel } from './model/posts.output.model'
 import { PostServiceModel } from './model/posts.service.model'
 
 @Injectable()
-export class PostsRepository {
+export class PostsMongoRepository {
 	constructor(@InjectModel(Post.name) private PostModel: Model<Post>) {}
 
 	/*async getPosts() {

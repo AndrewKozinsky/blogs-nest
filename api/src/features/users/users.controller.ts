@@ -24,12 +24,12 @@ import {
 } from './models/users.input.model'
 import { CreateUserUseCase } from './use-cases/createUser.useCase'
 import { DeleteUserUseCase } from './use-cases/deleteUser.useCase'
-import { UsersQueryRepository } from './users.queryRepository'
+import { UsersMongoQueryRepository } from './users.mongo.queryRepository'
 
 @Controller(RouteNames.USERS.value)
 export class UsersController {
 	constructor(
-		private usersQueryRepository: UsersQueryRepository,
+		private usersQueryRepository: UsersMongoQueryRepository,
 		private createUserUseCase: CreateUserUseCase,
 		private deleteUserUseCase: DeleteUserUseCase,
 	) {}

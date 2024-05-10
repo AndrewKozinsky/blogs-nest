@@ -3,8 +3,8 @@ import { add } from 'date-fns'
 import * as jwt from 'jsonwebtoken'
 import { agent as request } from 'supertest'
 import { JwtService } from '../src/base/application/jwt.service'
-import { AuthRepository } from '../src/features/auth/auth.repository'
-import { UsersRepository } from '../src/features/users/users.repository'
+import { AuthMongoRepository } from '../src/features/auth/auth.mongo.repository'
+import { UsersMongoRepository } from '../src/features/users/users.mongo.repository'
 import { wait } from '../src/utils/promise'
 import { createUniqString, parseCookieStringToObj } from '../src/utils/stringUtils'
 import { DBTypes } from '../src/db/dbTypes'
@@ -26,15 +26,15 @@ it.skip('123', async () => {
 
 describe('ROOT', () => {
 	let app: INestApplication
-	let authRepository: AuthRepository
-	let usersRepository: UsersRepository
+	let authRepository: AuthMongoRepository
+	let usersRepository: UsersMongoRepository
 	const jwtService = new JwtService()
 
 	beforeAll(async () => {
 		app = await createTestApp()
 
-		authRepository = await app.resolve(AuthRepository)
-		usersRepository = await app.resolve(UsersRepository)
+		authRepository = await app.resolve(AuthMongoRepository)
+		usersRepository = await app.resolve(UsersMongoRepository)
 	})
 
 	beforeEach(async () => {

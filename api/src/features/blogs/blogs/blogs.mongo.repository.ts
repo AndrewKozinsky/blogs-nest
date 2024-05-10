@@ -12,7 +12,7 @@ import {
 import { BlogServiceModel } from './model/blogs.service.model'
 
 @Injectable()
-export class BlogsRepository {
+export class BlogsMongoRepository {
 	constructor(@InjectModel(Blog.name) private BlogModel: Model<Blog>) {}
 
 	/*async getBlogs() {

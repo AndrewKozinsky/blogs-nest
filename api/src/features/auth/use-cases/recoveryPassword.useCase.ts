@@ -2,14 +2,14 @@ import { Injectable } from '@nestjs/common'
 import { EmailManager } from '../../../base/managers/email.manager'
 import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
 import { createUniqString } from '../../../utils/stringUtils'
-import { UsersRepository } from '../../users/users.repository'
-import { AuthRepository } from '../auth.repository'
+import { UsersMongoRepository } from '../../users/users.mongo.repository'
+import { AuthMongoRepository } from '../auth.mongo.repository'
 
 @Injectable()
 export class RecoveryPasswordUseCase {
 	constructor(
-		private authRepository: AuthRepository,
-		private usersRepository: UsersRepository,
+		private authRepository: AuthMongoRepository,
+		private usersRepository: UsersMongoRepository,
 		private emailManager: EmailManager,
 	) {}
 

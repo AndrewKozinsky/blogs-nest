@@ -6,7 +6,7 @@ import { DBTypes } from '../../../db/dbTypes'
 import { Blog, BlogDocument } from '../../../db/schemas/blog.schema'
 import { Post } from '../../../db/schemas/post.schema'
 import { PostOutModel } from '../posts/model/posts.output.model'
-import { PostsQueryRepository } from '../posts/posts.queryRepository'
+import { PostsMongoQueryRepository } from '../posts/posts.mongo.queryRepository'
 import { GetBlogPostsQueries, GetBlogsQueries } from './model/blogs.input.model'
 import {
 	BlogOutModel,
@@ -16,11 +16,11 @@ import {
 } from './model/blogs.output.model'
 
 @Injectable()
-export class BlogsQueryRepository {
+export class BlogsMongoQueryRepository {
 	constructor(
 		@InjectModel(Blog.name) private BlogModel: Model<Blog>,
 		@InjectModel(Post.name) private PostModel: Model<Post>,
-		private postsQueryRepository: PostsQueryRepository,
+		private postsQueryRepository: PostsMongoQueryRepository,
 	) {}
 
 	async getBlogs(query: GetBlogsQueries): Promise<GetBlogsOutModel> {
