@@ -1,6 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { MongooseModule } from '@nestjs/mongoose'
+import { TypeOrmModule } from '@nestjs/typeorm'
 import { HashAdapter } from './base/adapters/hash.adapter'
 import { BrowserService } from './base/application/browser.service'
 import { JwtService } from './base/application/jwt.service'
@@ -18,19 +19,29 @@ import { RequestsLimiterMiddleware } from './infrastructure/middlewares/requests
 import { SetReqUserMiddleware } from './infrastructure/middlewares/setReqUser.middleware'
 import { RouteNames } from './settings/routeNames'
 
-const mongoURI = process.env.MONGO_URL
-const dbName = process.env.MONGO_DB_NAME
+const { MONGO_URL, DB_NAME, DB_USER_NAME, DB_USER_PASSWORD, DB_TYPE, POSTGRES_PORT } = process.env
 
 @Module({
 	imports: [
 		ConfigModule.forRoot(),
-		MongooseModule.forRoot(mongoURI, { dbName }),
-		// Ограничитель можно сделать отдельным пакетом Limit throller
+		MongooseModule.forRoot(MONGO_URL, { dbName: DB_NAME }),
+		// Ограничитель можно сделать отдельным пакетом Limit throtller
 		// Схемы в папку feature
 		MongooseModule.forFeature([
 			{ name: User.name, schema: UserSchema },
 			{ name: RateLimit.name, schema: RateLimitSchema },
 		]),
+		TypeOrmModule.forRoot({
+			type: 'postgres',
+			host: 'blogs-postgres',
+			port: POSTGRES_PORT,
+			username: DB_USER_NAME,
+			password: DB_USER_PASSWORD,
+			database: DB_NAME,
+			entities: [],
+			autoLoadEntities: false,
+			synchronize: false,
+		}),
 		AuthModule,
 		BlogsModule,
 		UsersModule,

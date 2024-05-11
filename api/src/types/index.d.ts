@@ -5,9 +5,13 @@ declare global {
 		interface ProcessEnv {
 			AUTH_LOGIN: string
 			AUTH_PASSWORD: string
-			MONGO_URL: string
-			MONGO_DB_NAME: string
 			JWT_SECRET: 'dev' | 'test'
+			MONGO_URL: string
+			DB_NAME: string
+			DB_TYPE: 'mongo' | 'postgres'
+			DB_USER_NAME: string
+			DB_USER_PASSWORD: string
+			POSTGRES_PORT: number
 		}
 	}
 

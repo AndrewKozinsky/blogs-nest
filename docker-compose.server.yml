@@ -10,7 +10,7 @@ services:
       VIRTUAL_HOST: blogs.andrewkozinsky.ru
       LETSENCRYPT_HOST: blogs.andrewkozinsky.ru
     volumes:
-      - ./nginx/nginx.conf.dev:/etc/nginx/nginx.conf
+      - ./nginx/nginx.conf.server:/etc/nginx/nginx.conf
   mongo:
     image: mongo:4.4.6
     restart: unless-stopped
@@ -19,6 +19,16 @@ services:
       - 27017:27017
     volumes:
       - dbdata6:/data/db
+  postgres:
+    image: postgres:16.2
+    restart: unless-stopped
+    container_name: blogs-postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: "123"
+      POSTGRES_DB: blogs
   api:
     build:
       context: api/
@@ -29,11 +39,16 @@ services:
     environment:
       AUTH_LOGIN: admin
       AUTH_PASSWORD: qwerty
-      MONGO_URL: mongodb://blogs-mongo:27017
-      MONGO_DB_NAME: blogs
       JWT_SECRET: 123
+      DB_TYPE: postgres
+      DB_NAME: blogs
+      MONGO_URL: mongodb://blogs-mongo:27017
+      POSTGRES_PORT: 5432
+      DB_USER_NAME: admin
+      DB_USER_PASSWORD: "123"
 volumes:
   dbdata6: {}
+  postgres: {}
 networks:
   default:
     external:

@@ -5,6 +5,19 @@ import { ConfigSchemaV37Json } from './types/ConfigSchemaV37Json'
  * @param env — тип конфигурации
  */
 export function createDockerConfig(env: 'dev' | 'serverCheck' | 'server'): ConfigSchemaV37Json {
+	const DB_TYPE: 'mongo' | 'postgres' = 'postgres'
+
+	const AUTH_LOGIN = 'admin'
+	const AUTH_PASSWORD = 'qwerty'
+	const JWT_SECRET = 123
+
+	const DB_USER_NAME = 'admin'
+	const DB_USER_PASSWORD = '123'
+	const DB_NAME = 'blogs'
+
+	const MONGO_URL = 'mongodb://blogs-mongo:27017'
+	const POSTGRES_PORT = 5432
+
 	return {
 		version: '3',
 
@@ -33,6 +46,17 @@ export function createDockerConfig(env: 'dev' | 'serverCheck' | 'server'): Confi
 				ports: ['27017:27017'],
 				volumes: ['dbdata6:/data/db'],
 			},
+			postgres: {
+				image: 'postgres:16.2',
+				restart: 'unless-stopped',
+				container_name: 'blogs-postgres',
+				ports: [POSTGRES_PORT + ':' + POSTGRES_PORT],
+				environment: {
+					POSTGRES_USER: DB_USER_NAME,
+					POSTGRES_PASSWORD: DB_USER_PASSWORD,
+					POSTGRES_DB: DB_NAME,
+				},
+			},
 			api: {
 				build: {
 					context: 'api/',
@@ -49,18 +73,22 @@ export function createDockerConfig(env: 'dev' | 'serverCheck' | 'server'): Confi
 				container_name: 'blogs-api',
 				command: env === 'server' ? 'yarn run start' : 'yarn run start:dev',
 				restart: 'unless-stopped',
-				// ports: env === 'server' ? undefined : ['3000:3000'],
 				environment: {
-					AUTH_LOGIN: 'admin',
-					AUTH_PASSWORD: 'qwerty',
-					MONGO_URL: 'mongodb://blogs-mongo:27017',
-					MONGO_DB_NAME: 'blogs',
-					JWT_SECRET: 123,
+					AUTH_LOGIN,
+					AUTH_PASSWORD,
+					JWT_SECRET,
+					DB_TYPE,
+					DB_NAME,
+					MONGO_URL,
+					POSTGRES_PORT,
+					DB_USER_NAME,
+					DB_USER_PASSWORD,
 				},
 			},
 		},
 		volumes: {
 			dbdata6: {},
+			postgres: {},
 		},
 
 		networks: env === 'server' ? getServerNetworks() : undefined,
