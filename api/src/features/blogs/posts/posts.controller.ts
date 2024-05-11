@@ -5,7 +5,6 @@ import {
 	Get,
 	HttpCode,
 	HttpStatus,
-	Inject,
 	NotFoundException,
 	Param,
 	Post,

@@ -7,7 +7,7 @@ import { CommentLike, CommentLikeSchema } from '../../db/schemas/commentLike.sch
 import { Post, PostSchema } from '../../db/schemas/post.schema'
 import { PostLike, PostLikeSchema } from '../../db/schemas/postLike.schema'
 import { User, UserSchema } from '../../db/schemas/user.schema'
-import { BlogsMongoQueryRepository } from './blogs/blogs.queryRepository'
+import { BlogsMongoQueryRepository } from './blogs/blogs.mongo.queryRepository'
 import { CommentLikesMongoRepository } from './commentLikes/CommentLikes.mongo.repository'
 import { CommentsController } from './comments/comments.controller'
 import { CommentsMongoQueryRepository } from './comments/comments.mongo.queryRepository'

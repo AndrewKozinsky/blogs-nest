@@ -1,8 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { DBTypes } from '../../../../db/dbTypes'
-import { BlogsMongoRepository } from '../../blogs/blogs.mongo.repository'
-import { CreatePostDtoModel, UpdatePostDtoModel } from '../model/posts.input.model'
-import { PostOutModel } from '../model/posts.output.model'
+import { UpdatePostDtoModel } from '../model/posts.input.model'
 import { PostsMongoRepository } from '../posts.mongo.repository'
 
 @Injectable()

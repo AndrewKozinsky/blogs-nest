@@ -1,4 +1,7 @@
+import { ObjectId } from 'mongodb'
 import { Injectable } from '@nestjs/common'
+import { InjectModel } from '@nestjs/mongoose'
+import { FilterQuery, Model } from 'mongoose'
 import { DBTypes } from '../../../db/dbTypes'
 import { Post, PostDocument } from '../../../db/schemas/post.schema'
 import { PostLike } from '../../../db/schemas/postLike.schema'
@@ -11,9 +14,6 @@ import {
 	NewestLike,
 	PostOutModel,
 } from './model/posts.output.model'
-import { InjectModel } from '@nestjs/mongoose'
-import { FilterQuery, Model } from 'mongoose'
-import { ObjectId } from 'mongodb'
 
 @Injectable()
 export class PostsMongoQueryRepository {

@@ -1,14 +1,10 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { ObjectId } from 'mongodb'
-import { FilterQuery, Model } from 'mongoose'
+import { Model } from 'mongoose'
 import { Blog, BlogDocument } from '../../../db/schemas/blog.schema'
-import { GetBlogsQueries, UpdateBlogDtoModel } from './model/blogs.input.model'
-import {
-	BlogOutModel,
-	GetBlogOutModel as CreateBlogOutModel,
-	GetBlogsOutModel,
-} from './model/blogs.output.model'
+import { UpdateBlogDtoModel } from './model/blogs.input.model'
+import { GetBlogOutModel as CreateBlogOutModel } from './model/blogs.output.model'
 import { BlogServiceModel } from './model/blogs.service.model'
 
 @Injectable()

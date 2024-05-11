@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common'
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { EmailManager } from '../../../base/managers/email.manager'
 import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
 import { AuthMongoRepository } from '../auth.mongo.repository'

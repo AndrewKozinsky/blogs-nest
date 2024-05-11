@@ -28,10 +28,6 @@ export class DbService {
 		@InjectModel(User.name) private UserModel: Model<User>,
 	) {}
 
-	/*async close() {
-		await mongoose.disconnect()
-	}*/
-
 	async drop() {
 		try {
 			const models = [

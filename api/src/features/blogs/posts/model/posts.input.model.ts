@@ -1,8 +1,7 @@
-import { ArgumentMetadata, BadRequestException, Injectable, PipeTransform } from '@nestjs/common'
+import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common'
 import { plainToInstance, Type } from 'class-transformer'
 import {
 	IsIn,
-	IsInt,
 	IsNumber,
 	IsOptional,
 	IsString,
@@ -16,7 +15,6 @@ import {
 } from 'class-validator'
 import { Trim } from '../../../../infrastructure/pipes/Trim.decorator'
 import { BlogsMongoRepository } from '../../blogs/blogs.mongo.repository'
-import { GetBlogsQueries } from '../../blogs/model/blogs.input.model'
 
 @ValidatorConstraint({ name: 'blogId', async: true })
 @Injectable()

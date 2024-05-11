@@ -19,7 +19,7 @@ import { CheckAdminAuthGuard } from '../../../infrastructure/guards/checkAdminAu
 import RouteNames from '../../../settings/routeNames'
 import { PostsMongoQueryRepository } from '../posts/posts.mongo.queryRepository'
 import { BlogsMongoRepository } from './blogs.mongo.repository'
-import { BlogsMongoQueryRepository } from './blogs.queryRepository'
+import { BlogsMongoQueryRepository } from './blogs.mongo.queryRepository'
 import {
 	CreateBlogDtoModel,
 	CreateBlogPostDtoModel,
