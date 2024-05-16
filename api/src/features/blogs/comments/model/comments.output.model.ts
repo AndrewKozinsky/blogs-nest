@@ -1,4 +1,4 @@
-import { DBTypes } from '../../../../db/dbTypes'
+import { DBTypes } from '../../../../db/mongo/dbTypes'
 import { ItemsOutModel } from '../../../common/models/common'
 
 export type CommentOutModel = {

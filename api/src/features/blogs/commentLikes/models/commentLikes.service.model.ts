@@ -1,4 +1,4 @@
-import { DBTypes } from '../../../../db/dbTypes'
+import { DBTypes } from '../../../../db/mongo/dbTypes'
 
 export type CommentLikeServiceModel = {
 	commentId: string

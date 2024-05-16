@@ -5,20 +5,20 @@ import { UpdateCommentDtoModel } from '../model/comments.input.model'
 
 @Injectable()
 export class UpdateCommentUseCase {
-	constructor(private commentsRepository: CommentsMongoRepository) {}
+	constructor(private commentsMongoRepository: CommentsMongoRepository) {}
 
 	async execute(
 		user: UserServiceModel,
 		commentId: string,
 		updateCommentDto: UpdateCommentDtoModel,
 	): Promise<'notOwner' | boolean> {
-		const comment = await this.commentsRepository.getComment(commentId)
+		const comment = await this.commentsMongoRepository.getComment(commentId)
 		if (!comment) return false
 
 		if (comment.commentatorInfo.userId !== user.id) {
 			return 'notOwner'
 		}
 
-		return this.commentsRepository.updateComment(commentId, updateCommentDto)
+		return this.commentsMongoRepository.updateComment(commentId, updateCommentDto)
 	}
 }

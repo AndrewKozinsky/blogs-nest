@@ -3,9 +3,9 @@ import { InjectModel } from '@nestjs/mongoose'
 import { ObjectId } from 'mongodb'
 import { Model } from 'mongoose'
 import { HashAdapter } from '../../base/adapters/hash.adapter'
-import { DBTypes } from '../../db/dbTypes'
+import { DBTypes } from '../../db/mongo/dbTypes'
 import { CommonService } from '../common/common.service'
-import { User, UserDocument } from '../../db/schemas/user.schema'
+import { User, UserDocument } from '../../db/mongo/schemas/user.schema'
 import { UserServiceModel } from './models/users.service.model'
 
 @Injectable()

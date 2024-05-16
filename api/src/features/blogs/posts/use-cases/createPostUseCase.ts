@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import { DBTypes } from '../../../../db/dbTypes'
-import { BlogsMongoRepository } from '../../blogs/blogs.mongo.repository'
+import { DBTypes } from '../../../../db/mongo/dbTypes'
+import { BlogsRepository } from '../../blogs/blogsRepository'
 import { CreatePostDtoModel } from '../model/posts.input.model'
 import { PostOutModel } from '../model/posts.output.model'
 import { PostsMongoRepository } from '../posts.mongo.repository'
@@ -8,12 +8,12 @@ import { PostsMongoRepository } from '../posts.mongo.repository'
 @Injectable()
 export class CreatePostUseCase {
 	constructor(
-		private blogsRepository: BlogsMongoRepository,
-		private postsRepository: PostsMongoRepository,
+		private blogsMongoRepository: BlogsRepository,
+		private postsMongoRepository: PostsMongoRepository,
 	) {}
 
 	async execute(dto: CreatePostDtoModel): Promise<string> {
-		const blog = await this.blogsRepository.getBlogById(dto.blogId)
+		const blog = await this.blogsMongoRepository.getBlogById(dto.blogId)
 
 		const newPostDto: PostOutModel = {
 			id: new Date().toISOString(),
@@ -31,6 +31,6 @@ export class CreatePostUseCase {
 			},
 		}
 
-		return await this.postsRepository.createPost(newPostDto)
+		return await this.postsMongoRepository.createPost(newPostDto)
 	}
 }

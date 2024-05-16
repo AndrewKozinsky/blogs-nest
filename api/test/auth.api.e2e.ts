@@ -7,7 +7,7 @@ import { AuthMongoRepository } from '../src/features/auth/auth.mongo.repository'
 import { UsersMongoRepository } from '../src/features/users/users.mongo.repository'
 import { wait } from '../src/utils/promise'
 import { createUniqString, parseCookieStringToObj } from '../src/utils/stringUtils'
-import { DBTypes } from '../src/db/dbTypes'
+import { DBTypes } from '../src/db/mongo/dbTypes'
 import {
 	addUserByAdminRequest,
 	adminAuthorizationValue,

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
-import { DeviceToken } from '../../db/schemas/deviceToken.schema'
+import { DeviceToken } from '../../db/mongo/schemas/deviceToken.schema'
 import { AuthMongoRepository } from '../auth/auth.mongo.repository'
 
 @Injectable()

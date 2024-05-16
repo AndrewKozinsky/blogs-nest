@@ -24,7 +24,7 @@ import { TerminateSpecifiedDeviceRefreshTokenUseCase } from './use-cases/termina
 export class SecurityController {
 	constructor(
 		private requestService: RequestService,
-		private securityQueryRepository: SecurityMongoQueryRepository,
+		private securityMongoQueryRepository: SecurityMongoQueryRepository,
 		private terminateAllDeviceRefreshTokensApartThisUseCase: TerminateAllDeviceRefreshTokensApartThisUseCase,
 		private terminateSpecifiedDeviceRefreshTokenUseCase: TerminateSpecifiedDeviceRefreshTokenUseCase,
 	) {}
@@ -36,7 +36,7 @@ export class SecurityController {
 		const refreshTokenFromCookie = this.requestService.getRefreshTokenStrFromReq(req) as string
 
 		const userDevices =
-			await this.securityQueryRepository.getUserDevices(refreshTokenFromCookie)
+			await this.securityMongoQueryRepository.getUserDevices(refreshTokenFromCookie)
 
 		res.status(HttpStatus.OK).send(userDevices)
 	}

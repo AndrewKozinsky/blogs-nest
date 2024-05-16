@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { JwtService } from '../../../base/application/jwt.service'
-import { DBTypes } from '../../../db/dbTypes'
+import { DBTypes } from '../../../db/mongo/dbTypes'
 import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
 import { UsersMongoRepository } from '../../users/users.mongo.repository'
 import { AuthMongoRepository } from '../auth.mongo.repository'
@@ -8,9 +8,9 @@ import { AuthMongoRepository } from '../auth.mongo.repository'
 @Injectable()
 export class GenerateAccessAndRefreshTokensUseCase {
 	constructor(
-		private authRepository: AuthMongoRepository,
+		private authMongoRepository: AuthMongoRepository,
 		private jwtService: JwtService,
-		private usersRepository: UsersMongoRepository,
+		private usersMongoRepository: UsersMongoRepository,
 	) {}
 
 	async execute(
@@ -23,14 +23,14 @@ export class GenerateAccessAndRefreshTokensUseCase {
 		}
 
 		// Throw en error if the user was removed
-		const user = await this.usersRepository.getUserById(deviceRefreshToken.userId)
+		const user = await this.usersMongoRepository.getUserById(deviceRefreshToken.userId)
 		if (!user) {
 			return {
 				code: LayerResultCode.Unauthorized,
 			}
 		}
 
-		await this.authRepository.updateDeviceRefreshTokenDate(deviceRefreshToken.deviceId)
+		await this.authMongoRepository.updateDeviceRefreshTokenDate(deviceRefreshToken.deviceId)
 
 		const newRefreshToken = this.jwtService.createRefreshTokenStr(deviceRefreshToken.deviceId)
 

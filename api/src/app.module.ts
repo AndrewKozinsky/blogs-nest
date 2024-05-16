@@ -2,12 +2,14 @@ import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/c
 import { ConfigModule } from '@nestjs/config'
 import { MongooseModule } from '@nestjs/mongoose'
 import { TypeOrmModule } from '@nestjs/typeorm'
+import { DataSource } from 'typeorm'
 import { HashAdapter } from './base/adapters/hash.adapter'
 import { BrowserService } from './base/application/browser.service'
 import { JwtService } from './base/application/jwt.service'
 import { RequestService } from './base/application/request.service'
-import { RateLimit, RateLimitSchema } from './db/schemas/rateLimit.schema'
-import { User, UserSchema } from './db/schemas/user.schema'
+import { RateLimit, RateLimitSchema } from './db/mongo/schemas/rateLimit.schema'
+import { User, UserSchema } from './db/mongo/schemas/user.schema'
+import { PgTablesCreator } from './db/pg/TablesCreator'
 import { AuthModule } from './features/auth/auth.module'
 import { BlogsModule } from './features/blogs/blogs.module'
 import { CommonService } from './features/common/common.service'
@@ -59,6 +61,27 @@ const { MONGO_URL, DB_NAME, DB_USER_NAME, DB_USER_PASSWORD, DB_TYPE, POSTGRES_PO
 	],
 })
 export class AppModule implements NestModule {
+	constructor(private dataSource: DataSource) {}
+
+	// It creates empty Postgres tables if they are not exist
+	async onModuleInit() {
+		try {
+			await this.dataSource.query(
+				`CREATE TABLE IF NOT EXISTS blogs (
+	id SERIAL PRIMARY KEY,
+  name VARCHAR,
+  description VARCHAR,
+  websiteUrl VARCHAR,
+  createdAt DATE,
+  isMembership BOOLEAN
+)`,
+				[],
+			)
+		} catch (error) {
+			console.log(error)
+		}
+	}
+
 	configure(consumer: MiddlewareConsumer) {
 		consumer
 			.apply(SetReqUserMiddleware)

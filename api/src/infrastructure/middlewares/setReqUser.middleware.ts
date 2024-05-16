@@ -7,7 +7,7 @@ import { UsersMongoRepository } from '../../features/users/users.mongo.repositor
 export class SetReqUserMiddleware implements NestMiddleware {
 	constructor(
 		private jwtService: JwtService,
-		private usersRepository: UsersMongoRepository,
+		private usersMongoRepository: UsersMongoRepository,
 	) {}
 
 	async use(req: Request, res: Response, next: NextFunction) {
@@ -30,7 +30,7 @@ export class SetReqUserMiddleware implements NestMiddleware {
 			return
 		}
 
-		req.user = await this.usersRepository.getUserById(userId)
+		req.user = await this.usersMongoRepository.getUserById(userId)
 		next()
 	}
 }

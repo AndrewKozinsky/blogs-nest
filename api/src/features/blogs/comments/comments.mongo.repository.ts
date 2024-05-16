@@ -4,10 +4,10 @@ import { ObjectId } from 'mongodb'
 import { InjectModel } from '@nestjs/mongoose'
 import { CreatePostCommentDtoModel } from '../posts/model/posts.input.model'
 import { UserServiceModel } from '../../users/models/users.service.model'
-import { CommentDocument } from '../../../db/schemas/comment.schema'
+import { CommentDocument } from '../../../db/mongo/schemas/comment.schema'
 import { UpdateCommentDtoModel } from './model/comments.input.model'
 import { CommentServiceModel } from './model/comments.service.model'
-import { Comment } from '../../../db/schemas/comment.schema'
+import { Comment } from '../../../db/mongo/schemas/comment.schema'
 
 @Injectable()
 export class CommentsMongoRepository {

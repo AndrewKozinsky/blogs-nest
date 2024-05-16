@@ -12,10 +12,10 @@ import { AuthMongoRepository } from '../auth.mongo.repository'
 export class IsEmailExistsValidationInAuthRegistrationEmailResendingDto
 	implements ValidatorConstraintInterface
 {
-	constructor(private readonly authRepository: AuthMongoRepository) {}
+	constructor(private readonly authMongoRepository: AuthMongoRepository) {}
 
 	async validate(value: string): Promise<boolean> {
-		const user = await this.authRepository.getUserByEmail(value)
+		const user = await this.authMongoRepository.getUserByEmail(value)
 
 		if (!user || user.emailConfirmation.isConfirmed) {
 			throw new BadRequestException([

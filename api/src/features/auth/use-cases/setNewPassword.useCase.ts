@@ -4,18 +4,18 @@ import { UsersMongoRepository } from '../../users/users.mongo.repository'
 
 @Injectable()
 export class SetNewPasswordUseCase {
-	constructor(private usersRepository: UsersMongoRepository) {}
+	constructor(private usersMongoRepository: UsersMongoRepository) {}
 
 	async execute(passRecoveryCode: string, newPassword: string): Promise<LayerResult<null>> {
-		const user = await this.usersRepository.getUserByPasswordRecoveryCode(passRecoveryCode)
+		const user = await this.usersMongoRepository.getUserByPasswordRecoveryCode(passRecoveryCode)
 
 		if (!user) {
 			return { code: LayerResultCode.BadRequest }
 		}
 
-		await this.usersRepository.setPasswordRecoveryCodeToUser(user.id, null)
+		await this.usersMongoRepository.setPasswordRecoveryCodeToUser(user.id, null)
 
-		await this.usersRepository.setNewPasswordToUser(user.id, newPassword)
+		await this.usersMongoRepository.setNewPasswordToUser(user.id, newPassword)
 
 		return {
 			code: LayerResultCode.Success,

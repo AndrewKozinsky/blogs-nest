@@ -12,10 +12,10 @@ import { UsersMongoRepository } from '../../users/users.mongo.repository'
 @ValidatorConstraint({ name: 'recoveryCode', async: true })
 @Injectable()
 export class IsRecoveryCodeExistsValidation implements ValidatorConstraintInterface {
-	constructor(private readonly usersRepository: UsersMongoRepository) {}
+	constructor(private readonly usersMongoRepository: UsersMongoRepository) {}
 
 	async validate(recoveryCode: string): Promise<boolean> {
-		const user = await this.usersRepository.getUserByPasswordRecoveryCode(recoveryCode)
+		const user = await this.usersMongoRepository.getUserByPasswordRecoveryCode(recoveryCode)
 
 		if (!user) {
 			throw new BadRequestException([

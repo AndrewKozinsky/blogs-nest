@@ -8,13 +8,13 @@ import { AuthMongoRepository } from '../auth.mongo.repository'
 @Injectable()
 export class RecoveryPasswordUseCase {
 	constructor(
-		private authRepository: AuthMongoRepository,
-		private usersRepository: UsersMongoRepository,
+		private authMongoRepository: AuthMongoRepository,
+		private usersMongoRepository: UsersMongoRepository,
 		private emailManager: EmailManager,
 	) {}
 
 	async execute(email: string): Promise<LayerResult<null>> {
-		const user = await this.authRepository.getUserByLoginOrEmail(email)
+		const user = await this.authMongoRepository.getUserByLoginOrEmail(email)
 
 		// Send success status even if current email is not registered (for prevent user's email detection)
 		if (!user) {
@@ -23,7 +23,7 @@ export class RecoveryPasswordUseCase {
 
 		const recoveryCode = createUniqString()
 
-		await this.usersRepository.setPasswordRecoveryCodeToUser(user.id, recoveryCode)
+		await this.usersMongoRepository.setPasswordRecoveryCodeToUser(user.id, recoveryCode)
 
 		try {
 			await this.emailManager.sendPasswordRecoveryMessage(email, recoveryCode)
@@ -33,7 +33,7 @@ export class RecoveryPasswordUseCase {
 			}
 		} catch (err: unknown) {
 			console.log(err)
-			await this.authRepository.deleteUser(user.id)
+			await this.authMongoRepository.deleteUser(user.id)
 
 			return {
 				code: LayerResultCode.BadRequest,

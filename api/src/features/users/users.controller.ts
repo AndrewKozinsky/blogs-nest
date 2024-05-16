@@ -29,7 +29,7 @@ import { UsersMongoQueryRepository } from './users.mongo.queryRepository'
 @Controller(RouteNames.USERS.value)
 export class UsersController {
 	constructor(
-		private usersQueryRepository: UsersMongoQueryRepository,
+		private usersMongoQueryRepository: UsersMongoQueryRepository,
 		private createUserUseCase: CreateUserUseCase,
 		private deleteUserUseCase: DeleteUserUseCase,
 	) {}
@@ -38,7 +38,7 @@ export class UsersController {
 	@UseGuards(CheckAdminAuthGuard)
 	@Get()
 	async getUsers(@Query(new GetUsersQueriesPipe()) query: GetUsersQueries, @Res() res: Response) {
-		const users = await this.usersQueryRepository.getUsers(query)
+		const users = await this.usersMongoQueryRepository.getUsers(query)
 
 		res.status(HttpStatus.OK).send(users)
 	}

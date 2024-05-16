@@ -4,8 +4,8 @@ import { NextFunction, Request, Response } from 'express'
 import { Model } from 'mongoose'
 import { BrowserService } from '../../base/application/browser.service'
 import { addMilliseconds } from 'date-fns'
-import { DBTypes } from '../../db/dbTypes'
-import { RateLimit } from '../../db/schemas/rateLimit.schema'
+import { DBTypes } from '../../db/mongo/dbTypes'
+import { RateLimit } from '../../db/mongo/schemas/rateLimit.schema'
 import { config } from '../../settings/config'
 
 @Injectable()

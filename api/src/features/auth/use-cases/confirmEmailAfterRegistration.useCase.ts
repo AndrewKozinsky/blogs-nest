@@ -4,10 +4,10 @@ import { AuthMongoRepository } from '../auth.mongo.repository'
 
 @Injectable()
 export class ConfirmEmailAfterRegistrationUseCase {
-	constructor(private authRepository: AuthMongoRepository) {}
+	constructor(private authMongoRepository: AuthMongoRepository) {}
 
 	async execute(confirmationCode: string): Promise<LayerResult<null>> {
-		const user = await this.authRepository.getUserByConfirmationCode(confirmationCode)
+		const user = await this.authMongoRepository.getUserByConfirmationCode(confirmationCode)
 		if (!user || user.emailConfirmation.isConfirmed) {
 			return {
 				code: LayerResultCode.BadRequest,
@@ -23,7 +23,7 @@ export class ConfirmEmailAfterRegistrationUseCase {
 			}
 		}
 
-		await this.authRepository.makeUserEmailConfirmed(user.id)
+		await this.authMongoRepository.makeUserEmailConfirmed(user.id)
 
 		return {
 			code: LayerResultCode.Success,

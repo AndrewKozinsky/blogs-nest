@@ -14,10 +14,10 @@ import { AuthMongoRepository } from '../auth.mongo.repository'
 @ValidatorConstraint({ name: 'login', async: true })
 @Injectable()
 export class IsLoginExistsValidation implements ValidatorConstraintInterface {
-	constructor(private readonly authRepository: AuthMongoRepository) {}
+	constructor(private readonly authMongoRepository: AuthMongoRepository) {}
 
 	async validate(value: string): Promise<boolean> {
-		const user = await this.authRepository.getUserByLoginOrEmail(value)
+		const user = await this.authMongoRepository.getUserByLoginOrEmail(value)
 
 		if (user) {
 			throw new BadRequestException([{ field: 'login', message: 'Login exists already' }])
@@ -30,10 +30,10 @@ export class IsLoginExistsValidation implements ValidatorConstraintInterface {
 @ValidatorConstraint({ name: 'email', async: true })
 @Injectable()
 export class IsEmailExistsValidation implements ValidatorConstraintInterface {
-	constructor(private readonly authRepository: AuthMongoRepository) {}
+	constructor(private readonly authMongoRepository: AuthMongoRepository) {}
 
 	async validate(value: string): Promise<boolean> {
-		const user = await this.authRepository.getUserByLoginOrEmail(value)
+		const user = await this.authMongoRepository.getUserByLoginOrEmail(value)
 
 		if (user) {
 			throw new BadRequestException([{ field: 'email', message: 'Email exists already' }])

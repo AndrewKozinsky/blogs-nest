@@ -4,9 +4,9 @@ import { PostsMongoRepository } from '../posts.mongo.repository'
 
 @Injectable()
 export class UpdatePostUseCase {
-	constructor(private postsRepository: PostsMongoRepository) {}
+	constructor(private postsMongoRepository: PostsMongoRepository) {}
 
 	async execute(postId: string, updatePostDto: UpdatePostDtoModel) {
-		return this.postsRepository.updatePost(postId, updatePostDto)
+		return this.postsMongoRepository.updatePost(postId, updatePostDto)
 	}
 }

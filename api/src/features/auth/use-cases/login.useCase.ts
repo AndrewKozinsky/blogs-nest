@@ -10,7 +10,7 @@ import { AuthLoginDtoModel } from '../model/authLogin.input.model'
 @Injectable()
 export class LoginUseCase {
 	constructor(
-		private authRepository: AuthMongoRepository,
+		private authMongoRepository: AuthMongoRepository,
 		private jwtService: JwtService,
 		private browserService: BrowserService,
 	) {}
@@ -19,7 +19,8 @@ export class LoginUseCase {
 		req: Request,
 		body: AuthLoginDtoModel,
 	): Promise<LayerResult<{ refreshTokenStr: string; user: UserServiceModel }>> {
-		const getUserRes = await this.authRepository.getConfirmedUserByLoginOrEmailAndPassword(body)
+		const getUserRes =
+			await this.authMongoRepository.getConfirmedUserByLoginOrEmailAndPassword(body)
 
 		if (getUserRes.code !== LayerResultCode.Success || !getUserRes.data) {
 			return {
@@ -35,7 +36,7 @@ export class LoginUseCase {
 			clientIP,
 			clientName,
 		)
-		await this.authRepository.insertDeviceRefreshToken(newDeviceRefreshToken)
+		await this.authMongoRepository.insertDeviceRefreshToken(newDeviceRefreshToken)
 
 		const refreshTokenStr = this.jwtService.createRefreshTokenStr(
 			newDeviceRefreshToken.deviceId,

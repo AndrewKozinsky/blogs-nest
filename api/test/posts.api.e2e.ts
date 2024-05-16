@@ -5,7 +5,7 @@ import { CreatePostDtoModel } from '../src/features/blogs/posts/model/posts.inpu
 import { GetPostsOutModel } from '../src/features/blogs/posts/model/posts.output.model'
 import { HTTP_STATUSES } from '../src/settings/config'
 import RouteNames from '../src/settings/routeNames'
-import { DBTypes } from '../src/db/dbTypes'
+import { DBTypes } from '../src/db/mongo/dbTypes'
 import { GetPostCommentsOutModel } from '../src/features/blogs/comments/model/comments.output.model'
 import { createTestApp } from './utils/common'
 import { clearAllDB } from './utils/db'

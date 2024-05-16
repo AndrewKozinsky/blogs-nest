@@ -1,7 +1,7 @@
 import { BadRequestException, Controller, Delete, HttpStatus, Res } from '@nestjs/common'
 import { Response } from 'express'
 import RouteNames from '../../settings/routeNames'
-import { DbService } from '../../db/dbService'
+import { DbService } from '../../db/mongo/dbService'
 
 @Controller(RouteNames.TESTING.value)
 export class TestsController {

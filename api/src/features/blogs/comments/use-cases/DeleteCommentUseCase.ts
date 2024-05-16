@@ -4,16 +4,16 @@ import { CommentsMongoRepository } from '../comments.mongo.repository'
 
 @Injectable()
 export class DeleteCommentUseCase {
-	constructor(private commentsRepository: CommentsMongoRepository) {}
+	constructor(private commentsMongoRepository: CommentsMongoRepository) {}
 
 	async execute(user: UserServiceModel, commentId: string): Promise<'notOwner' | boolean> {
-		const comment = await this.commentsRepository.getComment(commentId)
+		const comment = await this.commentsMongoRepository.getComment(commentId)
 		if (!comment) return false
 
 		if (comment.commentatorInfo.userId !== user.id) {
 			return 'notOwner'
 		}
 
-		return this.commentsRepository.deleteComment(commentId)
+		return this.commentsMongoRepository.deleteComment(commentId)
 	}
 }

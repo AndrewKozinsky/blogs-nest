@@ -8,8 +8,8 @@ import { PostsMongoRepository } from '../posts.mongo.repository'
 @Injectable()
 export class CreatePostCommentUseCase {
 	constructor(
-		private postsRepository: PostsMongoRepository,
-		private commentsRepository: CommentsMongoRepository,
+		private postsMongoRepository: PostsMongoRepository,
+		private commentsMongoRepository: CommentsMongoRepository,
 	) {}
 
 	async execute(
@@ -21,9 +21,9 @@ export class CreatePostCommentUseCase {
 			return 'postNotExist'
 		}
 
-		const post = await this.postsRepository.getPostById(postId)
+		const post = await this.postsMongoRepository.getPostById(postId)
 		if (!post) return 'postNotExist'
 
-		return await this.commentsRepository.createPostComment(user, postId, commentDto)
+		return await this.commentsMongoRepository.createPostComment(user, postId, commentDto)
 	}
 }

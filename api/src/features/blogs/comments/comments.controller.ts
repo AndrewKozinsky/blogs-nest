@@ -27,7 +27,7 @@ import { UpdateCommentUseCase } from './use-cases/UpdateCommentUseCase'
 @Controller(RouteNames.COMMENTS.value)
 export class CommentsController {
 	constructor(
-		private commentsQueryRepository: CommentsMongoQueryRepository,
+		private commentsMongoQueryRepository: CommentsMongoQueryRepository,
 		private updateCommentUseCase: UpdateCommentUseCase,
 		private deleteCommentUseCase: DeleteCommentUseCase,
 		private setCommentLikeStatusUseCase: SetCommentLikeStatusUseCase,
@@ -43,7 +43,7 @@ export class CommentsController {
 	) {
 		const { user } = req
 
-		const comment = await this.commentsQueryRepository.getComment(user?.id, commentId)
+		const comment = await this.commentsMongoQueryRepository.getComment(user?.id, commentId)
 
 		if (!comment) {
 			throw new NotFoundException()

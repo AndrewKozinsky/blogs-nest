@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { ObjectId } from 'mongodb'
 import { Model } from 'mongoose'
-import { DBTypes } from '../../../db/dbTypes'
-import { PostLike, PostLikeDocument } from '../../../db/schemas/postLike.schema'
+import { DBTypes } from '../../../db/mongo/dbTypes'
+import { PostLike, PostLikeDocument } from '../../../db/mongo/schemas/postLike.schema'
 import { PostLikeServiceModel } from './models/postLikes.service.model'
 
 @Injectable()

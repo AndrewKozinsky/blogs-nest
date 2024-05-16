@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
 import { HTTP_STATUSES } from '../src/settings/config'
 import RouteNames from '../src/settings/routeNames'
-import { DBTypes } from '../src/db/dbTypes'
+import { DBTypes } from '../src/db/mongo/dbTypes'
 import {
 	addBlogRequest,
 	addPostCommentRequest,

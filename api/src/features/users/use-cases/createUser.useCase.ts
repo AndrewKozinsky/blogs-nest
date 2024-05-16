@@ -10,22 +10,22 @@ import { UsersMongoRepository } from '../users.mongo.repository'
 @Injectable()
 export class CreateUserUseCase {
 	constructor(
-		private usersRepository: UsersMongoRepository,
+		private usersMongoRepository: UsersMongoRepository,
 		private commonService: CommonService,
-		private usersQueryRepository: UsersMongoQueryRepository,
-		private authRepository: AuthMongoRepository,
+		private usersMongoQueryRepository: UsersMongoQueryRepository,
+		private authMongoRepository: AuthMongoRepository,
 	) {}
 
 	async execute(data: CreateUserDtoModel): Promise<LayerResult<UserOutModel>> {
-		const userByEmail = await this.authRepository.getUserByEmail(data.email)
+		const userByEmail = await this.authMongoRepository.getUserByEmail(data.email)
 		if (userByEmail) {
 			return { code: LayerResultCode.BadRequest }
 		}
 
 		const newUserDto = await this.commonService.getCreateUserDto(data, true)
-		const createdUserId = await this.usersRepository.createUser(newUserDto)
+		const createdUserId = await this.usersMongoRepository.createUser(newUserDto)
 
-		const createdUser = await this.usersQueryRepository.getUser(createdUserId)
+		const createdUser = await this.usersMongoQueryRepository.getUser(createdUserId)
 		if (!createdUser) {
 			return { code: LayerResultCode.BadRequest }
 		}

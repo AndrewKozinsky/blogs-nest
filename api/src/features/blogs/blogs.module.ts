@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common'
 import { MongooseModule } from '@nestjs/mongoose'
 import { HashAdapter } from '../../base/adapters/hash.adapter'
-import { Blog, BlogSchema } from '../../db/schemas/blog.schema'
-import { Comment, CommentSchema } from '../../db/schemas/comment.schema'
-import { CommentLike, CommentLikeSchema } from '../../db/schemas/commentLike.schema'
-import { Post, PostSchema } from '../../db/schemas/post.schema'
-import { PostLike, PostLikeSchema } from '../../db/schemas/postLike.schema'
-import { User, UserSchema } from '../../db/schemas/user.schema'
-import { BlogsMongoQueryRepository } from './blogs/blogs.mongo.queryRepository'
+import { Blog, BlogSchema } from '../../db/mongo/schemas/blog.schema'
+import { Comment, CommentSchema } from '../../db/mongo/schemas/comment.schema'
+import { CommentLike, CommentLikeSchema } from '../../db/mongo/schemas/commentLike.schema'
+import { Post, PostSchema } from '../../db/mongo/schemas/post.schema'
+import { PostLike, PostLikeSchema } from '../../db/mongo/schemas/postLike.schema'
+import { User, UserSchema } from '../../db/mongo/schemas/user.schema'
+import { BlogsQueryRepository } from './blogs/blogsQueryRepository'
 import { CommentLikesMongoRepository } from './commentLikes/CommentLikes.mongo.repository'
 import { CommentsController } from './comments/comments.controller'
 import { CommentsMongoQueryRepository } from './comments/comments.mongo.queryRepository'
@@ -25,7 +25,7 @@ import { CreatePostCommentUseCase } from './posts/use-cases/createPostCommentUse
 import { CreatePostUseCase } from './posts/use-cases/createPostUseCase'
 import { UsersMongoRepository } from '../users/users.mongo.repository'
 import { BlogsController } from './blogs/blogs.controller'
-import { BlogsMongoRepository } from './blogs/blogs.mongo.repository'
+import { BlogsRepository } from './blogs/blogsRepository'
 import { CreateBlogPostUseCase } from './blogs/use-cases/CreateBlogPostUseCase'
 import { CreateBlogUseCase } from './blogs/use-cases/CreateBlogUseCase'
 import { DeleteBlogUseCase } from './blogs/use-cases/DeleteBlogUseCase'
@@ -62,8 +62,8 @@ const useCases = [
 	],
 	controllers: [BlogsController, PostsController, CommentsController],
 	providers: [
-		BlogsMongoQueryRepository,
-		BlogsMongoRepository,
+		BlogsQueryRepository,
+		BlogsRepository,
 		PostsMongoQueryRepository,
 		PostLikesMongoRepository,
 		UsersMongoRepository,

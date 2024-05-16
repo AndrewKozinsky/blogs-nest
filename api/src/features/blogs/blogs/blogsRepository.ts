@@ -1,15 +1,20 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
+import { InjectDataSource } from '@nestjs/typeorm'
 import { ObjectId } from 'mongodb'
 import { Model } from 'mongoose'
-import { Blog, BlogDocument } from '../../../db/schemas/blog.schema'
-import { UpdateBlogDtoModel } from './model/blogs.input.model'
+import { DataSource } from 'typeorm'
+import { Blog, BlogDocument } from '../../../db/mongo/schemas/blog.schema'
+import { CreateBlogDtoModel, UpdateBlogDtoModel } from './model/blogs.input.model'
 import { GetBlogOutModel as CreateBlogOutModel } from './model/blogs.output.model'
 import { BlogServiceModel } from './model/blogs.service.model'
 
 @Injectable()
-export class BlogsMongoRepository {
-	constructor(@InjectModel(Blog.name) private BlogModel: Model<Blog>) {}
+export class BlogsRepository {
+	constructor(
+		@InjectModel(Blog.name) private BlogModel: Model<Blog>,
+		private dataSource: DataSource,
+	) {}
 
 	/*async getBlogs() {
 		const getBlogsRes = await this.BlogModel.find({}).lean()
@@ -27,7 +32,23 @@ export class BlogsMongoRepository {
 		return getBlogRes ? this.mapDbBlogToServiceBlog(getBlogRes) : null
 	}
 
-	async createBlog(dto: CreateBlogOutModel) {
+	async createBlog(dto: CreateBlogDtoModel) {
+		/*const createBlogRes = await this.BlogModel.create({ ...dto, isMembership: false })
+		return createBlogRes.id*/
+
+		const createdAt = new Date().toISOString().split('T')[0]
+		const res = await this.dataSource.query(
+			`INSERT INTO blogs
+			("name", "description", "websiteUrl", "createdAt", "isMembership")
+			VALUES($1, $2, $3, $4, $5)`,
+			[dto.name, dto.description, dto.websiteUrl, createdAt, '0'],
+		)
+		console.log(res)
+
+		return '123'
+	}
+
+	async createBlogByMongo(dto: CreateBlogOutModel) {
 		const createBlogRes = await this.BlogModel.create({ ...dto, isMembership: false })
 
 		return createBlogRes.id

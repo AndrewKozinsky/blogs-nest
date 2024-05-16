@@ -8,7 +8,7 @@ export class CheckDeviceRefreshTokenGuard implements CanActivate {
 	constructor(
 		private requestService: RequestService,
 		private jwtService: JwtService,
-		private readonly authRepository: AuthMongoRepository,
+		private readonly authMongoRepository: AuthMongoRepository,
 	) {}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -26,7 +26,7 @@ export class CheckDeviceRefreshTokenGuard implements CanActivate {
 				this.jwtService.getTokenStrExpirationDate(refreshTokenStr)
 
 			const deviceRefreshToken =
-				await this.authRepository.getDeviceRefreshTokenByTokenStr(refreshTokenStr)
+				await this.authMongoRepository.getDeviceRefreshTokenByTokenStr(refreshTokenStr)
 
 			if (!refreshTokenStrExpirationDate || !deviceRefreshToken) {
 				throw new UnauthorizedException()

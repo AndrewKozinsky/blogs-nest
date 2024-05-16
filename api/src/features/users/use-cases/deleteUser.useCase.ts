@@ -3,9 +3,9 @@ import { UsersMongoRepository } from '../users.mongo.repository'
 
 @Injectable()
 export class DeleteUserUseCase {
-	constructor(private usersRepository: UsersMongoRepository) {}
+	constructor(private usersMongoRepository: UsersMongoRepository) {}
 
 	async execute(userId: string) {
-		return this.usersRepository.deleteUser(userId)
+		return this.usersMongoRepository.deleteUser(userId)
 	}
 }

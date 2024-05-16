@@ -3,9 +3,9 @@ import { UsersMongoRepository } from './users.mongo.repository'
 
 @Injectable()
 export class UsersService {
-	constructor(private usersRepository: UsersMongoRepository) {}
+	constructor(private usersMongoRepository: UsersMongoRepository) {}
 
 	async getUser(userId: string) {
-		return this.usersRepository.getUserById(userId)
+		return this.usersMongoRepository.getUserById(userId)
 	}
 }

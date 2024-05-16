@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { add, addMilliseconds } from 'date-fns'
 import jwt, { decode } from 'jsonwebtoken'
 import { config } from '../../settings/config'
-import { DBTypes } from '../../db/dbTypes'
+import { DBTypes } from '../../db/mongo/dbTypes'
 import { createUniqString } from '../../utils/stringUtils'
 
 @Injectable()

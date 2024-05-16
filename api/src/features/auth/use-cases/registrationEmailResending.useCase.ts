@@ -7,14 +7,14 @@ import { AuthRegistrationEmailResendingDtoModel } from '../model/authRegistratio
 @Injectable()
 export class RegistrationEmailResendingUseCase {
 	constructor(
-		private authRepository: AuthMongoRepository,
+		private authMongoRepository: AuthMongoRepository,
 		private emailManager: EmailManager,
 	) {}
 
 	async execute(body: AuthRegistrationEmailResendingDtoModel): Promise<LayerResult<null>> {
 		const { email } = body
 
-		const user = await this.authRepository.getUserByEmail(email)
+		const user = await this.authMongoRepository.getUserByEmail(email)
 
 		if (!user || user.emailConfirmation.isConfirmed) {
 			return {
@@ -22,7 +22,9 @@ export class RegistrationEmailResendingUseCase {
 			}
 		}
 
-		const newConfirmationCode = await this.authRepository.setNewEmailConfirmationCode(user.id)
+		const newConfirmationCode = await this.authMongoRepository.setNewEmailConfirmationCode(
+			user.id,
+		)
 
 		// await не нужен потому что тест не проходит в Инкубаторе
 		try {

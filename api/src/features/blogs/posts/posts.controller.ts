@@ -40,8 +40,8 @@ import { UpdatePostUseCase } from './use-cases/updatePostUseCase'
 @Controller(RouteNames.POSTS.value)
 export class PostsController {
 	constructor(
-		private postsQueryRepository: PostsMongoQueryRepository,
-		private commentsQueryRepository: CommentsMongoQueryRepository,
+		private postsMongoQueryRepository: PostsMongoQueryRepository,
+		private commentsMongoQueryRepository: CommentsMongoQueryRepository,
 		private createPostUseCase: CreatePostUseCase,
 		private updatePostUseCase: UpdatePostUseCase,
 		private deletePostUseCase: DeletePostUseCase,
@@ -58,7 +58,7 @@ export class PostsController {
 	) {
 		const { user } = req
 
-		const posts = await this.postsQueryRepository.getPosts(user?.id, query)
+		const posts = await this.postsMongoQueryRepository.getPosts(user?.id, query)
 
 		res.status(HttpStatus.OK).send(posts)
 	}
@@ -71,7 +71,7 @@ export class PostsController {
 		const { user } = req
 		const createPostId = await this.createPostUseCase.execute(body)
 
-		return await this.postsQueryRepository.getPost(user?.id, createPostId)
+		return await this.postsMongoQueryRepository.getPost(user?.id, createPostId)
 	}
 
 	// Return post by id
@@ -80,7 +80,7 @@ export class PostsController {
 	async getPost(@Param('postId') postId: string, @Res() res: Response, @Req() req: Request) {
 		const { user } = req
 
-		const post = await this.postsQueryRepository.getPost(user?.id, postId)
+		const post = await this.postsMongoQueryRepository.getPost(user?.id, postId)
 
 		if (!post) {
 			throw new NotFoundException()
@@ -123,7 +123,7 @@ export class PostsController {
 	) {
 		const { user } = req
 
-		const postComments = await this.commentsQueryRepository.getPostComments(
+		const postComments = await this.commentsMongoQueryRepository.getPostComments(
 			user?.id,
 			postId,
 			query,
@@ -157,7 +157,7 @@ export class PostsController {
 			throw new NotFoundException()
 		}
 
-		const getCommentRes = await this.commentsQueryRepository.getComment(
+		const getCommentRes = await this.commentsMongoQueryRepository.getComment(
 			user!.id,
 			createdCommentId,
 		)
