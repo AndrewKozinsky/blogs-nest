@@ -7,6 +7,7 @@ import {
 	HttpStatus,
 	NotFoundException,
 	Param,
+	ParseIntPipe,
 	Post,
 	Put,
 	Query,
@@ -17,7 +18,7 @@ import {
 import { Request, Response } from 'express'
 import { CheckAdminAuthGuard } from '../../../infrastructure/guards/checkAdminAuth.guard'
 import RouteNames from '../../../settings/routeNames'
-import { PostsMongoQueryRepository } from '../posts/posts.mongo.queryRepository'
+import { PostsQueryRepository } from '../posts/postsQueryRepository'
 import { BlogsRepository } from './blogsRepository'
 import { BlogsQueryRepository } from './blogsQueryRepository'
 import {
@@ -39,17 +40,17 @@ export class BlogsController {
 	constructor(
 		private deleteBlogUseCase: DeleteBlogUseCase,
 		private updateBlogUseCase: UpdateBlogUseCase,
-		private postsMongoQueryRepository: PostsMongoQueryRepository,
+		private postsQueryRepository: PostsQueryRepository,
 		private createBlogPostUseCase: CreateBlogPostUseCase,
-		private blogsMongoRepository: BlogsRepository,
+		private blogsRepository: BlogsRepository,
 		private createBlogUseCase: CreateBlogUseCase,
-		private blogsMongoQueryRepository: BlogsQueryRepository,
+		private blogsQueryRepository: BlogsQueryRepository,
 	) {}
 
 	// Returns blogs with paging
 	@Get()
 	async getBlogs(@Query(new GetBlogsQueriesPipe()) query: GetBlogsQueries, @Res() res: Response) {
-		const blogs = await this.blogsMongoQueryRepository.getBlogs(query)
+		const blogs = await this.blogsQueryRepository.getBlogs(query)
 		res.status(HttpStatus.OK).send(blogs)
 	}
 
@@ -59,11 +60,11 @@ export class BlogsController {
 	@HttpCode(HttpStatus.CREATED)
 	async createNewBlog(@Body() body: CreateBlogDtoModel) {
 		const createdBlogId = await this.createBlogUseCase.execute(body)
-		return await this.blogsMongoQueryRepository.getBlog(createdBlogId)
+		return await this.blogsQueryRepository.getBlog(createdBlogId)
 	}
 
 	// Returns all posts for specified blog
-	@Get(':blogId/posts')
+	/*@Get(':blogId/posts')
 	async getBlogPosts(
 		@Query(new GetBlogPostsQueriesPipe()) query: GetBlogPostsQueries,
 		@Param('blogId') blogId: string,
@@ -72,21 +73,21 @@ export class BlogsController {
 	) {
 		const { user } = req
 
-		const blog = await this.blogsMongoRepository.getBlogById(blogId)
+		const blog = await this.blogsRepository.getBlogById(blogId)
 		if (!blog) {
 			throw new NotFoundException()
 		}
 
-		const posts = await this.blogsMongoQueryRepository.getBlogPosts(user?.id, blogId, req.query)
+		const posts = await this.blogsQueryRepository.getBlogPosts(user?.id, blogId, req.query)
 		if (!posts) {
 			throw new NotFoundException()
 		}
 
 		res.status(HttpStatus.OK).send(posts)
-	}
+	}*/
 
 	// Create new post for specific blog
-	@UseGuards(CheckAdminAuthGuard)
+	/*@UseGuards(CheckAdminAuthGuard)
 	@Post(':blogId/posts')
 	@HttpCode(HttpStatus.CREATED)
 	async createNewPostForSpecificBlog(
@@ -96,19 +97,19 @@ export class BlogsController {
 	) {
 		const { user } = req
 
-		const blog = await this.blogsMongoRepository.getBlogById(blogId)
+		const blog = await this.blogsRepository.getBlogById(blogId)
 		if (!blog) {
 			throw new NotFoundException()
 		}
 
 		const createPostInsertedId = await this.createBlogPostUseCase.execute(blogId, body)
-		return await this.postsMongoQueryRepository.getPost(user?.id, createPostInsertedId)
-	}
+		return await this.postsQueryRepository.getPost(user?.id, createPostInsertedId)
+	}*/
 
 	// Returns blog by id
 	@Get(':blogId')
 	async getBlog(@Param('blogId') blogId: string, @Res() res: Response) {
-		const blog = await this.blogsMongoQueryRepository.getBlog(blogId)
+		const blog = await this.blogsQueryRepository.getBlog(blogId)
 
 		if (!blog) {
 			throw new NotFoundException()

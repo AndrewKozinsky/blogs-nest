@@ -3,17 +3,17 @@ import { DBTypes } from '../../../../db/mongo/dbTypes'
 import { BlogsRepository } from '../../blogs/blogsRepository'
 import { CreatePostDtoModel } from '../model/posts.input.model'
 import { PostOutModel } from '../model/posts.output.model'
-import { PostsMongoRepository } from '../posts.mongo.repository'
+import { PostsRepository } from '../postsRepository'
 
 @Injectable()
 export class CreatePostUseCase {
 	constructor(
-		private blogsMongoRepository: BlogsRepository,
-		private postsMongoRepository: PostsMongoRepository,
+		private blogsRepository: BlogsRepository,
+		private postsRepository: PostsRepository,
 	) {}
 
 	async execute(dto: CreatePostDtoModel): Promise<string> {
-		const blog = await this.blogsMongoRepository.getBlogById(dto.blogId)
+		const blog = await this.blogsRepository.getBlogById(dto.blogId)
 
 		const newPostDto: PostOutModel = {
 			id: new Date().toISOString(),
@@ -31,6 +31,6 @@ export class CreatePostUseCase {
 			},
 		}
 
-		return await this.postsMongoRepository.createPost(newPostDto)
+		return await this.postsRepository.createPost(newPostDto)
 	}
 }

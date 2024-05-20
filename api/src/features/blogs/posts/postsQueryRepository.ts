@@ -5,8 +5,8 @@ import { FilterQuery, Model } from 'mongoose'
 import { DBTypes } from '../../../db/mongo/dbTypes'
 import { Post, PostDocument } from '../../../db/mongo/schemas/post.schema'
 import { PostLike } from '../../../db/mongo/schemas/postLike.schema'
-import { PostLikesMongoRepository } from '../postLikes/postLikes.mongo.repository'
-import { UsersMongoRepository } from '../../users/users.mongo.repository'
+import { PostLikesRepository } from '../postLikes/postLikesRepository'
+import { UsersRepository } from '../../users/usersRepository'
 import { GetPostsQueries } from './model/posts.input.model'
 import {
 	GetPostOutModel,
@@ -16,12 +16,12 @@ import {
 } from './model/posts.output.model'
 
 @Injectable()
-export class PostsMongoQueryRepository {
+export class PostsQueryRepository {
 	constructor(
 		@InjectModel(Post.name) private PostModel: Model<Post>,
 		@InjectModel(PostLike.name) private PostLikeModel: Model<PostLike>,
-		private postLikesMongoRepository: PostLikesMongoRepository,
-		private usersMongoRepository: UsersMongoRepository,
+		private postLikesRepository: PostLikesRepository,
+		private usersRepository: UsersRepository,
 	) {}
 
 	async getPosts(
@@ -53,13 +53,12 @@ export class PostsMongoQueryRepository {
 			getPostsRes.map(async (post) => {
 				const postId = post._id.toString()
 
-				const postLikesStatsRes =
-					await this.postLikesMongoRepository.getPostLikesStats(postId)
+				const postLikesStatsRes = await this.postLikesRepository.getPostLikesStats(postId)
 
 				let currentUserCommentLikeStatus = DBTypes.LikeStatuses.None
 				if (userId) {
 					currentUserCommentLikeStatus =
-						await this.postLikesMongoRepository.getUserPostLikeStatus(userId, postId)
+						await this.postLikesRepository.getUserPostLikeStatus(userId, postId)
 				}
 
 				const newestPostLikes = await this.getNewestPostLikes(postId)
@@ -90,12 +89,14 @@ export class PostsMongoQueryRepository {
 
 		const getPostRes = await this.PostModel.findOne({ _id: new ObjectId(postId) })
 
-		const postLikesStatsRes = await this.postLikesMongoRepository.getPostLikesStats(postId)
+		const postLikesStatsRes = await this.postLikesRepository.getPostLikesStats(postId)
 
 		let currentUserCommentLikeStatus = DBTypes.LikeStatuses.None
 		if (userId) {
-			currentUserCommentLikeStatus =
-				await this.postLikesMongoRepository.getUserPostLikeStatus(userId, postId)
+			currentUserCommentLikeStatus = await this.postLikesRepository.getUserPostLikeStatus(
+				userId,
+				postId,
+			)
 		}
 
 		const newestPostLikes = await this.getNewestPostLikes(postId)
@@ -122,7 +123,7 @@ export class PostsMongoQueryRepository {
 
 		return await Promise.all(
 			getPostRes.map(async (postLike) => {
-				const userRes = await this.usersMongoRepository.getUserById(postLike.userId)
+				const userRes = await this.usersRepository.getUserById(postLike.userId)
 
 				return {
 					addedAt: postLike.addedAt,

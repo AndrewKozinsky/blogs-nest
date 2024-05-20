@@ -1,14 +1,14 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '../../base/application/jwt.service'
 import { RequestService } from '../../base/application/request.service'
-import { AuthMongoRepository } from '../../features/auth/auth.mongo.repository'
+import { AuthRepository } from '../../features/auth/authRepository'
 
 @Injectable()
 export class CheckDeviceRefreshTokenGuard implements CanActivate {
 	constructor(
 		private requestService: RequestService,
 		private jwtService: JwtService,
-		private readonly authMongoRepository: AuthMongoRepository,
+		private readonly authRepository: AuthRepository,
 	) {}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -26,7 +26,7 @@ export class CheckDeviceRefreshTokenGuard implements CanActivate {
 				this.jwtService.getTokenStrExpirationDate(refreshTokenStr)
 
 			const deviceRefreshToken =
-				await this.authMongoRepository.getDeviceRefreshTokenByTokenStr(refreshTokenStr)
+				await this.authRepository.getDeviceRefreshTokenByTokenStr(refreshTokenStr)
 
 			if (!refreshTokenStrExpirationDate || !deviceRefreshToken) {
 				throw new UnauthorizedException()

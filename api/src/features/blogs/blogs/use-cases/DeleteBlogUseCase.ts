@@ -3,9 +3,9 @@ import { BlogsRepository } from '../blogsRepository'
 
 @Injectable()
 export class DeleteBlogUseCase {
-	constructor(private blogsMongoRepository: BlogsRepository) {}
+	constructor(private blogsRepository: BlogsRepository) {}
 
 	async execute(blogId: string) {
-		return this.blogsMongoRepository.deleteBlog(blogId)
+		return this.blogsRepository.deleteBlog(blogId)
 	}
 }

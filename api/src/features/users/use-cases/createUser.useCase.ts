@@ -1,31 +1,31 @@
 import { Injectable } from '@nestjs/common'
 import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
-import { AuthMongoRepository } from '../../auth/auth.mongo.repository'
+import { AuthRepository } from '../../auth/authRepository'
 import { CommonService } from '../../common/common.service'
 import { CreateUserDtoModel } from '../models/users.input.model'
 import { UserOutModel } from '../models/users.output.model'
-import { UsersMongoQueryRepository } from '../users.mongo.queryRepository'
-import { UsersMongoRepository } from '../users.mongo.repository'
+import { UsersQueryRepository } from '../usersQueryRepository'
+import { UsersRepository } from '../usersRepository'
 
 @Injectable()
 export class CreateUserUseCase {
 	constructor(
-		private usersMongoRepository: UsersMongoRepository,
+		private usersRepository: UsersRepository,
 		private commonService: CommonService,
-		private usersMongoQueryRepository: UsersMongoQueryRepository,
-		private authMongoRepository: AuthMongoRepository,
+		private usersQueryRepository: UsersQueryRepository,
+		private authRepository: AuthRepository,
 	) {}
 
 	async execute(data: CreateUserDtoModel): Promise<LayerResult<UserOutModel>> {
-		const userByEmail = await this.authMongoRepository.getUserByEmail(data.email)
+		const userByEmail = await this.authRepository.getUserByEmail(data.email)
 		if (userByEmail) {
 			return { code: LayerResultCode.BadRequest }
 		}
 
 		const newUserDto = await this.commonService.getCreateUserDto(data, true)
-		const createdUserId = await this.usersMongoRepository.createUser(newUserDto)
+		const createdUserId = await this.usersRepository.createUser(newUserDto)
 
-		const createdUser = await this.usersMongoQueryRepository.getUser(createdUserId)
+		const createdUser = await this.usersQueryRepository.getUser(createdUserId)
 		if (!createdUser) {
 			return { code: LayerResultCode.BadRequest }
 		}

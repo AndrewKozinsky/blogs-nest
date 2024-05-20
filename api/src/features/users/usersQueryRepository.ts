@@ -8,7 +8,7 @@ import { GetUsersQueries } from './models/users.input.model'
 import { GetUserOutModel, GetUsersOutModel, UserOutModel } from './models/users.output.model'
 
 @Injectable()
-export class UsersMongoQueryRepository {
+export class UsersQueryRepository {
 	constructor(@InjectModel(User.name) private UserModel: Model<User>) {}
 
 	async getUsers(queries: GetUsersQueries): Promise<GetUsersOutModel> {

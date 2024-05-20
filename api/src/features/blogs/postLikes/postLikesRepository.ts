@@ -7,7 +7,7 @@ import { PostLike, PostLikeDocument } from '../../../db/mongo/schemas/postLike.s
 import { PostLikeServiceModel } from './models/postLikes.service.model'
 
 @Injectable()
-export class PostLikesMongoRepository {
+export class PostLikesRepository {
 	constructor(@InjectModel(PostLike.name) private PostLikeModel: Model<PostLike>) {}
 
 	async getPostLikeByUser(userId: string, postId: string) {

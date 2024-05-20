@@ -1,24 +1,24 @@
 import { Injectable } from '@nestjs/common'
 import { UserServiceModel } from '../../../users/models/users.service.model'
-import { CommentsMongoRepository } from '../comments.mongo.repository'
+import { CommentsRepository } from '../commentsRepository'
 import { UpdateCommentDtoModel } from '../model/comments.input.model'
 
 @Injectable()
 export class UpdateCommentUseCase {
-	constructor(private commentsMongoRepository: CommentsMongoRepository) {}
+	constructor(private commentsRepository: CommentsRepository) {}
 
 	async execute(
 		user: UserServiceModel,
 		commentId: string,
 		updateCommentDto: UpdateCommentDtoModel,
 	): Promise<'notOwner' | boolean> {
-		const comment = await this.commentsMongoRepository.getComment(commentId)
+		const comment = await this.commentsRepository.getComment(commentId)
 		if (!comment) return false
 
 		if (comment.commentatorInfo.userId !== user.id) {
 			return 'notOwner'
 		}
 
-		return this.commentsMongoRepository.updateComment(commentId, updateCommentDto)
+		return this.commentsRepository.updateComment(commentId, updateCommentDto)
 	}
 }

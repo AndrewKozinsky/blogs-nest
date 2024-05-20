@@ -16,7 +16,7 @@ import { RequestService } from '../../base/application/request.service'
 import { CheckDeviceRefreshTokenGuard } from '../../infrastructure/guards/checkDeviceRefreshToken.guard'
 import RouteNames from '../../settings/routeNames'
 import { LayerResultCode } from '../../types/resultCodes'
-import { SecurityMongoQueryRepository } from './security.mongo.queryRepository'
+import { SecurityQueryRepository } from './securityQueryRepository'
 import { TerminateAllDeviceRefreshTokensApartThisUseCase } from './use-cases/terminateAllDeviceRefreshTokensApartThisUseCase'
 import { TerminateSpecifiedDeviceRefreshTokenUseCase } from './use-cases/terminateSpecifiedDeviceRefreshTokenUseCase'
 
@@ -24,7 +24,7 @@ import { TerminateSpecifiedDeviceRefreshTokenUseCase } from './use-cases/termina
 export class SecurityController {
 	constructor(
 		private requestService: RequestService,
-		private securityMongoQueryRepository: SecurityMongoQueryRepository,
+		private securityQueryRepository: SecurityQueryRepository,
 		private terminateAllDeviceRefreshTokensApartThisUseCase: TerminateAllDeviceRefreshTokensApartThisUseCase,
 		private terminateSpecifiedDeviceRefreshTokenUseCase: TerminateSpecifiedDeviceRefreshTokenUseCase,
 	) {}
@@ -36,7 +36,7 @@ export class SecurityController {
 		const refreshTokenFromCookie = this.requestService.getRefreshTokenStrFromReq(req) as string
 
 		const userDevices =
-			await this.securityMongoQueryRepository.getUserDevices(refreshTokenFromCookie)
+			await this.securityQueryRepository.getUserDevices(refreshTokenFromCookie)
 
 		res.status(HttpStatus.OK).send(userDevices)
 	}

@@ -2,13 +2,13 @@ import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { DeviceToken } from '../../db/mongo/schemas/deviceToken.schema'
-import { AuthMongoRepository } from '../auth/auth.mongo.repository'
+import { AuthRepository } from '../auth/authRepository'
 
 @Injectable()
-export class SecurityMongoRepository {
+export class SecurityRepository {
 	constructor(
 		@InjectModel(DeviceToken.name) private DeviceTokenModel: Model<DeviceToken>,
-		private authRepository: AuthMongoRepository,
+		private authRepository: AuthRepository,
 	) {}
 
 	async terminateAllDeviceRefreshTokensApartThis(currentDeviceId: string) {

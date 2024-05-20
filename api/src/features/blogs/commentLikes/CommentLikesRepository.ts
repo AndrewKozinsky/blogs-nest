@@ -7,7 +7,7 @@ import { CommentLike, CommentLikeDocument } from '../../../db/mongo/schemas/comm
 import { CommentLikeServiceModel } from './models/commentLikes.service.model'
 
 @Injectable()
-export class CommentLikesMongoRepository {
+export class CommentLikesRepository {
 	constructor(@InjectModel(CommentLike.name) private CommentLikeModel: Model<CommentLike>) {}
 
 	async getCommentLikeByUser(userId: string, commentId: string) {

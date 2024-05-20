@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common'
 import { DBTypes } from '../../../db/mongo/dbTypes'
 import { Comment, CommentDocument } from '../../../db/mongo/schemas/comment.schema'
 import { Post } from '../../../db/mongo/schemas/post.schema'
-import { CommentLikesMongoRepository } from '../commentLikes/CommentLikes.mongo.repository'
+import { CommentLikesRepository } from '../commentLikes/CommentLikesRepository'
 import { GetPostCommentsQueries } from '../posts/model/posts.input.model'
-import { UsersMongoRepository } from '../../users/users.mongo.repository'
+import { UsersRepository } from '../../users/usersRepository'
 import { CommentOutModel, GetCommentOutModel } from './model/comments.output.model'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
@@ -29,11 +29,11 @@ type GetPostCommentsResult =
 	  }
 
 @Injectable()
-export class CommentsMongoQueryRepository {
+export class CommentsQueryRepository {
 	constructor(
 		@InjectModel(Post.name) private PostModel: Model<Post>,
 		@InjectModel(Comment.name) private CommentModel: Model<Comment>,
-		private commentLikesMongoRepository: CommentLikesMongoRepository,
+		private commentLikesRepository: CommentLikesRepository,
 	) {}
 
 	async getComment(
@@ -47,12 +47,12 @@ export class CommentsMongoQueryRepository {
 		const getCommentRes = await this.CommentModel.findOne({ _id: new ObjectId(commentId) })
 
 		const commentLikesStatsRes =
-			await this.commentLikesMongoRepository.getCommentLikesStats(commentId)
+			await this.commentLikesRepository.getCommentLikesStats(commentId)
 
 		let currentUserCommentLikeStatus = DBTypes.LikeStatuses.None
 		if (userId) {
 			currentUserCommentLikeStatus =
-				await this.commentLikesMongoRepository.getUserCommentLikeStatus(userId, commentId)
+				await this.commentLikesRepository.getUserCommentLikeStatus(userId, commentId)
 		}
 
 		return getCommentRes
@@ -102,15 +102,14 @@ export class CommentsMongoQueryRepository {
 
 		const items = await Promise.all(
 			getPostCommentsRes.map(async (comment) => {
-				const commentLikesStatsRes =
-					await this.commentLikesMongoRepository.getCommentLikesStats(
-						comment._id.toString(),
-					)
+				const commentLikesStatsRes = await this.commentLikesRepository.getCommentLikesStats(
+					comment._id.toString(),
+				)
 
 				let currentUserCommentLikeStatus = DBTypes.LikeStatuses.None
 				if (userId) {
 					currentUserCommentLikeStatus =
-						await this.commentLikesMongoRepository.getUserCommentLikeStatus(
+						await this.commentLikesRepository.getUserCommentLikeStatus(
 							userId,
 							comment._id.toString(),
 						)

@@ -5,7 +5,7 @@ import { CreateBlogOutModel } from '../model/blogs.output.model'
 
 @Injectable()
 export class CreateBlogUseCase {
-	constructor(private blogsMongoRepository: BlogsRepository) {}
+	constructor(private blogsRepository: BlogsRepository) {}
 
 	async execute(body: CreateBlogDtoModel) {
 		const newBlog: CreateBlogOutModel = {
@@ -17,6 +17,6 @@ export class CreateBlogUseCase {
 			isMembership: false,
 		}
 
-		return await this.blogsMongoRepository.createBlog(newBlog)
+		return await this.blogsRepository.createBlog(newBlog)
 	}
 }

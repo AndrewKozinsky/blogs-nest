@@ -4,13 +4,13 @@ import { BrowserService } from '../../../base/application/browser.service'
 import { JwtService } from '../../../base/application/jwt.service'
 import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
 import { UserServiceModel } from '../../users/models/users.service.model'
-import { AuthMongoRepository } from '../auth.mongo.repository'
+import { AuthRepository } from '../authRepository'
 import { AuthLoginDtoModel } from '../model/authLogin.input.model'
 
 @Injectable()
 export class LoginUseCase {
 	constructor(
-		private authMongoRepository: AuthMongoRepository,
+		private authRepository: AuthRepository,
 		private jwtService: JwtService,
 		private browserService: BrowserService,
 	) {}
@@ -19,8 +19,7 @@ export class LoginUseCase {
 		req: Request,
 		body: AuthLoginDtoModel,
 	): Promise<LayerResult<{ refreshTokenStr: string; user: UserServiceModel }>> {
-		const getUserRes =
-			await this.authMongoRepository.getConfirmedUserByLoginOrEmailAndPassword(body)
+		const getUserRes = await this.authRepository.getConfirmedUserByLoginOrEmailAndPassword(body)
 
 		if (getUserRes.code !== LayerResultCode.Success || !getUserRes.data) {
 			return {
@@ -36,7 +35,7 @@ export class LoginUseCase {
 			clientIP,
 			clientName,
 		)
-		await this.authMongoRepository.insertDeviceRefreshToken(newDeviceRefreshToken)
+		await this.authRepository.insertDeviceRefreshToken(newDeviceRefreshToken)
 
 		const refreshTokenStr = this.jwtService.createRefreshTokenStr(
 			newDeviceRefreshToken.deviceId,

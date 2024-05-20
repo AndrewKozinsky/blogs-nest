@@ -4,9 +4,9 @@ import { UpdateBlogDtoModel } from '../model/blogs.input.model'
 
 @Injectable()
 export class UpdateBlogUseCase {
-	constructor(private blogsMongoRepository: BlogsRepository) {}
+	constructor(private blogsRepository: BlogsRepository) {}
 
 	async execute(blogId: string, updateBlogDto: UpdateBlogDtoModel) {
-		return this.blogsMongoRepository.updateBlog(blogId, updateBlogDto)
+		return this.blogsRepository.updateBlog(blogId, updateBlogDto)
 	}
 }

@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common'
 import { DBTypes } from '../../../../db/mongo/dbTypes'
 import { LayerResult, LayerResultCode } from '../../../../types/resultCodes'
-import { PostLikesMongoRepository } from '../../postLikes/postLikes.mongo.repository'
+import { PostLikesRepository } from '../../postLikes/postLikesRepository'
 import { UserServiceModel } from '../../../users/models/users.service.model'
-import { PostsMongoRepository } from '../posts.mongo.repository'
+import { PostsRepository } from '../postsRepository'
 
 @Injectable()
 export class SetPostLikeStatusUseCase {
 	constructor(
-		private postsMongoRepository: PostsMongoRepository,
-		private postLikesMongoRepository: PostLikesMongoRepository,
+		private postsRepository: PostsRepository,
+		private postLikesRepository: PostLikesRepository,
 	) {}
 
 	async execute(
@@ -17,7 +17,7 @@ export class SetPostLikeStatusUseCase {
 		postId: string,
 		likeStatus: DBTypes.LikeStatuses,
 	): Promise<LayerResult<null>> {
-		const post = await this.postsMongoRepository.getPostById(postId)
+		const post = await this.postsRepository.getPostById(postId)
 		if (!post) {
 			return {
 				code: LayerResultCode.NotFound,
@@ -25,12 +25,12 @@ export class SetPostLikeStatusUseCase {
 		}
 
 		// Find post like status object if it exists
-		const postLike = await this.postLikesMongoRepository.getPostLikeByUser(user.id, postId)
+		const postLike = await this.postLikesRepository.getPostLikeByUser(user.id, postId)
 
 		if (postLike) {
-			await this.postLikesMongoRepository.updatePostLike(user.id, postId, likeStatus)
+			await this.postLikesRepository.updatePostLike(user.id, postId, likeStatus)
 		} else {
-			await this.postLikesMongoRepository.createPostLike(user.id, postId, likeStatus)
+			await this.postLikesRepository.createPostLike(user.id, postId, likeStatus)
 		}
 
 		return {

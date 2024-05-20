@@ -18,7 +18,7 @@ import { CheckAccessTokenGuard } from '../../../infrastructure/guards/checkAcces
 import RouteNames from '../../../settings/routeNames'
 import { LayerResultCode } from '../../../types/resultCodes'
 import { CommentLikeOperationsDtoModel } from '../commentLikes/models/commentLikeOperations.input.model'
-import { CommentsMongoQueryRepository } from './comments.mongo.queryRepository'
+import { CommentsQueryRepository } from './commentsQueryRepository'
 import { UpdateCommentDtoModel } from './model/comments.input.model'
 import { DeleteCommentUseCase } from './use-cases/DeleteCommentUseCase'
 import { SetCommentLikeStatusUseCase } from './use-cases/SetCommentLikeStatusUseCase'
@@ -27,7 +27,7 @@ import { UpdateCommentUseCase } from './use-cases/UpdateCommentUseCase'
 @Controller(RouteNames.COMMENTS.value)
 export class CommentsController {
 	constructor(
-		private commentsMongoQueryRepository: CommentsMongoQueryRepository,
+		private commentsQueryRepository: CommentsQueryRepository,
 		private updateCommentUseCase: UpdateCommentUseCase,
 		private deleteCommentUseCase: DeleteCommentUseCase,
 		private setCommentLikeStatusUseCase: SetCommentLikeStatusUseCase,
@@ -43,7 +43,7 @@ export class CommentsController {
 	) {
 		const { user } = req
 
-		const comment = await this.commentsMongoQueryRepository.getComment(user?.id, commentId)
+		const comment = await this.commentsQueryRepository.getComment(user?.id, commentId)
 
 		if (!comment) {
 			throw new NotFoundException()

@@ -19,10 +19,10 @@ import { BlogsRepository } from '../../blogs/blogsRepository'
 @ValidatorConstraint({ name: 'blogId', async: true })
 @Injectable()
 export class BlogIdValidation implements ValidatorConstraintInterface {
-	constructor(private readonly blogsMongoRepository: BlogsRepository) {}
+	constructor(private readonly blogsRepository: BlogsRepository) {}
 
 	async validate(value: string): Promise<boolean> {
-		const blog = await this.blogsMongoRepository.getBlogById(value)
+		const blog = await this.blogsRepository.getBlogById(value)
 
 		return !!blog
 	}

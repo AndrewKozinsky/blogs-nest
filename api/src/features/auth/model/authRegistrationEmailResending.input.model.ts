@@ -5,17 +5,17 @@ import {
 	ValidatorConstraint,
 	ValidatorConstraintInterface,
 } from 'class-validator'
-import { AuthMongoRepository } from '../auth.mongo.repository'
+import { AuthRepository } from '../authRepository'
 
 @ValidatorConstraint({ name: 'email', async: true })
 @Injectable()
 export class IsEmailExistsValidationInAuthRegistrationEmailResendingDto
 	implements ValidatorConstraintInterface
 {
-	constructor(private readonly authMongoRepository: AuthMongoRepository) {}
+	constructor(private readonly authRepository: AuthRepository) {}
 
 	async validate(value: string): Promise<boolean> {
-		const user = await this.authMongoRepository.getUserByEmail(value)
+		const user = await this.authRepository.getUserByEmail(value)
 
 		if (!user || user.emailConfirmation.isConfirmed) {
 			throw new BadRequestException([

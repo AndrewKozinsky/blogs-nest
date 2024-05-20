@@ -1,20 +1,20 @@
 import { Injectable } from '@nestjs/common'
 import { EmailManager } from '../../../base/managers/email.manager'
 import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
-import { AuthMongoRepository } from '../auth.mongo.repository'
+import { AuthRepository } from '../authRepository'
 import { AuthRegistrationEmailResendingDtoModel } from '../model/authRegistrationEmailResending.input.model'
 
 @Injectable()
 export class RegistrationEmailResendingUseCase {
 	constructor(
-		private authMongoRepository: AuthMongoRepository,
+		private authRepository: AuthRepository,
 		private emailManager: EmailManager,
 	) {}
 
 	async execute(body: AuthRegistrationEmailResendingDtoModel): Promise<LayerResult<null>> {
 		const { email } = body
 
-		const user = await this.authMongoRepository.getUserByEmail(email)
+		const user = await this.authRepository.getUserByEmail(email)
 
 		if (!user || user.emailConfirmation.isConfirmed) {
 			return {
@@ -22,9 +22,7 @@ export class RegistrationEmailResendingUseCase {
 			}
 		}
 
-		const newConfirmationCode = await this.authMongoRepository.setNewEmailConfirmationCode(
-			user.id,
-		)
+		const newConfirmationCode = await this.authRepository.setNewEmailConfirmationCode(user.id)
 
 		// await не нужен потому что тест не проходит в Инкубаторе
 		try {

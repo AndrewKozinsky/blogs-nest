@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common'
 import { UpdatePostDtoModel } from '../model/posts.input.model'
-import { PostsMongoRepository } from '../posts.mongo.repository'
+import { PostsRepository } from '../postsRepository'
 
 @Injectable()
 export class UpdatePostUseCase {
-	constructor(private postsMongoRepository: PostsMongoRepository) {}
+	constructor(private postsRepository: PostsRepository) {}
 
 	async execute(postId: string, updatePostDto: UpdatePostDtoModel) {
-		return this.postsMongoRepository.updatePost(postId, updatePostDto)
+		return this.postsRepository.updatePost(postId, updatePostDto)
 	}
 }

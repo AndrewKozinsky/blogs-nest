@@ -1,21 +1,21 @@
 import { Injectable } from '@nestjs/common'
 import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
-import { UsersMongoRepository } from '../../users/users.mongo.repository'
+import { UsersRepository } from '../../users/usersRepository'
 
 @Injectable()
 export class SetNewPasswordUseCase {
-	constructor(private usersMongoRepository: UsersMongoRepository) {}
+	constructor(private usersRepository: UsersRepository) {}
 
 	async execute(passRecoveryCode: string, newPassword: string): Promise<LayerResult<null>> {
-		const user = await this.usersMongoRepository.getUserByPasswordRecoveryCode(passRecoveryCode)
+		const user = await this.usersRepository.getUserByPasswordRecoveryCode(passRecoveryCode)
 
 		if (!user) {
 			return { code: LayerResultCode.BadRequest }
 		}
 
-		await this.usersMongoRepository.setPasswordRecoveryCodeToUser(user.id, null)
+		await this.usersRepository.setPasswordRecoveryCodeToUser(user.id, null)
 
-		await this.usersMongoRepository.setNewPasswordToUser(user.id, newPassword)
+		await this.usersRepository.setNewPasswordToUser(user.id, newPassword)
 
 		return {
 			code: LayerResultCode.Success,

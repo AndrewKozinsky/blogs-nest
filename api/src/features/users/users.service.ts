@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common'
-import { UsersMongoRepository } from './users.mongo.repository'
+import { UsersRepository } from './usersRepository'
 
 @Injectable()
 export class UsersService {
-	constructor(private usersMongoRepository: UsersMongoRepository) {}
+	constructor(private usersRepository: UsersRepository) {}
 
 	async getUser(userId: string) {
-		return this.usersMongoRepository.getUserById(userId)
+		return this.usersRepository.getUserById(userId)
 	}
 }

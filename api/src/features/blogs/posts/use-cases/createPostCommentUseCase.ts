@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common'
 import { ObjectId } from 'mongodb'
-import { CommentsMongoRepository } from '../../comments/comments.mongo.repository'
+import { CommentsRepository } from '../../comments/commentsRepository'
 import { UserServiceModel } from '../../../users/models/users.service.model'
 import { CreatePostCommentDtoModel } from '../model/posts.input.model'
-import { PostsMongoRepository } from '../posts.mongo.repository'
+import { PostsRepository } from '../postsRepository'
 
 @Injectable()
 export class CreatePostCommentUseCase {
 	constructor(
-		private postsMongoRepository: PostsMongoRepository,
-		private commentsMongoRepository: CommentsMongoRepository,
+		private postsRepository: PostsRepository,
+		private commentsRepository: CommentsRepository,
 	) {}
 
 	async execute(
@@ -21,9 +21,9 @@ export class CreatePostCommentUseCase {
 			return 'postNotExist'
 		}
 
-		const post = await this.postsMongoRepository.getPostById(postId)
+		const post = await this.postsRepository.getPostById(postId)
 		if (!post) return 'postNotExist'
 
-		return await this.commentsMongoRepository.createPostComment(user, postId, commentDto)
+		return await this.commentsRepository.createPostComment(user, postId, commentDto)
 	}
 }

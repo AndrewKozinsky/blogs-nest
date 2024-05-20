@@ -24,12 +24,12 @@ import {
 } from './models/users.input.model'
 import { CreateUserUseCase } from './use-cases/createUser.useCase'
 import { DeleteUserUseCase } from './use-cases/deleteUser.useCase'
-import { UsersMongoQueryRepository } from './users.mongo.queryRepository'
+import { UsersQueryRepository } from './usersQueryRepository'
 
 @Controller(RouteNames.USERS.value)
 export class UsersController {
 	constructor(
-		private usersMongoQueryRepository: UsersMongoQueryRepository,
+		private usersQueryRepository: UsersQueryRepository,
 		private createUserUseCase: CreateUserUseCase,
 		private deleteUserUseCase: DeleteUserUseCase,
 	) {}
@@ -38,7 +38,7 @@ export class UsersController {
 	@UseGuards(CheckAdminAuthGuard)
 	@Get()
 	async getUsers(@Query(new GetUsersQueriesPipe()) query: GetUsersQueries, @Res() res: Response) {
-		const users = await this.usersMongoQueryRepository.getUsers(query)
+		const users = await this.usersQueryRepository.getUsers(query)
 
 		res.status(HttpStatus.OK).send(users)
 	}

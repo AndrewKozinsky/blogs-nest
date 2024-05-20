@@ -9,7 +9,7 @@ import { User, UserDocument } from '../../db/mongo/schemas/user.schema'
 import { UserServiceModel } from './models/users.service.model'
 
 @Injectable()
-export class UsersMongoRepository {
+export class UsersRepository {
 	constructor(
 		@InjectModel(User.name) private UserModel: Model<User>,
 		private commonService: CommonService,

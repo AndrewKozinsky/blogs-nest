@@ -16,7 +16,7 @@ import { CommonService } from './features/common/common.service'
 import { SecurityModule } from './features/security/security.module'
 import { TestsModule } from './features/test/tests.module'
 import { UsersModule } from './features/users/users.module'
-import { UsersMongoRepository } from './features/users/users.mongo.repository'
+import { UsersRepository } from './features/users/usersRepository'
 import { RequestsLimiterMiddleware } from './infrastructure/middlewares/requestsLimiter.middleware'
 import { SetReqUserMiddleware } from './infrastructure/middlewares/setReqUser.middleware'
 import { RouteNames } from './settings/routeNames'
@@ -34,6 +34,7 @@ const { MONGO_URL, DB_NAME, DB_USER_NAME, DB_USER_PASSWORD, DB_TYPE, POSTGRES_PO
 			{ name: RateLimit.name, schema: RateLimitSchema },
 		]),
 		TypeOrmModule.forRoot({
+			// url: 'postgresql://blogs_owner:ybZpRe4Es5oA@ep-curly-voice-a2q1fh7d.eu-central-1.aws.neon.tech/blogs?sslmode=require',
 			type: 'postgres',
 			host: 'blogs-postgres',
 			port: POSTGRES_PORT,
@@ -53,7 +54,7 @@ const { MONGO_URL, DB_NAME, DB_USER_NAME, DB_USER_PASSWORD, DB_TYPE, POSTGRES_PO
 	controllers: [],
 	providers: [
 		CommonService,
-		UsersMongoRepository,
+		UsersRepository,
 		HashAdapter,
 		JwtService,
 		RequestService,
@@ -74,6 +75,18 @@ export class AppModule implements NestModule {
   websiteUrl VARCHAR,
   createdAt DATE,
   isMembership BOOLEAN
+)`,
+				[],
+			)
+
+			await this.dataSource.query(
+				`CREATE TABLE IF NOT EXISTS posts (
+	id SERIAL PRIMARY KEY,
+	title VARCHAR,
+  	shortDescription VARCHAR,
+  	content TEXT,
+  	createdAt DATE,
+    blogId SERIAL REFERENCES blogs(id)
 )`,
 				[],
 			)

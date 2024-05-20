@@ -1,13 +1,13 @@
 import { Injectable, NestMiddleware } from '@nestjs/common'
 import { NextFunction, Request, Response } from 'express'
 import { JwtService } from '../../base/application/jwt.service'
-import { UsersMongoRepository } from '../../features/users/users.mongo.repository'
+import { UsersRepository } from '../../features/users/usersRepository'
 
 @Injectable()
 export class SetReqUserMiddleware implements NestMiddleware {
 	constructor(
 		private jwtService: JwtService,
-		private usersMongoRepository: UsersMongoRepository,
+		private usersRepository: UsersRepository,
 	) {}
 
 	async use(req: Request, res: Response, next: NextFunction) {
@@ -30,7 +30,7 @@ export class SetReqUserMiddleware implements NestMiddleware {
 			return
 		}
 
-		req.user = await this.usersMongoRepository.getUserById(userId)
+		req.user = await this.usersRepository.getUserById(userId)
 		next()
 	}
 }

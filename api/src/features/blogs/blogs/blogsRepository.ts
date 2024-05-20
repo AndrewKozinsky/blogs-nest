@@ -5,6 +5,7 @@ import { ObjectId } from 'mongodb'
 import { Model } from 'mongoose'
 import { DataSource } from 'typeorm'
 import { Blog, BlogDocument } from '../../../db/mongo/schemas/blog.schema'
+import { convertToNumber } from '../../../utils/numbers'
 import { CreateBlogDtoModel, UpdateBlogDtoModel } from './model/blogs.input.model'
 import { GetBlogOutModel as CreateBlogOutModel } from './model/blogs.output.model'
 import { BlogServiceModel } from './model/blogs.service.model'
@@ -13,7 +14,7 @@ import { BlogServiceModel } from './model/blogs.service.model'
 export class BlogsRepository {
 	constructor(
 		@InjectModel(Blog.name) private BlogModel: Model<Blog>,
-		private dataSource: DataSource,
+		@InjectDataSource() private dataSource: DataSource,
 	) {}
 
 	/*async getBlogs() {
@@ -33,19 +34,18 @@ export class BlogsRepository {
 	}
 
 	async createBlog(dto: CreateBlogDtoModel) {
-		/*const createBlogRes = await this.BlogModel.create({ ...dto, isMembership: false })
-		return createBlogRes.id*/
+		// Current data like '2024-05-19T14:36:40.112Z'
+		const createdAt = new Date().toISOString()
 
-		const createdAt = new Date().toISOString().split('T')[0]
-		const res = await this.dataSource.query(
+		// Insert new blog and get an array like this: [ { id: 10 } ]
+		const newBlogsIdRes = await this.dataSource.query(
 			`INSERT INTO blogs
-			("name", "description", "websiteUrl", "createdAt", "isMembership")
-			VALUES($1, $2, $3, $4, $5)`,
+			("name", "description", "websiteurl", "createdat", "ismembership")
+			VALUES($1, $2, $3, $4, $5) RETURNING id`,
 			[dto.name, dto.description, dto.websiteUrl, createdAt, '0'],
 		)
-		console.log(res)
 
-		return '123'
+		return newBlogsIdRes[0].id
 	}
 
 	async createBlogByMongo(dto: CreateBlogOutModel) {
@@ -55,6 +55,28 @@ export class BlogsRepository {
 	}
 
 	async updateBlog(blogId: string, updateBlogDto: UpdateBlogDtoModel): Promise<boolean> {
+		const blogIdNum = convertToNumber(blogId)
+		if (!blogIdNum || !Object.keys(updateBlogDto).length) {
+			return false
+		}
+
+		let updateQueryStr = 'UPDATE blogs SET '
+
+		const updateQueryStrParams = Object.keys(updateBlogDto).map((updateBlogParamKey) => {
+			// @ts-ignore
+			return updateBlogParamKey + ' = ' + `'${updateBlogDto[updateBlogParamKey]}'`
+		})
+		updateQueryStr += updateQueryStrParams.join(', ')
+		updateQueryStr += ` WHERE id = ${blogIdNum};`
+
+		// The query will return an array where the second element is a number of updated documents
+		// [ [], 1 ]
+		const updateBlogRes = await this.dataSource.query(updateQueryStr, [])
+
+		return updateBlogRes[1] === 1
+	}
+
+	/*async updateBlogByMongo(blogId: string, updateBlogDto: UpdateBlogDtoModel): Promise<boolean> {
 		if (!ObjectId.isValid(blogId)) {
 			return false
 		}
@@ -65,9 +87,25 @@ export class BlogsRepository {
 		)
 
 		return updateBlogRes.modifiedCount === 1
-	}
+	}*/
 
 	async deleteBlog(blogId: string): Promise<boolean> {
+		const blogIdNum = convertToNumber(blogId)
+		if (!blogIdNum) {
+			return false
+		}
+
+		// The query will return an array where the second element is a number of deleted documents
+		// [ [], 1 ]
+		const deleteBlogRes = await this.dataSource.query(
+			`DELETE FROM blogs WHERE id='${+blogIdNum}'`,
+			[],
+		)
+
+		return deleteBlogRes[1] === 1
+	}
+
+	/*async deleteBlogByMongo(blogId: string): Promise<boolean> {
 		if (!ObjectId.isValid(blogId)) {
 			return false
 		}
@@ -75,7 +113,7 @@ export class BlogsRepository {
 		const result = await this.BlogModel.deleteOne({ _id: new ObjectId(blogId) })
 
 		return result.deletedCount === 1
-	}
+	}*/
 
 	mapDbBlogToServiceBlog(DbBlog: BlogDocument): BlogServiceModel {
 		return {

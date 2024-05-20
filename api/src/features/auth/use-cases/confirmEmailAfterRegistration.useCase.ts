@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common'
 import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
-import { AuthMongoRepository } from '../auth.mongo.repository'
+import { AuthRepository } from '../authRepository'
 
 @Injectable()
 export class ConfirmEmailAfterRegistrationUseCase {
-	constructor(private authMongoRepository: AuthMongoRepository) {}
+	constructor(private authRepository: AuthRepository) {}
 
 	async execute(confirmationCode: string): Promise<LayerResult<null>> {
-		const user = await this.authMongoRepository.getUserByConfirmationCode(confirmationCode)
+		const user = await this.authRepository.getUserByConfirmationCode(confirmationCode)
 		if (!user || user.emailConfirmation.isConfirmed) {
 			return {
 				code: LayerResultCode.BadRequest,
@@ -23,7 +23,7 @@ export class ConfirmEmailAfterRegistrationUseCase {
 			}
 		}
 
-		await this.authMongoRepository.makeUserEmailConfirmed(user.id)
+		await this.authRepository.makeUserEmailConfirmed(user.id)
 
 		return {
 			code: LayerResultCode.Success,

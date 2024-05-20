@@ -7,15 +7,15 @@ import {
 	ValidatorConstraint,
 	ValidatorConstraintInterface,
 } from 'class-validator'
-import { AuthMongoRepository } from '../auth.mongo.repository'
+import { AuthRepository } from '../authRepository'
 
 @ValidatorConstraint({ name: 'code', async: true })
 @Injectable()
 export class CodeCustomValidation implements ValidatorConstraintInterface {
-	constructor(private readonly authMongoRepository: AuthMongoRepository) {}
+	constructor(private readonly authRepository: AuthRepository) {}
 
 	async validate(value: string): Promise<boolean> {
-		const user = await this.authMongoRepository.getUserByConfirmationCode(value)
+		const user = await this.authRepository.getUserByConfirmationCode(value)
 
 		if (user?.emailConfirmation.isConfirmed) {
 			throw new BadRequestException([{ field: 'code', message: 'Email exists already' }])

@@ -5,11 +5,11 @@ import { JwtService } from '../../base/application/jwt.service'
 import { RequestService } from '../../base/application/request.service'
 import { DeviceToken, DeviceTokenSchema } from '../../db/mongo/schemas/deviceToken.schema'
 import { User, UserSchema } from '../../db/mongo/schemas/user.schema'
-import { AuthMongoRepository } from '../auth/auth.mongo.repository'
+import { AuthRepository } from '../auth/authRepository'
 import { CommonService } from '../common/common.service'
 import { SecurityController } from './security.controller'
-import { SecurityMongoQueryRepository } from './security.mongo.queryRepository'
-import { SecurityMongoRepository } from './security.mongo.repository'
+import { SecurityQueryRepository } from './securityQueryRepository'
+import { SecurityRepository } from './securityRepository'
 import { TerminateAllDeviceRefreshTokensApartThisUseCase } from './use-cases/terminateAllDeviceRefreshTokensApartThisUseCase'
 import { TerminateSpecifiedDeviceRefreshTokenUseCase } from './use-cases/terminateSpecifiedDeviceRefreshTokenUseCase'
 
@@ -28,12 +28,12 @@ const useCases = [
 	controllers: [SecurityController],
 	providers: [
 		RequestService,
-		SecurityMongoQueryRepository,
-		AuthMongoRepository,
+		SecurityQueryRepository,
+		AuthRepository,
 		HashAdapter,
 		CommonService,
 		JwtService,
-		SecurityMongoRepository,
+		SecurityRepository,
 		...useCases,
 	],
 })
