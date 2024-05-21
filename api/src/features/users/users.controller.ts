@@ -44,7 +44,7 @@ export class UsersController {
 	}*/
 
 	// Create new user by the admin
-	/*@UseGuards(CheckAdminAuthGuard)
+	@UseGuards(CheckAdminAuthGuard)
 	@Post()
 	@HttpCode(HttpStatus.CREATED)
 	async createUser(@Body() body: CreateUserDtoModel) {
@@ -55,7 +55,7 @@ export class UsersController {
 		}
 
 		if (createdUserStatus) return createdUserStatus.data
-	}*/
+	}
 
 	// Delete user specified by id
 	/*@UseGuards(CheckAdminAuthGuard)

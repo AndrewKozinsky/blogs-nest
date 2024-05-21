@@ -126,6 +126,7 @@ export class AuthPgRepository {
 		return this.mapDbUserToServiceUser(getUserRes)
 	}
 
+// <Omit<PGGetUserQuery, 'id'>>
 	async createUser(dto: DBTypes.User) {
 		return this.commonService.createUser(dto)
 	}

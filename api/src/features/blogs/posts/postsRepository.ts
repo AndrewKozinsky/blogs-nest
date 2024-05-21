@@ -37,7 +37,7 @@ export class PostsRepository {
 		// Current data like '2024-05-19T14:36:40.112Z'
 		const createdAt = new Date().toISOString()
 
-		// Insert new blog and get an array like this: [ { id: 10 } ]
+		// Insert new blog and to get an array like this: [ { id: 10 } ]
 		const newBlogPostIdRes = await this.dataSource.query(
 			`INSERT INTO posts
 			("title", "shortdescription", "content", "blogid", "createdat")

@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
+import { InjectDataSource } from '@nestjs/typeorm'
 import { addMilliseconds } from 'date-fns'
 import { ObjectId } from 'mongodb'
 import { Model } from 'mongoose'
+import { DataSource } from 'typeorm'
 import { HashAdapter } from '../../base/adapters/hash.adapter'
 import { JwtService } from '../../base/application/jwt.service'
+import { PGGetUserQuery } from '../../db/pg/blogs'
 import { config } from '../../settings/config'
 import { DBTypes } from '../../db/mongo/dbTypes'
 import { User, UserDocument } from '../../db/mongo/schemas/user.schema'
@@ -23,6 +26,7 @@ export class AuthRepository {
 		private hashService: HashAdapter,
 		private commonService: CommonService,
 		private jwtService: JwtService,
+		@InjectDataSource() private dataSource: DataSource,
 	) {}
 
 	async getUserByRefreshToken(refreshTokenStr: string) {
@@ -44,10 +48,34 @@ export class AuthRepository {
 			return null
 		}
 
+		// @ts-ignore
 		return this.mapDbUserToServiceUser(getUserRes)
 	}
 
 	async getUserByEmail(loginOrEmail: string) {
+		/*const getUserRes = await this.UserModel.findOne({
+			'account.email': loginOrEmail,
+		})
+
+		if (!getUserRes) {
+			return null
+		}
+
+		return this.mapDbUserToServiceUser(getUserRes)*/
+
+		const usersRes = await this.dataSource.query(
+			`SELECT * FROM users WHERE email=${loginOrEmail}`,
+			[],
+		)
+
+		if (!usersRes.length) {
+			return null
+		}
+
+		return this.mapDbUserToServiceUser(usersRes[0])
+	}
+
+	/*async getUserByEmailByMongo(loginOrEmail: string) {
 		const getUserRes = await this.UserModel.findOne({
 			'account.email': loginOrEmail,
 		})
@@ -57,7 +85,7 @@ export class AuthRepository {
 		}
 
 		return this.mapDbUserToServiceUser(getUserRes)
-	}
+	}*/
 
 	async getUserByLoginOrEmail(loginOrEmail: string) {
 		const getUserRes = await this.UserModel.findOne({
@@ -68,6 +96,7 @@ export class AuthRepository {
 			return null
 		}
 
+		// @ts-ignore
 		return this.mapDbUserToServiceUser(getUserRes)
 	}
 
@@ -92,6 +121,7 @@ export class AuthRepository {
 			return null
 		}
 
+		// @ts-ignore
 		return this.mapDbUserToServiceUser(getUserRes)
 	}
 
@@ -122,12 +152,17 @@ export class AuthRepository {
 			return null
 		}
 
+		// @ts-ignore
 		return this.mapDbUserToServiceUser(getUserRes)
 	}
 
-	async createUser(dto: DBTypes.User) {
+	async createUser(dto: Omit<PGGetUserQuery, 'id'>) {
 		return this.commonService.createUser(dto)
 	}
+
+	/*async createUserByMongo(dto: DBTypes.User) {
+		return this.commonService.createUser(dto)
+	}*/
 
 	async makeUserEmailConfirmed(userId: string) {
 		const updateUserRes = await this.UserModel.updateOne(
@@ -225,7 +260,7 @@ export class AuthRepository {
 		}
 	}
 
-	mapDbUserToServiceUser(dbUser: UserDocument): UserServiceModel {
+	mapDbUserToServiceUser(dbUser: PGGetUserQuery): UserServiceModel {
 		return this.commonService.mapDbUserToServiceUser(dbUser)
 	}
 

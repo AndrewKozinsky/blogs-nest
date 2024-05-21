@@ -4,6 +4,7 @@ import { ObjectId } from 'mongodb'
 import { Model } from 'mongoose'
 import { HashAdapter } from '../../base/adapters/hash.adapter'
 import { DBTypes } from '../../db/mongo/dbTypes'
+import { PGGetUserQuery } from '../../db/pg/blogs'
 import { CommonService } from '../common/common.service'
 import { User, UserDocument } from '../../db/mongo/schemas/user.schema'
 import { UserServiceModel } from './models/users.service.model'
@@ -25,6 +26,7 @@ export class UsersRepository {
 
 		if (!getUserRes) return null
 
+		// @ts-ignore
 		return this.mapDbUserToServiceUser(getUserRes)
 	}
 
@@ -35,10 +37,11 @@ export class UsersRepository {
 
 		if (!getUserRes) return null
 
+		// @ts-ignore
 		return this.mapDbUserToServiceUser(getUserRes)
 	}
 
-	async createUser(dto: DBTypes.User) {
+	async createUser(dto: Omit<PGGetUserQuery, 'id'>) {
 		return this.commonService.createUser(dto)
 	}
 
@@ -46,7 +49,7 @@ export class UsersRepository {
 		return this.commonService.deleteUser(userId)
 	}
 
-	mapDbUserToServiceUser(dbUser: UserDocument): UserServiceModel {
+	mapDbUserToServiceUser(dbUser: PGGetUserQuery): UserServiceModel {
 		return this.commonService.mapDbUserToServiceUser(dbUser)
 	}
 
