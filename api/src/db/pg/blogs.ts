@@ -12,9 +12,31 @@ export type PGGetUserQuery = {
 	login: string
 	email: string
 	password: string
-	passwordRecoveryCode?: string
-	createdAt: string
-	emailConfirmationCode: string
-	confirmationCodeExpirationDate: string
-	isConfirmationEmailCodeConfirmed: boolean
+	passwordrecoverycode?: string
+	createdat: string
+	emailconfirmationcode: string
+	confirmationcodeexpirationdate: string
+	isconfirmationemailcodeconfirmed: boolean
+}
+
+export type PGGetPostQuery = {
+	id: string // '10'
+	title: string
+	shortdescription: string
+	content: string
+	createdat: string
+	blogid: string
+	blogname: string
+}
+
+export type PGGetCommentQuery = {
+	id: string
+	content: string
+	postid: string
+	userid: string
+	userlogin: string
+	createdat: string
+	likescount: number
+	dislikescount: number
+	currentusercommentlikestatus: string
 }

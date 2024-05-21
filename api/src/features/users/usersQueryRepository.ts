@@ -18,8 +18,35 @@ export class UsersQueryRepository {
 		@InjectDataSource() private dataSource: DataSource,
 	) {}
 
-	//<Omit<PGGetUserQuery, 'id'>>
-	async getUsers(queries: GetUsersQueries): Promise<GetUsersOutModel> {
+	async getUsers(query: GetUsersQueries): Promise<GetUsersOutModel> {
+		const login = query.searchLoginTerm ?? ''
+		const email = query.searchEmailTerm ?? ''
+
+		const sortBy = query.sortBy ?? 'createdAt'
+		const sortDirection = query.sortDirection === 'asc' ? 'ASC' : 'DESC'
+
+		const pageNumber = query.pageNumber ? +query.pageNumber : 1
+		const pageSize = query.pageSize ? +query.pageSize : 10
+
+		const usersCountRes = await this.dataSource.query('SELECT COUNT(*) FROM users', []) // [ { count: '18' } ]
+		const totalUsersCount = +usersCountRes[0].count
+		const pagesCount = Math.ceil(totalUsersCount / pageSize)
+
+		const getUsersRes = await this.dataSource.query(
+			`SELECT * FROM users WHERE login ILIKE '%${login}%' OR email ILIKE '%${email}%' ORDER BY ${sortBy} ${sortDirection} LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize}`,
+			[],
+		)
+
+		return {
+			pagesCount,
+			page: pageNumber,
+			pageSize,
+			totalCount: totalUsersCount,
+			items: getUsersRes.map(this.mapDbUserToOutputUser),
+		}
+	}
+
+	/*async getUsersByMongo(queries: GetUsersQueries): Promise<GetUsersOutModel> {
 		const filter: FilterQuery<DBTypes.User> = {
 			$or: [
 				{ 'account.login': { $regex: queries.searchLoginTerm ?? '', $options: 'i' } },
@@ -49,10 +76,9 @@ export class UsersQueryRepository {
 			page: pageNumber,
 			pageSize,
 			totalCount: totalUsersCount,
-			// @ts-ignore
 			items: getUsersRes.map(this.mapDbUserToOutputUser),
 		}
-	}
+	}*/
 
 	async getUser(userId: string): Promise<null | GetUserOutModel> {
 		const userIdNum = convertToNumber(userId)
@@ -66,7 +92,7 @@ export class UsersQueryRepository {
 			return null
 		}
 
-		return usersRes ? this.mapDbUserToOutputUser(usersRes) : null
+		return this.mapDbUserToOutputUser(usersRes[0])
 	}
 
 	/*async getUserByMongo(userId: string): Promise<null | GetUserOutModel> {
@@ -84,7 +110,7 @@ export class UsersQueryRepository {
 			id: DbUser.id,
 			email: DbUser.email,
 			login: DbUser.login,
-			createdAt: DbUser.createdAt,
+			createdAt: DbUser.createdat,
 		}
 	}
 }

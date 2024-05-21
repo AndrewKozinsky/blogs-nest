@@ -289,6 +289,7 @@ export class PostsQueryRepository {
 				return {
 					addedAt: postLike.addedAt,
 					userId: postLike.userId,
+					// @ts-ignore
 					login: userRes!.account.login,
 				}
 			}),

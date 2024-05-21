@@ -17,10 +17,6 @@ export class CreatePostCommentUseCase {
 		commentDto: CreatePostCommentDtoModel,
 		user: UserServiceModel,
 	): Promise<'postNotExist' | string> {
-		if (!ObjectId.isValid(postId)) {
-			return 'postNotExist'
-		}
-
 		const post = await this.postsRepository.getPostById(postId)
 		if (!post) return 'postNotExist'
 

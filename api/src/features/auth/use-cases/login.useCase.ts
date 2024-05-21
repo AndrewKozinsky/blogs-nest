@@ -35,6 +35,7 @@ export class LoginUseCase {
 			clientIP,
 			clientName,
 		)
+
 		await this.authRepository.insertDeviceRefreshToken(newDeviceRefreshToken)
 
 		const refreshTokenStr = this.jwtService.createRefreshTokenStr(

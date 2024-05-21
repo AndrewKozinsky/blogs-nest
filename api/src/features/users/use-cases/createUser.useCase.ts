@@ -18,6 +18,7 @@ export class CreateUserUseCase {
 
 	async execute(data: CreateUserDtoModel): Promise<LayerResult<UserOutModel>> {
 		const userByEmail = await this.authRepository.getUserByEmail(data.email)
+
 		if (userByEmail) {
 			return { code: LayerResultCode.BadRequest }
 		}

@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
+import { InjectDataSource } from '@nestjs/typeorm'
 import { ObjectId } from 'mongodb'
 import { Model } from 'mongoose'
+import { DataSource } from 'typeorm'
 import { HashAdapter } from '../../base/adapters/hash.adapter'
 import { DBTypes } from '../../db/mongo/dbTypes'
 import { PGGetUserQuery } from '../../db/pg/blogs'
+import { convertToNumber } from '../../utils/numbers'
 import { CommonService } from '../common/common.service'
 import { User, UserDocument } from '../../db/mongo/schemas/user.schema'
 import { UserServiceModel } from './models/users.service.model'
@@ -15,9 +18,24 @@ export class UsersRepository {
 		@InjectModel(User.name) private UserModel: Model<User>,
 		private commonService: CommonService,
 		private hashAdapter: HashAdapter,
+		@InjectDataSource() private dataSource: DataSource,
 	) {}
 
 	async getUserById(userId: string) {
+		const userIdNum = convertToNumber(userId)
+		if (!userIdNum) {
+			return false
+		}
+
+		const usersRes = await this.dataSource.query(`SELECT * FROM users WHERE id=${userId}`, [])
+
+		if (!usersRes.length) {
+			return null
+		}
+
+		return this.mapDbUserToServiceUser(usersRes[0])
+	}
+	/*async getUserByIdByMongo(userId: string) {
 		if (!ObjectId.isValid(userId)) {
 			return null
 		}
@@ -28,7 +46,7 @@ export class UsersRepository {
 
 		// @ts-ignore
 		return this.mapDbUserToServiceUser(getUserRes)
-	}
+	}*/
 
 	async getUserByPasswordRecoveryCode(passwordRecoveryCode: string) {
 		const getUserRes = await this.UserModel.findOne({

@@ -53,18 +53,8 @@ export class AuthRepository {
 	}
 
 	async getUserByEmail(loginOrEmail: string) {
-		/*const getUserRes = await this.UserModel.findOne({
-			'account.email': loginOrEmail,
-		})
-
-		if (!getUserRes) {
-			return null
-		}
-
-		return this.mapDbUserToServiceUser(getUserRes)*/
-
 		const usersRes = await this.dataSource.query(
-			`SELECT * FROM users WHERE email=${loginOrEmail}`,
+			`SELECT * FROM users WHERE email='${loginOrEmail}'`,
 			[],
 		)
 
@@ -101,6 +91,28 @@ export class AuthRepository {
 	}
 
 	async getUserByLoginOrEmailAndPassword(loginDto: { loginOrEmail: string; password: string }) {
+		const usersRes = await this.dataSource.query(
+			`SELECT * FROM users WHERE login='${loginDto.loginOrEmail}' OR email='${loginDto.loginOrEmail}'`,
+			[],
+		)
+
+		if (!usersRes.length) {
+			return null
+		}
+
+		const isPasswordMath = await this.hashService.compare(
+			loginDto.password,
+			usersRes[0].password,
+		)
+
+		if (!isPasswordMath) {
+			return null
+		}
+
+		return this.mapDbUserToServiceUser(usersRes[0])
+	}
+
+	/*async getUserByLoginOrEmailAndPasswordByMongo(loginDto: { loginOrEmail: string; password: string }) {
 		const getUserRes = await this.UserModel.findOne({
 			$or: [
 				{ 'account.login': loginDto.loginOrEmail },
@@ -121,9 +133,8 @@ export class AuthRepository {
 			return null
 		}
 
-		// @ts-ignore
 		return this.mapDbUserToServiceUser(getUserRes)
-	}
+	}*/
 
 	async getConfirmedUserByLoginOrEmailAndPassword(loginDto: {
 		loginOrEmail: string
@@ -189,8 +200,24 @@ export class AuthRepository {
 	}
 
 	async insertDeviceRefreshToken(deviceRefreshToken: DBTypes.DeviceToken) {
-		await this.DeviceTokenModel.insertMany(deviceRefreshToken)
+		await this.dataSource.query(
+			`INSERT INTO devicetokens
+			("issuedat", "userid", "expirationdate", "deviceip", "deviceid", "devicename")
+			VALUES($1, $2, $3, $4, $5, $6) RETURNING id`,
+			[
+				deviceRefreshToken.issuedAt,
+				deviceRefreshToken.userId,
+				deviceRefreshToken.expirationDate,
+				deviceRefreshToken.deviceIP,
+				deviceRefreshToken.deviceId,
+				deviceRefreshToken.deviceName,
+			],
+		)
 	}
+
+	/*async insertDeviceRefreshTokenByMongo(deviceRefreshToken: DBTypes.DeviceToken) {
+		await this.DeviceTokenModel.insertMany(deviceRefreshToken)
+	}*/
 
 	async getDeviceRefreshTokenByDeviceId(deviceId: string): Promise<null | DBTypes.DeviceToken> {
 		const getTokenRes = await this.DeviceTokenModel.findOne({

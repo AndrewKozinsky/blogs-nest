@@ -116,7 +116,7 @@ export class PostsController {
 	}
 
 	// Returns comments for specified post
-	/*@Get(':postId/comments')
+	@Get(':postId/comments')
 	@HttpCode(HttpStatus.OK)
 	async getPostComments(
 		@Req() req: Request,
@@ -136,10 +136,10 @@ export class PostsController {
 		}
 
 		return postComments.data
-	}*/
+	}
 
 	// Create new comment
-	/*@UseGuards(CheckAccessTokenGuard)
+	@UseGuards(CheckAccessTokenGuard)
 	@Post(':postId/comments')
 	@HttpCode(HttpStatus.CREATED)
 	async createComment(
@@ -165,7 +165,7 @@ export class PostsController {
 		)
 
 		return getCommentRes
-	}*/
+	}
 
 	// Make like/unlike/dislike/undislike operation
 	/*@UseGuards(CheckAccessTokenGuard)

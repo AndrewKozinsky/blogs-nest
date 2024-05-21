@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common'
+import { InjectDataSource } from '@nestjs/typeorm'
 import { Model } from 'mongoose'
 import { ObjectId } from 'mongodb'
 import { InjectModel } from '@nestjs/mongoose'
+import { DataSource } from 'typeorm'
+import { PGGetCommentQuery } from '../../../db/pg/blogs'
+import { convertToNumber } from '../../../utils/numbers'
 import { CreatePostCommentDtoModel } from '../posts/model/posts.input.model'
 import { UserServiceModel } from '../../users/models/users.service.model'
 import { CommentDocument } from '../../../db/mongo/schemas/comment.schema'
@@ -11,9 +15,30 @@ import { Comment } from '../../../db/mongo/schemas/comment.schema'
 
 @Injectable()
 export class CommentsRepository {
-	constructor(@InjectModel(Comment.name) private CommentModel: Model<Comment>) {}
+	constructor(
+		@InjectModel(Comment.name) private CommentModel: Model<Comment>,
+		@InjectDataSource() private dataSource: DataSource,
+	) {}
 
 	async getComment(commentId: string) {
+		const commentIdNum = convertToNumber(commentId)
+		if (!commentIdNum) {
+			return false
+		}
+
+		const commentsRes = await this.dataSource.query(
+			`SELECT *, (SELECT 'my user login' as userlogin) FROM comments WHERE id=${commentId}`,
+			[],
+		)
+
+		if (!commentsRes.length) {
+			return null
+		}
+
+		return this.mapDbCommentToClientComment(commentsRes[0])
+	}
+
+	/*async getCommentByMongo(commentId: string) {
 		if (!ObjectId.isValid(commentId)) {
 			return null
 		}
@@ -21,9 +46,28 @@ export class CommentsRepository {
 		const getCommentRes = await this.CommentModel.findOne({ _id: new ObjectId(commentId) })
 
 		return getCommentRes ? this.mapDbCommentToClientComment(getCommentRes) : null
-	}
+	}*/
 
 	async createPostComment(
+		user: UserServiceModel,
+		postId: string,
+		commentDto: CreatePostCommentDtoModel,
+	) {
+		// Current data like '2024-05-19T14:36:40.112Z'
+		const createdAt = new Date().toISOString()
+
+		// Insert new blog and to get an array like this: [ { id: 10 } ]
+		const newPostCommentsIdRes = await this.dataSource.query(
+			`INSERT INTO comments
+			("postid", "userid", "content", "createdat")
+			VALUES($1, $2, $3, $4) RETURNING id`,
+			[postId, user.id, commentDto.content, createdAt],
+		)
+
+		return newPostCommentsIdRes[0].id
+	}
+
+	/*async createPostCommentByMongo(
 		user: UserServiceModel,
 		postId: string,
 		commentDto: CreatePostCommentDtoModel,
@@ -41,9 +85,26 @@ export class CommentsRepository {
 		const createdPostCommentRes = await this.CommentModel.create(newPostComment)
 		const postClientComment = this.mapDbCommentToClientComment(createdPostCommentRes as any)
 		return postClientComment.id
-	}
+	}*/
 
 	async updateComment(
+		commentId: string,
+		updateCommentDto: UpdateCommentDtoModel,
+	): Promise<boolean> {
+		const commentIdNum = convertToNumber(commentId)
+		if (!commentIdNum) {
+			return false
+		}
+
+		const updateCommentRes = await this.dataSource.query(
+			`UPDATE comments SET content = '${updateCommentDto.content}' WHERE id = ${commentId};`,
+			[],
+		)
+
+		return updateCommentRes[1] === 1
+	}
+
+	/*async updateCommentByMongo(
 		commentId: string,
 		updateCommentDto: UpdateCommentDtoModel,
 	): Promise<boolean> {
@@ -57,9 +118,25 @@ export class CommentsRepository {
 		)
 
 		return updateCommentRes.modifiedCount === 1
-	}
+	}*/
 
 	async deleteComment(commentId: string): Promise<boolean> {
+		const commentIdNum = convertToNumber(commentId)
+		if (!commentIdNum) {
+			return false
+		}
+
+		// The query will return an array where the second element is a number of deleted documents
+		// [ [], 1 ]
+		const deleteCommentRes = await this.dataSource.query(
+			`DELETE FROM comments WHERE id='${commentId}'`,
+			[],
+		)
+
+		return deleteCommentRes[1] === 1
+	}
+
+	/*async deleteCommentByMongo(commentId: string): Promise<boolean> {
 		if (!ObjectId.isValid(commentId)) {
 			return false
 		}
@@ -67,17 +144,17 @@ export class CommentsRepository {
 		const result = await this.CommentModel.deleteOne({ _id: new ObjectId(commentId) })
 
 		return result.deletedCount === 1
-	}
+	}*/
 
-	mapDbCommentToClientComment(DbComment: CommentDocument): CommentServiceModel {
+	mapDbCommentToClientComment(DbComment: PGGetCommentQuery): CommentServiceModel {
 		return {
-			id: DbComment._id.toString(),
+			id: DbComment.id,
 			content: DbComment.content,
 			commentatorInfo: {
-				userId: DbComment.commentatorInfo.userId,
-				userLogin: DbComment.commentatorInfo.userLogin,
+				userId: DbComment.userid,
+				userLogin: DbComment.userlogin,
 			},
-			createdAt: DbComment.createdAt,
+			createdAt: DbComment.createdat,
 		}
 	}
 }

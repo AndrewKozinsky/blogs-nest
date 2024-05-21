@@ -8,6 +8,7 @@ import { HashAdapter } from '../../base/adapters/hash.adapter'
 import { DBTypes } from '../../db/mongo/dbTypes'
 import { User, UserDocument } from '../../db/mongo/schemas/user.schema'
 import { PGGetUserQuery } from '../../db/pg/blogs'
+import { convertToNumber } from '../../utils/numbers'
 import { createUniqString } from '../../utils/stringUtils'
 import { UserServiceModel } from '../users/models/users.service.model'
 import { add } from 'date-fns'
@@ -31,29 +32,29 @@ export class CommonService {
 			login: dto.login,
 			email: dto.email,
 			password: passwordHash,
-			passwordRecoveryCode: undefined,
-			createdAt: new Date().toISOString(),
-			emailConfirmationCode: createUniqString(),
-			confirmationCodeExpirationDate: add(new Date(), { hours: 0, minutes: 5 }).toISOString(),
-			isConfirmationEmailCodeConfirmed: isEmailConfirmed,
+			passwordrecoverycode: undefined,
+			createdat: new Date().toISOString(),
+			emailconfirmationcode: createUniqString(),
+			confirmationcodeexpirationdate: add(new Date(), { hours: 0, minutes: 5 }).toISOString(),
+			isconfirmationemailcodeconfirmed: isEmailConfirmed,
 		}
 	}
 
 	async createUser(dto: Omit<PGGetUserQuery, 'id'>) {
 		// Insert new user and to get an array like this: [ { id: 10 } ]
 		const newBlogsIdRes = await this.dataSource.query(
-			`INSERT INTO blogs
-			("login", "email", "password", "passwordRecoveryCode", "createdAt", "emailConfirmationCode", "confirmationCodeExpirationDate", "isConfirmationEmailCodeConfirmed")
-			VALUES($1, $2, $3, $4, $5) RETURNING id`,
+			`INSERT INTO users
+			("login", "email", "password", "passwordrecoverycode", "createdat", "emailconfirmationcode", "confirmationcodeexpirationdate", "isconfirmationemailcodeconfirmed")
+			VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
 			[
 				dto.login,
 				dto.email,
 				dto.password,
-				dto.passwordRecoveryCode,
-				dto.createdAt,
-				dto.emailConfirmationCode,
-				dto.confirmationCodeExpirationDate,
-				dto.isConfirmationEmailCodeConfirmed,
+				dto.passwordrecoverycode,
+				dto.createdat,
+				dto.emailconfirmationcode,
+				dto.confirmationcodeexpirationdate,
+				dto.isconfirmationemailcodeconfirmed,
 			],
 		)
 
@@ -66,6 +67,22 @@ export class CommonService {
 	}*/
 
 	async deleteUser(userId: string): Promise<boolean> {
+		const userIdNum = convertToNumber(userId)
+		if (!userIdNum) {
+			return false
+		}
+
+		// The query will return an array where the second element is a number of deleted documents
+		// [ [], 1 ]
+		const deleteBlogRes = await this.dataSource.query(
+			`DELETE FROM users WHERE id='${userId}'`,
+			[],
+		)
+
+		return deleteBlogRes[1] === 1
+	}
+
+	/*async deleteUserByMongo(userId: string): Promise<boolean> {
 		if (!ObjectId.isValid(userId)) {
 			return false
 		}
@@ -73,7 +90,7 @@ export class CommonService {
 		const result = await this.UserModel.deleteOne({ _id: new ObjectId(userId) })
 
 		return result.deletedCount === 1
-	}
+	}*/
 
 	mapDbUserToServiceUser(DbUser: PGGetUserQuery): UserServiceModel {
 		return {
@@ -82,13 +99,13 @@ export class CommonService {
 				login: DbUser.login,
 				email: DbUser.email,
 				password: DbUser.password,
-				passwordRecoveryCode: DbUser.passwordRecoveryCode,
-				createdAt: DbUser.createdAt,
+				passwordRecoveryCode: DbUser.passwordrecoverycode,
+				createdAt: DbUser.createdat,
 			},
 			emailConfirmation: {
-				confirmationCode: DbUser.emailConfirmationCode,
-				expirationDate: new Date(DbUser.confirmationCodeExpirationDate),
-				isConfirmed: DbUser.isConfirmationEmailCodeConfirmed,
+				confirmationCode: DbUser.emailconfirmationcode,
+				expirationDate: new Date(DbUser.confirmationcodeexpirationdate),
+				isConfirmed: DbUser.isconfirmationemailcodeconfirmed,
 			},
 		}
 	}

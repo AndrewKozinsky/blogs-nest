@@ -52,7 +52,7 @@ export class AuthController {
 	) {}
 
 	// User login
-	/*@Post(RouteNames.AUTH.LOGIN.value)
+	@Post(RouteNames.AUTH.LOGIN.value)
 	@HttpCode(HttpStatus.OK)
 	async login(@Req() req: Request, @Res() res: Response, @Body() body: AuthLoginDtoModel) {
 		const loginServiceRes = await this.loginUseCase.execute(req, body)
@@ -70,7 +70,7 @@ export class AuthController {
 		res.status(HttpStatus.OK).send({
 			accessToken: this.jwtService.createAccessTokenStr(loginServiceRes.data.user.id),
 		})
-	}*/
+	}
 
 	// Generate the new pair of access and refresh tokens
 	// (in cookie client must send correct refreshToken that will be revoked after refreshing)

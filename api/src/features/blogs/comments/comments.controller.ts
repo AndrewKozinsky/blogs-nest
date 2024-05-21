@@ -34,7 +34,7 @@ export class CommentsController {
 	) {}
 
 	// Return comment by id
-	/*@Get(':commentId')
+	@Get(':commentId')
 	@HttpCode(HttpStatus.OK)
 	async getComment(
 		@Param('commentId') commentId: string,
@@ -50,10 +50,10 @@ export class CommentsController {
 		}
 
 		res.status(HttpStatus.OK).send(comment)
-	}*/
+	}
 
 	// Update existing comment by id with InputModel
-	/*@UseGuards(CheckAccessTokenGuard)
+	@UseGuards(CheckAccessTokenGuard)
 	@Put(':commentId')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async updateComment(
@@ -74,10 +74,10 @@ export class CommentsController {
 		if (!updateCommentStatus) {
 			throw new NotFoundException()
 		}
-	}*/
+	}
 
 	// Delete comment specified by id
-	/*@UseGuards(CheckAccessTokenGuard)
+	@UseGuards(CheckAccessTokenGuard)
 	@Delete(':commentId')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteComment(@Param('commentId') commentId: string, @Req() req: Request) {
@@ -90,7 +90,7 @@ export class CommentsController {
 		if (!deleteCommentStatus) {
 			throw new NotFoundException()
 		}
-	}*/
+	}
 
 	// Make like/unlike/dislike/undislike operation
 	/*@UseGuards(CheckAccessTokenGuard)

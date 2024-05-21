@@ -6,6 +6,7 @@ import { Model } from 'mongoose'
 import { DataSource } from 'typeorm'
 import { DBTypes } from '../../../db/mongo/dbTypes'
 import { Post, PostDocument } from '../../../db/mongo/schemas/post.schema'
+import { PGGetPostQuery } from '../../../db/pg/blogs'
 import { convertToNumber } from '../../../utils/numbers'
 import { CreatePostDtoModel, UpdatePostDtoModel } from './model/posts.input.model'
 import { CreatePostOutModel, PostOutModel } from './model/posts.output.model'
@@ -24,6 +25,24 @@ export class PostsRepository {
 	}*/
 
 	async getPostById(postId: string) {
+		const postIdNum = convertToNumber(postId)
+		if (!postIdNum) {
+			return null
+		}
+
+		const postsRes = await this.dataSource.query(
+			`SELECT *, (SELECT 'My blog name' as blogName) FROM posts WHERE id=${postId}`,
+			[],
+		)
+
+		if (!postsRes.length) {
+			return null
+		}
+
+		return postsRes ? this.mapDbPostToClientPost(postsRes[0]) : null
+	}
+
+	/*async getPostByIdByMongo(postId: string) {
 		if (!ObjectId.isValid(postId)) {
 			return null
 		}
@@ -31,7 +50,7 @@ export class PostsRepository {
 		const getPostRes = await this.PostModel.findOne({ _id: new ObjectId(postId) })
 
 		return getPostRes ? this.mapDbPostToClientPost(getPostRes) : null
-	}
+	}*/
 
 	async createPost(dto: CreatePostDtoModel) {
 		// Current data like '2024-05-19T14:36:40.112Z'
@@ -116,15 +135,15 @@ export class PostsRepository {
 		return result.deletedCount === 1
 	}*/
 
-	mapDbPostToClientPost(DbPost: PostDocument): PostServiceModel {
+	mapDbPostToClientPost(DbPost: PGGetPostQuery): PostServiceModel {
 		return {
-			id: DbPost._id.toString(),
+			id: DbPost.id,
 			title: DbPost.title,
-			shortDescription: DbPost.shortDescription,
+			shortDescription: DbPost.shortdescription,
 			content: DbPost.content,
-			blogId: DbPost.blogId,
-			blogName: DbPost.blogName,
-			createdAt: DbPost.createdAt,
+			blogId: DbPost.blogid,
+			blogName: DbPost.blogname,
+			createdAt: DbPost.createdat,
 		}
 	}
 }
