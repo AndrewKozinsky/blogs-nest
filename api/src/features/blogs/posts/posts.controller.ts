@@ -50,7 +50,8 @@ export class PostsController {
 	) {}
 
 	// Returns all posts
-	@Get()
+	// AFTER postLikes !!!
+	/*@Get()
 	async getPosts(
 		@Query(new GetPostsQueriesPipe()) query: GetPostsQueries,
 		@Req() req: Request,
@@ -61,7 +62,7 @@ export class PostsController {
 		const posts = await this.postsQueryRepository.getPosts(user?.id, query)
 
 		res.status(HttpStatus.OK).send(posts)
-	}
+	}*/
 
 	// Create new post
 	@Post()
@@ -75,7 +76,8 @@ export class PostsController {
 	}
 
 	// Return post by id
-	@Get(':postId')
+	// AFTER postLikes !!!
+	/*@Get(':postId')
 	@HttpCode(HttpStatus.OK)
 	async getPost(@Param('postId') postId: string, @Res() res: Response, @Req() req: Request) {
 		const { user } = req
@@ -87,7 +89,7 @@ export class PostsController {
 		}
 
 		res.status(HttpStatus.OK).send(post)
-	}
+	}*/
 
 	// Update existing post by id with InputModel
 	@UseGuards(CheckAdminAuthGuard)
@@ -114,7 +116,7 @@ export class PostsController {
 	}
 
 	// Returns comments for specified post
-	@Get(':postId/comments')
+	/*@Get(':postId/comments')
 	@HttpCode(HttpStatus.OK)
 	async getPostComments(
 		@Req() req: Request,
@@ -134,10 +136,10 @@ export class PostsController {
 		}
 
 		return postComments.data
-	}
+	}*/
 
 	// Create new comment
-	@UseGuards(CheckAccessTokenGuard)
+	/*@UseGuards(CheckAccessTokenGuard)
 	@Post(':postId/comments')
 	@HttpCode(HttpStatus.CREATED)
 	async createComment(
@@ -163,10 +165,10 @@ export class PostsController {
 		)
 
 		return getCommentRes
-	}
+	}*/
 
 	// Make like/unlike/dislike/undislike operation
-	@UseGuards(CheckAccessTokenGuard)
+	/*@UseGuards(CheckAccessTokenGuard)
 	@Put(':postId/like-status')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async setPostLikeStatus(
@@ -183,5 +185,5 @@ export class PostsController {
 		if (setLikeStatus.code === LayerResultCode.NotFound) {
 			throw new NotFoundException()
 		}
-	}
+	}*/
 }

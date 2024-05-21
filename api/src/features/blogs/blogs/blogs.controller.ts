@@ -64,7 +64,7 @@ export class BlogsController {
 	}
 
 	// Returns all posts for specified blog
-	/*@Get(':blogId/posts')
+	@Get(':blogId/posts')
 	async getBlogPosts(
 		@Query(new GetBlogPostsQueriesPipe()) query: GetBlogPostsQueries,
 		@Param('blogId') blogId: string,
@@ -84,10 +84,10 @@ export class BlogsController {
 		}
 
 		res.status(HttpStatus.OK).send(posts)
-	}*/
+	}
 
 	// Create new post for specific blog
-	/*@UseGuards(CheckAdminAuthGuard)
+	@UseGuards(CheckAdminAuthGuard)
 	@Post(':blogId/posts')
 	@HttpCode(HttpStatus.CREATED)
 	async createNewPostForSpecificBlog(
@@ -104,7 +104,7 @@ export class BlogsController {
 
 		const createPostInsertedId = await this.createBlogPostUseCase.execute(blogId, body)
 		return await this.postsQueryRepository.getPost(user?.id, createPostInsertedId)
-	}*/
+	}
 
 	// Returns blog by id
 	@Get(':blogId')

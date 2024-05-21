@@ -37,12 +37,12 @@ export class BlogsQueryRepository {
 		const pageSize = query.pageSize ? +query.pageSize : 10
 
 		const getBlogsRes = await this.dataSource.query(
-			`SELECT * FROM blogs WHERE name ILIKE '%${blogName}%' ORDER BY ${sortBy} ${sortDirection} LIMIT ${pageSize} OFFSET ${pageNumber}`,
+			`SELECT * FROM blogs WHERE name ILIKE '%${blogName}%' ORDER BY ${sortBy} ${sortDirection} LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize}`,
 			[],
 		)
 
 		const blogsCountRes = await this.dataSource.query('SELECT COUNT(*) FROM blogs', []) // [ { count: '18' } ]
-		const totalBlogsCount = blogsCountRes[0].count
+		const totalBlogsCount = +blogsCountRes[0].count
 		const pagesCount = Math.ceil(totalBlogsCount / pageSize)
 
 		return {
@@ -91,14 +91,11 @@ export class BlogsQueryRepository {
 		blogId: string,
 		queries: GetBlogPostsQueries,
 	): Promise<GetBlogPostsOutModel> {
-		const filter: FilterQuery<PostOutModel> = {
-			blogId,
-		}
-
 		const pageNumber = queries.pageNumber ? +queries.pageNumber : 1
 		const pageSize = queries.pageSize ? +queries.pageSize : 10
 
-		const totalBlogPostsCount = await this.PostModel.countDocuments(filter)
+		const blogPostsCountRes = await this.dataSource.query('SELECT COUNT(*) FROM posts', []) // [ { count: '18' } ]
+		const totalBlogPostsCount = blogPostsCountRes[0].count
 		const pagesCount = Math.ceil(totalBlogPostsCount / pageSize)
 
 		const blogPosts = await this.postsQueryRepository.getPosts(userId, queries, blogId)

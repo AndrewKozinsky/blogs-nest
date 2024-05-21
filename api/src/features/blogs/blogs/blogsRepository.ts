@@ -5,6 +5,7 @@ import { ObjectId } from 'mongodb'
 import { Model } from 'mongoose'
 import { DataSource } from 'typeorm'
 import { Blog, BlogDocument } from '../../../db/mongo/schemas/blog.schema'
+import { PGGetBlogQuery } from '../../../db/pg/blogs'
 import { convertToNumber } from '../../../utils/numbers'
 import { CreateBlogDtoModel, UpdateBlogDtoModel } from './model/blogs.input.model'
 import { GetBlogOutModel as CreateBlogOutModel } from './model/blogs.output.model'
@@ -24,6 +25,16 @@ export class BlogsRepository {
 	}*/
 
 	async getBlogById(blogId: string) {
+		const blogsRes = await this.dataSource.query(`SELECT * FROM blogs WHERE id=${blogId}`, [])
+
+		if (!blogsRes.length) {
+			return null
+		}
+
+		return this.mapDbBlogToServiceBlog(blogsRes[0])
+	}
+
+	/*async getBlogByIdBuMongo(blogId: string) {
 		if (!ObjectId.isValid(blogId)) {
 			return null
 		}
@@ -31,7 +42,7 @@ export class BlogsRepository {
 		const getBlogRes = await this.BlogModel.findOne({ _id: new ObjectId(blogId) })
 
 		return getBlogRes ? this.mapDbBlogToServiceBlog(getBlogRes) : null
-	}
+	}*/
 
 	async createBlog(dto: CreateBlogDtoModel) {
 		// Current data like '2024-05-19T14:36:40.112Z'
@@ -48,11 +59,11 @@ export class BlogsRepository {
 		return newBlogsIdRes[0].id
 	}
 
-	async createBlogByMongo(dto: CreateBlogOutModel) {
+	/*async createBlogByMongo(dto: CreateBlogOutModel) {
 		const createBlogRes = await this.BlogModel.create({ ...dto, isMembership: false })
 
 		return createBlogRes.id
-	}
+	}*/
 
 	async updateBlog(blogId: string, updateBlogDto: UpdateBlogDtoModel): Promise<boolean> {
 		const blogIdNum = convertToNumber(blogId)
@@ -115,14 +126,14 @@ export class BlogsRepository {
 		return result.deletedCount === 1
 	}*/
 
-	mapDbBlogToServiceBlog(DbBlog: BlogDocument): BlogServiceModel {
+	mapDbBlogToServiceBlog(DbBlog: PGGetBlogQuery): BlogServiceModel {
 		return {
-			id: DbBlog._id.toString(),
+			id: DbBlog.id,
 			name: DbBlog.name,
 			description: DbBlog.description,
-			websiteUrl: DbBlog.websiteUrl,
-			createdAt: DbBlog.createdAt,
-			isMembership: DbBlog.isMembership,
+			websiteUrl: DbBlog.websiteurl,
+			createdAt: DbBlog.createdat,
+			isMembership: DbBlog.ismembership,
 		}
 	}
 }

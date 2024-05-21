@@ -15,7 +15,8 @@ import { CommonService } from '../common/common.service'
 import { UserServiceModel } from '../users/models/users.service.model'
 import { DeviceRefreshTokenServiceModel } from './model/auth.service.model'
 
-@Injectable()
+// DELETE!!!
+/*@Injectable()
 export class AuthPgRepository {
 	constructor(
 		@InjectModel(User.name) private UserModel: Model<User>,
@@ -198,9 +199,9 @@ export class AuthPgRepository {
 		}
 	}
 
-	/*async findDeviceRefreshTokenInDb(deviceId: string) {
+	/!*async findDeviceRefreshTokenInDb(deviceId: string) {
 		return this.DeviceTokenModel.findOne({ deviceId }).lean()
-	}*/
+	}*!/
 
 	async getUserDevicesByDeviceId(deviceId: string): Promise<LayerResult<DBTypes.DeviceToken[]>> {
 		const userDevice = await this.DeviceTokenModel.findOne({ deviceId }).lean()
@@ -242,4 +243,4 @@ export class AuthPgRepository {
 			userId: dbDevice.userId,
 		}
 	}
-}
+}*/

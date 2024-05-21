@@ -35,16 +35,16 @@ export class UsersController {
 	) {}
 
 	// Returns all users
-	@UseGuards(CheckAdminAuthGuard)
+	/*@UseGuards(CheckAdminAuthGuard)
 	@Get()
 	async getUsers(@Query(new GetUsersQueriesPipe()) query: GetUsersQueries, @Res() res: Response) {
 		const users = await this.usersQueryRepository.getUsers(query)
 
 		res.status(HttpStatus.OK).send(users)
-	}
+	}*/
 
 	// Create new user by the admin
-	@UseGuards(CheckAdminAuthGuard)
+	/*@UseGuards(CheckAdminAuthGuard)
 	@Post()
 	@HttpCode(HttpStatus.CREATED)
 	async createUser(@Body() body: CreateUserDtoModel) {
@@ -55,10 +55,10 @@ export class UsersController {
 		}
 
 		if (createdUserStatus) return createdUserStatus.data
-	}
+	}*/
 
 	// Delete user specified by id
-	@UseGuards(CheckAdminAuthGuard)
+	/*@UseGuards(CheckAdminAuthGuard)
 	@Delete(':userId')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteUser(@Param('userId') userId: string) {
@@ -67,5 +67,5 @@ export class UsersController {
 		if (!isUserDeleted) {
 			throw new NotFoundException()
 		}
-	}
+	}*/
 }
