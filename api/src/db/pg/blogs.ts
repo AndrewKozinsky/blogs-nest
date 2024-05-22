@@ -27,6 +27,8 @@ export type PGGetPostQuery = {
 	createdat: string
 	blogid: string
 	blogname: string
+	likescount: number
+	dislikescount: number
 }
 
 export type PGGetCommentQuery = {
@@ -49,4 +51,19 @@ export type PGGetDeviceTokensQuery = {
 	deviceip: string
 	deviceid: string
 	devicename: string
+}
+
+export type PGGetPostLikeQuery = {
+	id: string
+	postid: string
+	userid: string
+	status: string
+	addedat: string
+}
+
+export type PGGetCommentLikeQuery = {
+	id: string
+	commentid: string
+	userid: string
+	status: string
 }

@@ -7,7 +7,7 @@ import { DbService } from '../../db/mongo/dbService'
 export class TestsController {
 	constructor(private dbService: DbService) {}
 
-	/*@Delete(RouteNames.TESTING.ALL_DATA.value)
+	@Delete(RouteNames.TESTING.ALL_DATA.value)
 	async deleteAllData(@Res() res: Response) {
 		const isDropped = await this.dbService.drop()
 
@@ -17,5 +17,5 @@ export class TestsController {
 		}
 
 		throw new BadRequestException()
-	}*/
+	}
 }

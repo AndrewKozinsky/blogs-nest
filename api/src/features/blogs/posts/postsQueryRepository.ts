@@ -7,6 +7,8 @@ import { DataSource } from 'typeorm'
 import { DBTypes } from '../../../db/mongo/dbTypes'
 import { Post, PostDocument } from '../../../db/mongo/schemas/post.schema'
 import { PostLike } from '../../../db/mongo/schemas/postLike.schema'
+import { PGGetPostQuery } from '../../../db/pg/blogs'
+import { convertToNumber } from '../../../utils/numbers'
 import { PostLikesRepository } from '../postLikes/postLikesRepository'
 import { UsersRepository } from '../../users/usersRepository'
 import { GetPostsQueries } from './model/posts.input.model'
@@ -104,55 +106,50 @@ export class PostsQueryRepository {
 				totalCount: totalPostsCount,
 				items: [],
 			}
+		} else {
+			const getAllPostsRes = await this.dataSource.query(
+				'SELECT COUNT(*) FROM posts WHERE userid = ${userId}',
+				[],
+			) // [ { count: '18' } ]
+			const totalPostsCount = getAllPostsRes[0].count
+			const pagesCount = Math.ceil(totalPostsCount / pageSize)
+
+			const getPostsRes: PGGetPostQuery[] = await this.dataSource.query(
+				`SELECT *,
+       (SELECT COUNT(*) as likesCount FROM postlikes WHERE p.id = postlikes.postid AND postlikes.status = 'Like'),
+       (SELECT COUNT(*) as dislikesCount FROM postlikes WHERE p.id = postlikes.postid AND postlikes.status = 'Dislike')
+		FROM posts p WHERE userid = ${userId} ORDER BY ${sortBy} ${sortDirection} LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize}`,
+				[],
+			)
+
+			const items = await Promise.all(
+				getPostsRes.map(async (post) => {
+					const postId = post.id
+
+					let currentUserCommentLikeStatus = DBTypes.LikeStatuses.None
+					if (userId) {
+						currentUserCommentLikeStatus =
+							await this.postLikesRepository.getUserPostLikeStatus(userId, postId)
+					}
+
+					const newestPostLikes = await this.getNewestPostLikes(postId)
+
+					return this.mapDbPostToOutputPost(
+						post,
+						currentUserCommentLikeStatus,
+						newestPostLikes,
+					)
+				}),
+			)
+
+			return {
+				pagesCount,
+				page: pageNumber,
+				pageSize,
+				totalCount: totalPostsCount,
+				items,
+			}
 		}
-
-		/*
-		const totalPostsCount = await this.PostModel.countDocuments({})
-		const pagesCount = Math.ceil(totalPostsCount / pageSize)
-
-		const getPostsRes = await this.PostModel.find(filter)
-			.sort(sort)
-			.skip((pageNumber - 1) * pageSize)
-			.limit(pageSize)
-
-		const items = await Promise.all(
-			getPostsRes.map(async (post) => {
-				const postId = post._id.toString()
-
-				const postLikesStatsRes = await this.postLikesRepository.getPostLikesStats(postId)
-
-				let currentUserCommentLikeStatus = DBTypes.LikeStatuses.None
-				if (userId) {
-					currentUserCommentLikeStatus =
-						await this.postLikesRepository.getUserPostLikeStatus(userId, postId)
-				}
-
-				const newestPostLikes = await this.getNewestPostLikes(postId)
-
-				return this.mapDbPostToOutputPost(
-					post,
-					postLikesStatsRes.likesCount,
-					postLikesStatsRes.dislikesCount,
-					currentUserCommentLikeStatus,
-					newestPostLikes,
-				)
-			}),
-		)
-
-		return {
-			pagesCount,
-			page: pageNumber,
-			pageSize,
-			totalCount: totalPostsCount,
-			items,
-		}*/
-
-		const getPostsRes = await this.dataSource.query(
-			`SELECT * FROM posts WHERE blogid '${blogId}' ORDER BY ${sortBy} ${sortDirection} LIMIT ${pageSize} OFFSET ${pageNumber}`,
-			[],
-		)
-
-		return null as any
 	}
 
 	/*async getPostsByMongo(
@@ -214,13 +211,21 @@ export class PostsQueryRepository {
 	}*/
 
 	async getPost(userId: undefined | string, postId: string): Promise<null | GetPostOutModel> {
-		if (!ObjectId.isValid(postId)) {
+		const postIdNum = convertToNumber(postId)
+		if (!postIdNum) {
 			return null
 		}
 
-		const getPostRes = await this.PostModel.findOne({ _id: new ObjectId(postId) })
+		const getPostsRes = await this.dataSource.query(
+			`SELECT *,
+       (SELECT COUNT(*) as likesCount FROM postlikes WHERE p.id = postlikes.postid AND postlikes.status = 'Like'),
+       (SELECT COUNT(*) as dislikesCount FROM postlikes WHERE p.id = postlikes.postid AND postlikes.status = 'Dislike') FROM posts p WHERE p.id=${postId}`,
+			[],
+		)
 
-		const postLikesStatsRes = await this.postLikesRepository.getPostLikesStats(postId)
+		if (!getPostsRes.length) {
+			return null
+		}
 
 		let currentUserCommentLikeStatus = DBTypes.LikeStatuses.None
 		if (userId) {
@@ -232,15 +237,11 @@ export class PostsQueryRepository {
 
 		const newestPostLikes = await this.getNewestPostLikes(postId)
 
-		return getPostRes
-			? this.mapDbPostToOutputPost(
-					getPostRes,
-					postLikesStatsRes.likesCount,
-					postLikesStatsRes.dislikesCount,
-					currentUserCommentLikeStatus,
-					newestPostLikes,
-				)
-			: null
+		return this.mapDbPostToOutputPost(
+			getPostsRes[0],
+			currentUserCommentLikeStatus,
+			newestPostLikes,
+		)
 	}
 
 	/*async getPostByMongo(userId: undefined | string, postId: string): Promise<null | GetPostOutModel> {
@@ -297,23 +298,21 @@ export class PostsQueryRepository {
 	}
 
 	mapDbPostToOutputPost(
-		DbPost: PostDocument,
-		likesCount: number,
-		dislikesCount: number,
+		DbPost: PGGetPostQuery,
 		currentUserCommentLikeStatus: DBTypes.LikeStatuses,
 		newestLikes: NewestLike[],
 	): PostOutModel {
 		return {
-			id: DbPost._id.toString(),
+			id: DbPost.id,
 			title: DbPost.title,
-			shortDescription: DbPost.shortDescription,
+			shortDescription: DbPost.shortdescription,
 			content: DbPost.content,
-			blogId: DbPost.blogId,
-			blogName: DbPost.blogName,
-			createdAt: DbPost.createdAt,
+			blogId: DbPost.blogid,
+			blogName: DbPost.blogname,
+			createdAt: DbPost.createdat,
 			extendedLikesInfo: {
-				likesCount,
-				dislikesCount,
+				likesCount: DbPost.likescount,
+				dislikesCount: DbPost.dislikescount,
 				myStatus: currentUserCommentLikeStatus,
 				newestLikes,
 			},

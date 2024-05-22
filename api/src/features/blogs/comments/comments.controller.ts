@@ -93,7 +93,7 @@ export class CommentsController {
 	}
 
 	// Make like/unlike/dislike/undislike operation
-	/*@UseGuards(CheckAccessTokenGuard)
+	@UseGuards(CheckAccessTokenGuard)
 	@Put(':commentId/like-status')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async setCommentLikeStatus(
@@ -110,5 +110,5 @@ export class CommentsController {
 		if (setLikeStatus.code === LayerResultCode.NotFound) {
 			throw new NotFoundException()
 		}
-	}*/
+	}
 }
