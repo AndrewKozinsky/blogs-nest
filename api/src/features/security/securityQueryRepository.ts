@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
+import { InjectDataSource } from '@nestjs/typeorm'
 import { Model } from 'mongoose'
+import { DataSource } from 'typeorm'
 import { DeviceToken, DeviceTokenDocument } from '../../db/mongo/schemas/deviceToken.schema'
+import { PGGetDeviceTokensQuery } from '../../db/pg/blogs'
 import { AuthRepository } from '../auth/authRepository'
 import { GetUserDevicesOutModel, UserDeviceOutModel } from './model/security.output.model'
 
@@ -10,22 +13,28 @@ export class SecurityQueryRepository {
 	constructor(
 		@InjectModel(DeviceToken.name) private DeviceTokenModel: Model<DeviceToken>,
 		private authRepository: AuthRepository,
+		@InjectDataSource() private dataSource: DataSource,
 	) {}
 
 	async getUserDevices(refreshToken: string): Promise<GetUserDevicesOutModel> {
 		const user = await this.authRepository.getUserByRefreshToken(refreshToken)
 
-		const userDevices = await this.DeviceTokenModel.find({ userId: user!.id }).lean()
+		const userDevicesRes = await this.dataSource.query(
+			`SELECT * FROM devicetokens WHERE userId=${user!.id}`,
+			[],
+		)
 
-		return userDevices.map(this.mapDbUserDeviceToOutputUserDevice)
+		return userDevicesRes.map(this.mapDbUserDeviceToOutputUserDevice)
 	}
 
-	mapDbUserDeviceToOutputUserDevice(DbUserRefreshToken: DeviceTokenDocument): UserDeviceOutModel {
+	mapDbUserDeviceToOutputUserDevice(
+		DbUserRefreshToken: PGGetDeviceTokensQuery,
+	): UserDeviceOutModel {
 		return {
-			ip: DbUserRefreshToken.deviceIP, // IP address of device
-			title: DbUserRefreshToken.deviceName, // Chrome 105
-			lastActiveDate: DbUserRefreshToken.issuedAt.toISOString(), // Date of the last generating of refresh/access tokens
-			deviceId: DbUserRefreshToken.deviceId, // Id of the connected device session
+			ip: DbUserRefreshToken.deviceip, // IP address of device
+			title: DbUserRefreshToken.devicename, // Chrome 105
+			lastActiveDate: new Date(DbUserRefreshToken.issuedat).toISOString(), // Date of the last generating of refresh/access tokens
+			deviceId: DbUserRefreshToken.deviceid, // Id of the connected device session
 		}
 	}
 }

@@ -6,7 +6,6 @@ import { config } from '../../settings/config'
 export class RequestService {
 	getRefreshTokenStrFromReq(req: Request): null | string {
 		if (!req.cookies) return null
-
 		return req.cookies[config.refreshToken.name]
 	}
 }

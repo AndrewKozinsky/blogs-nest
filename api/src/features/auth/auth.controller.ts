@@ -74,7 +74,7 @@ export class AuthController {
 
 	// Generate the new pair of access and refresh tokens
 	// (in cookie client must send correct refreshToken that will be revoked after refreshing)
-	/*@UseGuards(CheckDeviceRefreshTokenGuard)
+	@UseGuards(CheckDeviceRefreshTokenGuard)
 	@Post(RouteNames.AUTH.REFRESH_TOKEN.value)
 	async refreshToken(@Req() req: Request, @Res() res: Response) {
 		const generateTokensRes = await this.generateAccessAndRefreshTokensUseCase.execute(
@@ -96,11 +96,11 @@ export class AuthController {
 		res.status(HttpStatus.OK).send({
 			accessToken: newAccessToken,
 		})
-	}*/
+	}
 
 	// Registration in the system.
 	// Email with confirmation code will be sent to passed email address.
-	/*@Post(RouteNames.AUTH.REGISTRATION.value)
+	@Post(RouteNames.AUTH.REGISTRATION.value)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async registration(@Body() body: AuthRegistrationDtoModel) {
 		const regStatus = await this.registrationUseCase.execute(body)
@@ -108,10 +108,10 @@ export class AuthController {
 		if (regStatus.code === LayerResultCode.BadRequest) {
 			throw new BadRequestException()
 		}
-	}*/
+	}
 
 	// Registration email resending.
-	/*@Post(RouteNames.AUTH.REGISTRATION_EMAIL_RESENDING.value)
+	@Post(RouteNames.AUTH.REGISTRATION_EMAIL_RESENDING.value)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async registrationEmailResending(@Body() body: AuthRegistrationEmailResendingDtoModel) {
 		const resendingStatus = await this.registrationEmailResendingUseCase.execute(body)
@@ -119,10 +119,10 @@ export class AuthController {
 		if (resendingStatus.code === LayerResultCode.BadRequest) {
 			throw new BadRequestException()
 		}
-	}*/
+	}
 
 	// Confirm registration
-	/*@Post(RouteNames.AUTH.REGISTRATION_CONFIRMATION.value)
+	@Post(RouteNames.AUTH.REGISTRATION_CONFIRMATION.value)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async registrationConfirmation(@Body() body: AuthRegistrationConfirmationDtoModel) {
 		const confirmationStatus: LayerResult<null> =
@@ -131,18 +131,18 @@ export class AuthController {
 		if (confirmationStatus.code === LayerResultCode.BadRequest) {
 			throw new BadRequestException()
 		}
-	}*/
+	}
 
 	// Get information about current user
-	/*@UseGuards(CheckAccessTokenGuard)
+	@UseGuards(CheckAccessTokenGuard)
 	@Get(RouteNames.AUTH.ME.value)
 	@HttpCode(HttpStatus.OK)
 	async getInformationAboutCurrentUser(@Req() req: Request) {
 		return await this.getCurrentUserUseCase.execute(req.user!)
-	}*/
+	}
 
 	// In cookie client must send correct refreshToken that will be revoked
-	/*@UseGuards(CheckDeviceRefreshTokenGuard)
+	@UseGuards(CheckDeviceRefreshTokenGuard)
 	@Post(RouteNames.AUTH.LOGOUT.value)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async logout(@Req() req: Request, @Res() res: Response) {
@@ -159,10 +159,10 @@ export class AuthController {
 
 		res.clearCookie(config.refreshToken.name)
 		res.sendStatus(HttpStatus.NO_CONTENT)
-	}*/
+	}
 
 	// Password recovery via Email confirmation. Email should be sent with RecoveryCode inside
-	/*@Post(RouteNames.AUTH.PASSWORD_RECOVERY.value)
+	@Post(RouteNames.AUTH.PASSWORD_RECOVERY.value)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async passwordRecovery(@Body() body: AuthPasswordRecoveryDtoModel) {
 		const passwordRecoveryServiceRes = await this.recoveryPasswordUseCase.execute(body.email)
@@ -172,10 +172,10 @@ export class AuthController {
 		}
 
 		// 204 Even if current email is not registered (for prevent user's email detection)
-	}*/
+	}
 
 	// Confirm Password recovery
-	/*@Post(RouteNames.AUTH.NEW_PASSWORD.value)
+	@Post(RouteNames.AUTH.NEW_PASSWORD.value)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async newPassword(@Body() body: AuthNewPasswordDtoModel) {
 		const passwordRecoveryServiceRes = await this.setNewPasswordUseCase.execute(
@@ -188,5 +188,5 @@ export class AuthController {
 		}
 
 		// 204 Even if current email is not registered (for prevent user's email detection)
-	}*/
+	}
 }

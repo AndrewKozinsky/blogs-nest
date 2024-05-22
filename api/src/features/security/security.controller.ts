@@ -30,7 +30,7 @@ export class SecurityController {
 	) {}
 
 	// Returns all devices with active sessions for current user
-	/*@UseGuards(CheckDeviceRefreshTokenGuard)
+	@UseGuards(CheckDeviceRefreshTokenGuard)
 	@Get('devices')
 	async getUserDevices(@Req() req: Request, @Res() res: Response) {
 		const refreshTokenFromCookie = this.requestService.getRefreshTokenStrFromReq(req) as string
@@ -39,10 +39,10 @@ export class SecurityController {
 			await this.securityQueryRepository.getUserDevices(refreshTokenFromCookie)
 
 		res.status(HttpStatus.OK).send(userDevices)
-	}*/
+	}
 
 	// Terminate all other (exclude current) device's sessions
-	/*@UseGuards(CheckDeviceRefreshTokenGuard)
+	@UseGuards(CheckDeviceRefreshTokenGuard)
 	@Delete('devices')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async terminateUserDevicesExceptOne(@Req() req: Request) {
@@ -50,10 +50,10 @@ export class SecurityController {
 		if (!refreshTokenFromCookie) return
 
 		await this.terminateAllDeviceRefreshTokensApartThisUseCase.execute(refreshTokenFromCookie)
-	}*/
+	}
 
 	// Terminate specified device session
-	/*@UseGuards(CheckDeviceRefreshTokenGuard)
+	@UseGuards(CheckDeviceRefreshTokenGuard)
 	@Delete('devices/:deviceId')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async terminateUserDevice(@Param('deviceId') deviceId: string, @Req() req: Request) {
@@ -74,5 +74,5 @@ export class SecurityController {
 		if (terminateDeviceRes.code === LayerResultCode.Forbidden) {
 			throw new ForbiddenException()
 		}
-	}*/
+	}
 }

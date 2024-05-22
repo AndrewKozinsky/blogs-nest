@@ -40,3 +40,13 @@ export type PGGetCommentQuery = {
 	dislikescount: number
 	currentusercommentlikestatus: string
 }
+
+export type PGGetDeviceTokensQuery = {
+	id: string
+	issuedat: string
+	userid: string
+	expirationdate: string
+	deviceip: string
+	deviceid: string
+	devicename: string
+}

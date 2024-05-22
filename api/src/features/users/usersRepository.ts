@@ -49,15 +49,27 @@ export class UsersRepository {
 	}*/
 
 	async getUserByPasswordRecoveryCode(passwordRecoveryCode: string) {
+		const usersRes = await this.dataSource.query(
+			`SELECT * FROM users WHERE passwordRecoveryCode='${passwordRecoveryCode}'`,
+			[],
+		)
+
+		if (!usersRes.length) {
+			return null
+		}
+
+		return this.mapDbUserToServiceUser(usersRes[0])
+	}
+
+	/*async getUserByPasswordRecoveryCodeByMongo(passwordRecoveryCode: string) {
 		const getUserRes = await this.UserModel.findOne({
 			'account.passwordRecoveryCode': passwordRecoveryCode,
 		})
 
 		if (!getUserRes) return null
 
-		// @ts-ignore
 		return this.mapDbUserToServiceUser(getUserRes)
-	}
+	}*/
 
 	async createUser(dto: Omit<PGGetUserQuery, 'id'>) {
 		return this.commonService.createUser(dto)
@@ -72,18 +84,34 @@ export class UsersRepository {
 	}
 
 	async setPasswordRecoveryCodeToUser(userId: string, recoveryCode: null | string) {
+		const updateUserRes = await this.dataSource.query(
+			`UPDATE users SET passwordRecoveryCode = ${recoveryCode} WHERE id = ${userId};`,
+			[],
+		)
+	}
+
+	/*async setPasswordRecoveryCodeToUserByMongo(userId: string, recoveryCode: null | string) {
 		await this.UserModel.updateOne(
 			{ _id: new ObjectId(userId) },
 			{ $set: { 'account.passwordRecoveryCode': recoveryCode } },
 		)
-	}
+	}*/
 
 	async setNewPasswordToUser(userId: string, newPassword: string) {
+		const passwordHash = await this.hashAdapter.hashString(newPassword)
+
+		const updateUserRes = await this.dataSource.query(
+			`UPDATE users SET password = ${passwordHash} WHERE id = ${userId};`,
+			[],
+		)
+	}
+
+	/*async setNewPasswordToUserByMongo(userId: string, newPassword: string) {
 		const passwordHash = await this.hashAdapter.hashString(newPassword)
 
 		await this.UserModel.updateOne(
 			{ _id: new ObjectId(userId) },
 			{ $set: { 'account.password': passwordHash } },
 		)
-	}
+	}*/
 }
