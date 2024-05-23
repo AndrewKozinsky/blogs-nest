@@ -20,7 +20,7 @@ import RouteNames from '../src/settings/routeNames'
 import { createTestApp } from './utils/common'
 import { clearAllDB } from './utils/db'
 
-it.skip('123', async () => {
+it.only('123', async () => {
 	expect(2).toBe(2)
 })
 
@@ -183,7 +183,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
-		it.only('should return 200 if the JWT refreshToken inside cookie is valid', async () => {
+		it('should return 200 if the JWT refreshToken inside cookie is valid', async () => {
 			const login = 'login'
 			const password = 'password'
 			const email = 'email@email.ru'
@@ -200,11 +200,11 @@ describe('ROOT', () => {
 				.set('Cookie', config.refreshToken.name + '=' + refreshTokenValue)
 				.expect(HTTP_STATUSES.OK_200)
 
-			// const newRefreshTokenStr = refreshTokenRes.headers['set-cookie'][0]
-			// const newRefreshTokenObj = parseCookieStringToObj(newRefreshTokenStr)
-			// expect(newRefreshTokenObj['Max-Age']).toBe(config.refreshToken.lifeDurationInMs / 1000)
-			// expect(newRefreshTokenObj.Secure).toBe(true)
-			// expect(newRefreshTokenObj.HttpOnly).toBe(true)
+			const newRefreshTokenStr = refreshTokenRes.headers['set-cookie'][0]
+			const newRefreshTokenObj = parseCookieStringToObj(newRefreshTokenStr)
+			expect(newRefreshTokenObj['Max-Age']).toBe(config.refreshToken.lifeDurationInMs / 1000)
+			expect(newRefreshTokenObj.Secure).toBe(true)
+			expect(newRefreshTokenObj.HttpOnly).toBe(true)
 		})
 	})
 
@@ -303,6 +303,7 @@ describe('ROOT', () => {
 			const userId = allUsers.body.items[0].id
 
 			const fullUserData = await usersRepository.getUserById(userId)
+			if (!fullUserData) return
 			const confirmationCode = fullUserData!.emailConfirmation.confirmationCode
 
 			await request(app.getHttpServer())
@@ -502,6 +503,7 @@ describe('ROOT', () => {
 
 			const userId = createdUserRes.body.id
 			const getUserRes = await usersRepository.getUserById(userId)
+			if (!getUserRes) return
 
 			await request(app.getHttpServer())
 				.post('/' + RouteNames.AUTH.NEW_PASSWORD.full)
@@ -538,6 +540,7 @@ describe('ROOT', () => {
 
 			const userId = createdUserRes.body.id
 			const getUserRes = await usersRepository.getUserById(userId)
+			if (!getUserRes) return
 
 			const newPasswordRes = await request(app.getHttpServer())
 				.post('/' + RouteNames.AUTH.NEW_PASSWORD.full)

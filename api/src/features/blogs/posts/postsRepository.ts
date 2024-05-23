@@ -31,7 +31,7 @@ export class PostsRepository {
 		}
 
 		const postsRes = await this.dataSource.query(
-			`SELECT *, (SELECT 'My blog name' as blogName) FROM posts WHERE id=${postId}`,
+			`SELECT *, (SELECT name as blogname from blogs WHERE id = p.blogid) FROM posts p WHERE id=${postId}`,
 			[],
 		)
 

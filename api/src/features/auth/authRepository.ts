@@ -288,7 +288,7 @@ export class AuthRepository {
 
 	async getDeviceRefreshTokenByDeviceId(deviceId: string): Promise<null | DBTypes.DeviceToken> {
 		const tokensRes = await this.dataSource.query(
-			`SELECT * FROM devicetokens WHERE deviceId=${deviceId}`,
+			`SELECT * FROM devicetokens WHERE deviceId='${deviceId}'`,
 			[],
 		)
 
@@ -312,22 +312,22 @@ export class AuthRepository {
 		// The query will return an array where the second element is a number of deleted documents
 		// [ [], 1 ]
 		const deletedDeviceTokensRes = await this.dataSource.query(
-			`DELETE FROM devicetokens WHERE id='${deviceId}'`,
-			[],
+			'DELETE FROM devicetokens WHERE deviceid = $1',
+			[deviceId],
 		)
 
 		return deletedDeviceTokensRes[1] === 1
 	}
 
 	async updateDeviceRefreshTokenDate(deviceId: string): Promise<boolean> {
-		const issuedAt = new Date().toISOString()
+		const issuedAt = new Date()
 		const expirationDate = new Date(
 			addMilliseconds(new Date(), config.refreshToken.lifeDurationInMs),
-		).toISOString()
+		)
 
 		const updateDevicesRes = await this.dataSource.query(
-			`UPDATE devicetokens SET issuedAt = '${issuedAt}', expirationDate = ${expirationDate} WHERE deviceId = ${deviceId};`,
-			[],
+			`UPDATE devicetokens SET issuedat = $1, expirationdate = $2 WHERE deviceid = '${deviceId}'`,
+			[issuedAt, expirationDate],
 		)
 
 		return updateDevicesRes[1] === 1

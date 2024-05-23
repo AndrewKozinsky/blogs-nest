@@ -132,6 +132,7 @@ export class PostsController {
 		if (postComments.status === 'postNotValid' || postComments.status === 'postNotFound') {
 			throw new NotFoundException()
 		}
+		// console.log(postComments.data.items[0])
 
 		return postComments.data
 	}

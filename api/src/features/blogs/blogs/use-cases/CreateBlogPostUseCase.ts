@@ -7,7 +7,7 @@ import { CreateBlogPostDtoModel } from '../model/blogs.input.model'
 export class CreateBlogPostUseCase {
 	constructor(private createPostUseCase: CreatePostUseCase) {}
 
-	async execute(blogId: string, postDto: CreateBlogPostDtoModel) {
+	async execute(blogId: number, postDto: CreateBlogPostDtoModel) {
 		const newPostDto: CreatePostDtoModel = { blogId, ...postDto }
 		return this.createPostUseCase.execute(newPostDto)
 	}

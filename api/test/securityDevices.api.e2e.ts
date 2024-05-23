@@ -19,7 +19,7 @@ import RouteNames from '../src/settings/routeNames'
 import { createTestApp } from './utils/common'
 import { clearAllDB } from './utils/db'
 
-it.skip('123', () => {
+it.only('123', () => {
 	expect(2).toBe(2)
 })
 
@@ -39,7 +39,7 @@ describe('ROOT', () => {
 	})
 
 	describe('Getting all user devices', () => {
-		it.only('should forbid a request if there is not refresh token', async () => {
+		it('should forbid a request if there is not refresh token', async () => {
 			await request(app.getHttpServer())
 				.get('/' + RouteNames.SECURITY.DEVICES.full)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)

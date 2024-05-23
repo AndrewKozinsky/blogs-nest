@@ -8,7 +8,7 @@ import { createTestApp } from './utils/common'
 import { clearAllDB } from './utils/db'
 import { addUserByAdminRequest, adminAuthorizationValue, checkUserObj } from './utils/utils'
 
-it('123', () => {
+it.only('123', () => {
 	expect(2).toBe(2)
 })
 
@@ -24,7 +24,7 @@ describe('ROOT', () => {
 	})
 
 	describe('Getting all users', () => {
-		it.only('should forbid a request from an unauthorized user', async () => {
+		it('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
 				.get('/' + RouteNames.USERS.value)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)

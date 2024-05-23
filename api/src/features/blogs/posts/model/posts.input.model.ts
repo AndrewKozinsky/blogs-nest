@@ -51,11 +51,9 @@ export class CreatePostDtoModel {
 	@MaxLength(1000, { message: 'Content is too long' })
 	content: string
 
-	@IsString({ message: 'BlogId must be a string' })
-	@MinLength(1, { message: 'BlogId is too short' })
-	@MaxLength(100, { message: 'BlogId is too long' })
+	@IsNumber()
 	@Validate(BlogIdValidation)
-	blogId: string
+	blogId: number
 }
 
 export class UpdatePostDtoModel {
@@ -78,9 +76,7 @@ export class UpdatePostDtoModel {
 	@MaxLength(1000, { message: 'Content is too long' })
 	content: string
 
-	@IsString({ message: 'BlogId must be a string' })
-	@MinLength(1, { message: 'BlogId is too short' })
-	@MaxLength(100, { message: 'BlogId is too long' })
+	@IsNumber()
 	@Validate(BlogIdValidation)
 	blogId: string
 }

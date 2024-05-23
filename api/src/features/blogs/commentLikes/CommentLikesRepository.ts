@@ -84,8 +84,8 @@ export class CommentLikesRepository {
 		}
 
 		const updateCommentLikeStatusRes = await this.dataSource.query(
-			`UPDATE commentlikes SET status = '${likeStatus}' WHERE userid = ${userId} AND commentid = ${commentId};`,
-			[],
+			'UPDATE commentlikes SET status = $1 WHERE userid = $2 AND commentid = $3',
+			[likeStatus, userId, commentId],
 		)
 
 		return updateCommentLikeStatusRes[1] === 1

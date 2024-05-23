@@ -28,7 +28,7 @@ type CookieObj = {
  * 	}
  * @param cookieString
  */
-/*export function parseCookieStringToObj(cookieString: string) {
+export function parseCookieStringToObj(cookieString: string) {
 	const cookieParts = cookieString.split('; ')
 
 	const resultObj: CookieObj = {
@@ -62,4 +62,4 @@ type CookieObj = {
 	}
 
 	return resultObj
-}*/
+}

@@ -16,7 +16,7 @@ import {
 	createDtoAddBlogPost,
 } from './utils/utils'
 
-it.skip('123', async () => {
+it.only('123', async () => {
 	expect(2).toBe(2)
 })
 
@@ -32,7 +32,7 @@ describe('ROOT', () => {
 	})
 
 	describe('Getting all blogs', () => {
-		it.only('should return an object with property items contains an empty array', async () => {
+		it('should return an object with property items contains an empty array', async () => {
 			const successAnswer: GetBlogsOutModel = {
 				pagesCount: 0,
 				page: 1,
@@ -129,7 +129,6 @@ describe('ROOT', () => {
 			const createdBlogRes = await addBlogRequest(app)
 			const createdBlogId = createdBlogRes.body.id
 
-			console.log('/' + RouteNames.BLOGS.BLOG_ID(createdBlogId).full)
 			const getBlogRes = await request(app.getHttpServer()).get(
 				'/' + RouteNames.BLOGS.BLOG_ID(createdBlogId).full,
 			)
@@ -346,7 +345,7 @@ describe('ROOT', () => {
 
 function checkBlogObj(blogObj: any) {
 	expect(typeof blogObj._id).toBe('undefined')
-	expect(typeof blogObj.id).toBe('string')
+	expect(typeof blogObj.id).toBe('number')
 	expect(typeof blogObj.name).toBe('string')
 	expect(typeof blogObj.description).toBe('string')
 	expect(blogObj.createdAt).toMatch(

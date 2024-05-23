@@ -30,7 +30,7 @@ export class BlogsQueryRepository {
 	async getBlogs(query: GetBlogsQueries): Promise<GetBlogsOutModel> {
 		const blogName = query.searchNameTerm || ''
 
-		const sortBy = query.sortBy ?? 'createdAt'
+		const sortBy = query.sortBy ?? 'createdat'
 		const sortDirection = query.sortDirection === 'asc' ? 'ASC' : 'DESC'
 
 		const pageNumber = query.pageNumber ? +query.pageNumber : 1
@@ -49,7 +49,7 @@ export class BlogsQueryRepository {
 			pagesCount,
 			page: pageNumber,
 			pageSize,
-			totalCount: totalBlogsCount,
+			totalCount: +totalBlogsCount,
 			items: getBlogsRes.map(this.mapDbBlogToOutputBlog),
 		}
 	}
@@ -104,7 +104,7 @@ export class BlogsQueryRepository {
 			pagesCount,
 			page: pageNumber,
 			pageSize,
-			totalCount: totalBlogPostsCount,
+			totalCount: +totalBlogPostsCount,
 			items: blogPosts.items,
 		}
 	}

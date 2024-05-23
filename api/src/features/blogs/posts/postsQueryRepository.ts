@@ -34,61 +34,7 @@ export class PostsQueryRepository {
 		query: GetPostsQueries,
 		blogId?: string,
 	): Promise<GetPostsOutModel> {
-		/*const filter: FilterQuery<DBTypes.Blog> = {}
-		if (blogId) {
-			filter.blogId = blogId
-		}
-
-		const sortBy = query.sortBy ?? 'createdAt'
-		const sortDirection = query.sortDirection ?? 'desc'
-		const sort = { [sortBy]: sortDirection }
-
-		const pageNumber = query.pageNumber ? +query.pageNumber : 1
-		const pageSize = query.pageSize ? +query.pageSize : 10
-
-		const totalPostsCount = await this.PostModel.countDocuments({})
-		const pagesCount = Math.ceil(totalPostsCount / pageSize)
-
-		const getPostsRes = await this.PostModel.find(filter)
-			.sort(sort)
-			.skip((pageNumber - 1) * pageSize)
-			.limit(pageSize)
-
-		const items = await Promise.all(
-			getPostsRes.map(async (post) => {
-				const postId = post._id.toString()
-
-				const postLikesStatsRes = await this.postLikesRepository.getPostLikesStats(postId)
-
-				let currentUserCommentLikeStatus = DBTypes.LikeStatuses.None
-				if (userId) {
-					currentUserCommentLikeStatus =
-						await this.postLikesRepository.getUserPostLikeStatus(userId, postId)
-				}
-
-				const newestPostLikes = await this.getNewestPostLikes(postId)
-
-				return this.mapDbPostToOutputPost(
-					post,
-					postLikesStatsRes.likesCount,
-					postLikesStatsRes.dislikesCount,
-					currentUserCommentLikeStatus,
-					newestPostLikes,
-				)
-			}),
-		)
-
-		return {
-			pagesCount,
-			page: pageNumber,
-			pageSize,
-			totalCount: totalPostsCount,
-			items,
-		}*/
-
-		// ------
-
-		const sortBy = query.sortBy ?? 'createdAt'
+		const sortBy = query.sortBy ?? 'createdat'
 		const sortDirection = query.sortDirection === 'asc' ? 'ASC' : 'DESC'
 
 		const pageNumber = query.pageNumber ? +query.pageNumber : 1
@@ -103,22 +49,24 @@ export class PostsQueryRepository {
 				pagesCount,
 				page: pageNumber,
 				pageSize,
-				totalCount: totalPostsCount,
+				totalCount: +totalPostsCount,
 				items: [],
 			}
 		} else {
 			const getAllPostsRes = await this.dataSource.query(
-				'SELECT COUNT(*) FROM posts WHERE userid = ${userId}',
-				[],
+				'SELECT COUNT(*) FROM posts WHERE blogid = $1',
+				[blogId],
 			) // [ { count: '18' } ]
+
 			const totalPostsCount = getAllPostsRes[0].count
 			const pagesCount = Math.ceil(totalPostsCount / pageSize)
 
 			const getPostsRes: PGGetPostQuery[] = await this.dataSource.query(
 				`SELECT *,
-       (SELECT COUNT(*) as likesCount FROM postlikes WHERE p.id = postlikes.postid AND postlikes.status = 'Like'),
-       (SELECT COUNT(*) as dislikesCount FROM postlikes WHERE p.id = postlikes.postid AND postlikes.status = 'Dislike')
-		FROM posts p WHERE userid = ${userId} ORDER BY ${sortBy} ${sortDirection} LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize}`,
+       (SELECT COUNT(*) as likescount FROM postlikes WHERE p.id = postid AND status = 'Like'),
+       (SELECT COUNT(*) as dislikescount FROM postlikes WHERE p.id = postid AND status = 'Dislike'),
+       (SELECT name as blogname from blogs WHERE id = p.blogid)
+		FROM posts p WHERE blogid = ${blogId} ORDER BY ${sortBy} ${sortDirection} LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize}`,
 				[],
 			)
 
@@ -146,7 +94,7 @@ export class PostsQueryRepository {
 				pagesCount,
 				page: pageNumber,
 				pageSize,
-				totalCount: totalPostsCount,
+				totalCount: +totalPostsCount,
 				items,
 			}
 		}
@@ -218,8 +166,10 @@ export class PostsQueryRepository {
 
 		const getPostsRes = await this.dataSource.query(
 			`SELECT *,
-       (SELECT COUNT(*) as likesCount FROM postlikes WHERE p.id = postlikes.postid AND postlikes.status = 'Like'),
-       (SELECT COUNT(*) as dislikesCount FROM postlikes WHERE p.id = postlikes.postid AND postlikes.status = 'Dislike') FROM posts p WHERE p.id=${postId}`,
+       (SELECT COUNT(*) as likescount FROM postlikes WHERE p.id = postlikes.postid AND postlikes.status = 'Like'),
+       (SELECT COUNT(*) as dislikescount FROM postlikes WHERE p.id = postlikes.postid AND postlikes.status = 'Dislike'),
+       (SELECT name as blogname from blogs WHERE id = p.blogid)
+       FROM posts p WHERE p.id=${postId}`,
 			[],
 		)
 
@@ -311,8 +261,8 @@ export class PostsQueryRepository {
 			blogName: DbPost.blogname,
 			createdAt: DbPost.createdat,
 			extendedLikesInfo: {
-				likesCount: DbPost.likescount,
-				dislikesCount: DbPost.dislikescount,
+				likesCount: +DbPost.likescount,
+				dislikesCount: +DbPost.dislikescount,
 				myStatus: currentUserCommentLikeStatus,
 				newestLikes,
 			},

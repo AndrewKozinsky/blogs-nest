@@ -1,6 +1,4 @@
 // import dotenv from 'dotenv'
-import { INestApplication } from '@nestjs/common'
-// import { Express } from 'express'
 import { agent as request } from 'supertest'
 import RouteNames from '../../src/settings/routeNames'
 import { DBTypes } from '../../src/db/mongo/dbTypes'
@@ -14,16 +12,6 @@ import {
 } from '../../src/features/blogs/posts/model/posts.input.model'
 import { CreateUserDtoModel } from '../../src/features/users/models/users.input.model'
 // import { HTTP_STATUSES } from '../../../src/config/config'
-// import RouteNames from '../../../src/config/routeNames'
-// import { DBTypes } from '../../../src/db/dbTypes'
-/*import {
-	CreateBlogDtoModel,
-	CreateBlogPostDtoModel,
-} from '../../../src/models/input/blogs.input.model'*/
-/*import {
-	CreatePostCommentDtoModel,
-	CreatePostDtoModel,
-} from '../../../src/models/input/posts.input.model'*/
 // import { CreateUserDtoModel } from '../../../src/models/input/users.input.model'
 
 // dotenv.config()
@@ -117,11 +105,11 @@ export function checkPostObj(
 	currentUserLikeStatus: DBTypes.LikeStatuses,
 ) {
 	expect(postObj._id).toBe(undefined)
-	expect(typeof postObj.id).toBe('string')
+	expect(typeof postObj.id).toBe('number')
 	expect(typeof postObj.title).toBe('string')
 	expect(typeof postObj.shortDescription).toBe('string')
 	expect(typeof postObj.content).toBe('string')
-	expect(typeof postObj.blogId).toBe('string')
+	expect(typeof postObj.blogId).toBe('number')
 	expect(typeof postObj.blogName).toBe('string')
 	expect(postObj.createdAt).toMatch(
 		/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/,

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 import { MongooseModule } from '@nestjs/mongoose'
-import { DbService } from '../../db/mongo/dbService'
+import { DbService } from '../../db/dbService'
 import { Blog, BlogSchema } from '../../db/mongo/schemas/blog.schema'
 import { Comment, CommentSchema } from '../../db/mongo/schemas/comment.schema'
 import { CommentLike, CommentLikeSchema } from '../../db/mongo/schemas/commentLike.schema'

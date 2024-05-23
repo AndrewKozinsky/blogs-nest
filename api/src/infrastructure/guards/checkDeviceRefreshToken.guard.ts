@@ -37,7 +37,6 @@ export class CheckDeviceRefreshTokenGuard implements CanActivate {
 				deviceRefreshToken!.expirationDate.toLocaleString()
 			) {
 				request.deviceRefreshToken = deviceRefreshToken
-
 				return true
 			}
 

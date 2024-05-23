@@ -18,7 +18,7 @@ import { describe } from 'node:test'
 import { createTestApp } from './utils/common'
 import { clearAllDB } from './utils/db'
 
-it.skip('123', async () => {
+it.only('123', async () => {
 	expect(2).toBe(2)
 })
 
@@ -34,7 +34,7 @@ describe('ROOT', () => {
 	})
 
 	describe('Getting a comment', () => {
-		it.only('should return 404 if a comment does not exists', async () => {
+		it('should return 404 if a comment does not exists', async () => {
 			const getCommentRes = await request(app.getHttpServer()).get(
 				'/' + RouteNames.COMMENTS.COMMENT_ID('999').full,
 			)
@@ -331,7 +331,7 @@ describe('ROOT', () => {
 			await request(app.getHttpServer())
 				.put('/' + RouteNames.COMMENTS.COMMENT_ID(commentId).LIKE_STATUS.full)
 				.set('authorization', 'Bearer ' + userToken)
-				.send(JSON.stringify({ likeStatus: DBTypes.LikeStatuses.Like }))
+				.send(JSON.stringify({ likeStatus: DBTypes.LikeStatuses.Dislike }))
 				.set('Content-Type', 'application/json')
 				.set('Accept', 'application/json')
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
@@ -345,24 +345,25 @@ describe('ROOT', () => {
 				getCommentRes.body,
 				createdUserRes.body.id,
 				createdUserRes.body.login,
-				1,
 				0,
-				DBTypes.LikeStatuses.None,
+				1,
+				DBTypes.LikeStatuses.Dislike,
 			)
 
 			// Get the comment again by an authorized user to check a returned object
 			const getComment2Res = await request(app.getHttpServer())
 				.get('/' + RouteNames.COMMENTS.COMMENT_ID(commentId).full)
 				.set('authorization', 'Bearer ' + userToken)
+				.send(JSON.stringify({ likeStatus: DBTypes.LikeStatuses.Like }))
 				.expect(HTTP_STATUSES.OK_200)
 
 			checkCommentObj(
 				getComment2Res.body,
 				createdUserRes.body.id,
 				createdUserRes.body.login,
-				1,
 				0,
-				DBTypes.LikeStatuses.Like,
+				1,
+				DBTypes.LikeStatuses.Dislike,
 			)
 		})
 	})

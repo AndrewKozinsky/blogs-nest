@@ -4,14 +4,14 @@ import dotenv from 'dotenv'
 import { Model } from 'mongoose'
 import { Injectable } from '@nestjs/common'
 import { DataSource } from 'typeorm'
-import { Blog } from './schemas/blog.schema'
-import { Comment } from './schemas/comment.schema'
-import { CommentLike } from './schemas/commentLike.schema'
-import { DeviceToken } from './schemas/deviceToken.schema'
-import { Post } from './schemas/post.schema'
-import { PostLike } from './schemas/postLike.schema'
-import { RateLimit } from './schemas/rateLimit.schema'
-import { User } from './schemas/user.schema'
+import { Blog } from './mongo/schemas/blog.schema'
+import { Comment } from './mongo/schemas/comment.schema'
+import { CommentLike } from './mongo/schemas/commentLike.schema'
+import { DeviceToken } from './mongo/schemas/deviceToken.schema'
+import { Post } from './mongo/schemas/post.schema'
+import { PostLike } from './mongo/schemas/postLike.schema'
+import { RateLimit } from './mongo/schemas/rateLimit.schema'
+import { User } from './mongo/schemas/user.schema'
 
 dotenv.config()
 
@@ -33,24 +33,24 @@ export class DbService {
 
 	async drop() {
 		try {
-			const deleteUsers = this.dataSource.query('DELETE FROM users', [])
-			const deleteBlogs = this.dataSource.query('DELETE FROM blogs', [])
-			const deletePosts = this.dataSource.query('DELETE FROM posts', [])
-			const deletePostLikes = this.dataSource.query('DELETE FROM postlikes', [])
-			const deleteComments = this.dataSource.query('DELETE FROM comments', [])
 			const deleteCommentLikes = this.dataSource.query('DELETE FROM commentlikes', [])
+			const deleteComments = this.dataSource.query('DELETE FROM comments', [])
+			const deletePostLikes = this.dataSource.query('DELETE FROM postlikes', [])
+			const deletePosts = this.dataSource.query('DELETE FROM posts', [])
 			const deleteRateLimits = this.dataSource.query('DELETE FROM ratelimites', [])
 			const deleteDeviceTokens = this.dataSource.query('DELETE FROM devicetokens', [])
+			const deleteBlogs = this.dataSource.query('DELETE FROM blogs', [])
+			const deleteUsers = this.dataSource.query('DELETE FROM users', [])
 
 			const models = [
-				deleteUsers,
-				deleteBlogs,
-				deletePosts,
-				deletePostLikes,
-				deleteComments,
 				deleteCommentLikes,
+				deleteComments,
+				deletePostLikes,
+				deletePosts,
 				deleteRateLimits,
 				deleteDeviceTokens,
+				deleteBlogs,
+				deleteUsers,
 			]
 
 			await Promise.all(models)

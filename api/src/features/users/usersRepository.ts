@@ -85,8 +85,8 @@ export class UsersRepository {
 
 	async setPasswordRecoveryCodeToUser(userId: string, recoveryCode: null | string) {
 		const updateUserRes = await this.dataSource.query(
-			`UPDATE users SET passwordRecoveryCode = ${recoveryCode} WHERE id = ${userId};`,
-			[],
+			'UPDATE users SET passwordRecoveryCode = $1 WHERE id = $2;',
+			[recoveryCode, userId],
 		)
 	}
 
@@ -101,8 +101,8 @@ export class UsersRepository {
 		const passwordHash = await this.hashAdapter.hashString(newPassword)
 
 		const updateUserRes = await this.dataSource.query(
-			`UPDATE users SET password = ${passwordHash} WHERE id = ${userId};`,
-			[],
+			'UPDATE users SET password = $1 WHERE id = $2',
+			[passwordHash, userId],
 		)
 	}
 

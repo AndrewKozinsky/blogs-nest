@@ -97,8 +97,8 @@ export class CommentsRepository {
 		}
 
 		const updateCommentRes = await this.dataSource.query(
-			`UPDATE comments SET content = '${updateCommentDto.content}' WHERE id = ${commentId};`,
-			[],
+			'UPDATE comments SET content = $1 WHERE id = $2;',
+			[updateCommentDto.content, commentId],
 		)
 
 		return updateCommentRes[1] === 1

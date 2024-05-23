@@ -80,8 +80,8 @@ export class PostLikesRepository {
 		}
 
 		const updatePostLikeRes = await this.dataSource.query(
-			`UPDATE postlikes SET status = '${likeStatus}' WHERE userid = ${userId} AND postid=${postId};`,
-			[],
+			'UPDATE postlikes SET status = $1 WHERE userid = $2 AND postid=$3',
+			[likeStatus, userId, postId],
 		)
 
 		return updatePostLikeRes[1] === 1

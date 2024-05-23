@@ -75,9 +75,9 @@ export class AppModule implements NestModule {
 	email VARCHAR,
 	password VARCHAR,
 	passwordRecoveryCode VARCHAR,
-	createdAt DATE,
+	createdAt TIMESTAMP,
 	emailConfirmationCode VARCHAR,
-	confirmationCodeExpirationDate DATE,
+	confirmationCodeExpirationDate TIMESTAMP,
 	isConfirmationEmailCodeConfirmed BOOLEAN
 )`,
 			[],
@@ -90,7 +90,7 @@ export class AppModule implements NestModule {
   name VARCHAR,
   description VARCHAR,
   websiteUrl VARCHAR,
-  createdAt DATE,
+  createdAt TIMESTAMP,
   isMembership BOOLEAN
 )`,
 				[],
@@ -102,7 +102,7 @@ export class AppModule implements NestModule {
 	title VARCHAR,
   	shortDescription VARCHAR,
   	content TEXT,
-  	createdAt DATE,
+  	createdAt TIMESTAMP,
     blogId SERIAL REFERENCES blogs(id)
 )`,
 				[],
@@ -114,7 +114,7 @@ export class AppModule implements NestModule {
 	postId SERIAL REFERENCES posts(id),
 	userId SERIAL REFERENCES users(id),
 	status VARCHAR,
-	addedAt DATE
+	addedAt TIMESTAMP
 )`,
 				[],
 			)
@@ -125,7 +125,7 @@ export class AppModule implements NestModule {
 	content TEXT,
 	postId SERIAL REFERENCES posts(id),
 	userId SERIAL REFERENCES users(id),
-	createdAt DATE
+	createdAt TIMESTAMP
 )`,
 				[],
 			)
@@ -144,7 +144,7 @@ export class AppModule implements NestModule {
 				`CREATE TABLE IF NOT EXISTS ratelimites (
 	id SERIAL PRIMARY KEY,
 	ip VARCHAR,
-	date DATE,
+	date TIMESTAMP,
 	path VARCHAR,
 	method VARCHAR
 )`,
@@ -154,9 +154,9 @@ export class AppModule implements NestModule {
 			await this.dataSource.query(
 				`CREATE TABLE IF NOT EXISTS devicetokens (
 	id SERIAL PRIMARY KEY,
-	issuedAt DATE,
+	issuedAt timestamp with time zone,
 	userId SERIAL REFERENCES users(id),
-	expirationDate DATE,
+	expirationDate timestamp with time zone,
 	deviceIP VARCHAR,
   	deviceId VARCHAR,
   	deviceName VARCHAR

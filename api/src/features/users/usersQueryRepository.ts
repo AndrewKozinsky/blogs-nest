@@ -22,7 +22,7 @@ export class UsersQueryRepository {
 		const login = query.searchLoginTerm ?? ''
 		const email = query.searchEmailTerm ?? ''
 
-		const sortBy = query.sortBy ?? 'createdAt'
+		const sortBy = query.sortBy ?? 'createdat'
 		const sortDirection = query.sortDirection === 'asc' ? 'ASC' : 'DESC'
 
 		const pageNumber = query.pageNumber ? +query.pageNumber : 1
@@ -41,7 +41,7 @@ export class UsersQueryRepository {
 			pagesCount,
 			page: pageNumber,
 			pageSize,
-			totalCount: totalUsersCount,
+			totalCount: +totalUsersCount,
 			items: getUsersRes.map(this.mapDbUserToOutputUser),
 		}
 	}

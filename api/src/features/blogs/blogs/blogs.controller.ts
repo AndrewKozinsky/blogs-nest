@@ -101,7 +101,7 @@ export class BlogsController {
 			throw new NotFoundException()
 		}
 
-		const createPostInsertedId = await this.createBlogPostUseCase.execute(blogId, body)
+		const createPostInsertedId = await this.createBlogPostUseCase.execute(+blogId, body)
 		return await this.postsQueryRepository.getPost(user?.id, createPostInsertedId)
 	}
 
