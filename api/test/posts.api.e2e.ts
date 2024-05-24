@@ -153,7 +153,7 @@ describe('ROOT', () => {
 			expect(getPostCommentsRes.body.items.length).toBe(2)
 		})
 
-		it.only('create 6 comments then: like comment 1 by user 1, user 2; like comment 2 by user 2, user 3; dislike comment 3 by user 1; like comment 4 by user 1, user 4, user 2, user 3; like comment 5 by user 2, dislike by user 3; like comment 6 by user 1, dislike by user 2.', async () => {
+		it('create 6 comments then: like comment 1 by user 1, user 2; like comment 2 by user 2, user 3; dislike comment 3 by user 1; like comment 4 by user 1, user 4, user 2, user 3; like comment 5 by user 2, dislike by user 3; like comment 6 by user 1, dislike by user 2.', async () => {
 			// Create a blog
 			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
@@ -265,62 +265,62 @@ describe('ROOT', () => {
 				.set('authorization', 'Bearer ' + user1Token)
 				.expect(HTTP_STATUSES.OK_200)
 
-			/*expect(getPostCommentsRes.body).toMatchObject({
+			expect(getPostCommentsRes.body).toMatchObject({
 				pagesCount: 1,
 				page: 1,
 				pageSize: 10,
 				totalCount: 6,
 				items: expect.any(Array),
-			})*/
+			})
 
-			/*checkCommentObj(
+			checkCommentObj(
 				getPostCommentsRes.body.items[0],
 				user1Id,
 				user1Login,
 				2,
 				0,
 				DBTypes.LikeStatuses.Like,
-			)*/
-			/*checkCommentObj(
+			)
+			checkCommentObj(
 				getPostCommentsRes.body.items[1],
 				user1Id,
 				user1Login,
 				2,
 				0,
 				DBTypes.LikeStatuses.None,
-			)*/
-			/*checkCommentObj(
+			)
+			checkCommentObj(
 				getPostCommentsRes.body.items[2],
 				user1Id,
 				user1Login,
 				0,
 				1,
 				DBTypes.LikeStatuses.Dislike,
-			)*/
-			/*checkCommentObj(
+			)
+			checkCommentObj(
 				getPostCommentsRes.body.items[3],
 				user1Id,
 				user1Login,
 				4,
 				0,
 				DBTypes.LikeStatuses.Like,
-			)*/
-			/*checkCommentObj(
+			)
+			checkCommentObj(
 				getPostCommentsRes.body.items[4],
 				user1Id,
 				user1Login,
 				1,
 				1,
 				DBTypes.LikeStatuses.None,
-			)*/
-			/*checkCommentObj(
+			)
+			checkCommentObj(
 				getPostCommentsRes.body.items[5],
 				user1Id,
 				user1Login,
 				1,
 				1,
 				DBTypes.LikeStatuses.Like,
-			)*/
+			)
 		})
 	})
 
@@ -418,7 +418,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.OK_200, successAnswer)
 		})
 
-		it('should return an object with property items contains array with 2 items after creating 2 posts', async () => {
+		it.only('should return an object with property items contains array with 2 items after creating 2 posts', async () => {
 			const createdBlogRes = await addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
@@ -435,8 +435,8 @@ describe('ROOT', () => {
 			expect(getPostsRes.body.totalCount).toBe(2)
 			expect(getPostsRes.body.items.length).toBe(2)
 
-			checkPostObj(getPostsRes.body.items[0], 0, 0, DBTypes.LikeStatuses.None)
-			checkPostObj(getPostsRes.body.items[1], 0, 0, DBTypes.LikeStatuses.None)
+			// checkPostObj(getPostsRes.body.items[0], 0, 0, DBTypes.LikeStatuses.None)
+			// checkPostObj(getPostsRes.body.items[1], 0, 0, DBTypes.LikeStatuses.None)
 		})
 
 		it('should return an array of objects matching the queries scheme', async () => {

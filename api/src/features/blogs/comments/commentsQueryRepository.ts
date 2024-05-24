@@ -145,7 +145,7 @@ FROM comments c WHERE id=${commentId}`,
 		(SELECT login as userlogin FROM users WHERE c.userid = id)`
 
 		if (userId) {
-			queryStr += `, (SELECT status as currentusercommentlikestatus FROM commentlikes WHERE userId = ${userId})`
+			queryStr += `, (SELECT status as currentusercommentlikestatus FROM commentlikes WHERE c.id = commentid AND userid = ${userId})`
 		} else {
 			queryStr += `, (SELECT '${DBTypes.LikeStatuses.None}' as currentusercommentlikestatus)`
 		}

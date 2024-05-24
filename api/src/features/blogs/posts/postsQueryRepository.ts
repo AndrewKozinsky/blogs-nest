@@ -40,63 +40,40 @@ export class PostsQueryRepository {
 		const pageNumber = query.pageNumber ? +query.pageNumber : 1
 		const pageSize = query.pageSize ? +query.pageSize : 10
 
-		if (!blogId) {
-			const getAllPostsRes = await this.dataSource.query('SELECT COUNT(*) FROM posts', []) // [ { count: '18' } ]
-			const totalPostsCount = getAllPostsRes[0].count
-			const pagesCount = Math.ceil(totalPostsCount / pageSize)
+		// Get all posts count
+		let getAllPostsQueryStr = 'SELECT COUNT(*) FROM posts'
+		if (blogId) getAllPostsQueryStr += ` WHERE blogid = ${blogId}`
+		const getAllPostsRes = await this.dataSource.query(getAllPostsQueryStr, []) // [ { count: '18' } ]
+		const totalPostsCount = getAllPostsRes[0].count
+		const pagesCount = Math.ceil(totalPostsCount / pageSize)
 
-			return {
-				pagesCount,
-				page: pageNumber,
-				pageSize,
-				totalCount: +totalPostsCount,
-				items: [],
-			}
-		} else {
-			const getAllPostsRes = await this.dataSource.query(
-				'SELECT COUNT(*) FROM posts WHERE blogid = $1',
-				[blogId],
-			) // [ { count: '18' } ]
+		let getPostsQueryStr = `SELECT *,
+		   (SELECT COUNT(*) as likescount FROM postlikes WHERE p.id = postid AND status = 'Like'),
+		   (SELECT COUNT(*) as dislikescount FROM postlikes WHERE p.id = postid AND status = 'Dislike'),
+		   (SELECT name as blogname from blogs WHERE id = p.blogid),
+		   (SELECT status as currentuserpostlikestatus FROM postlikes WHERE userid = ${userId || 0} AND postid = p.id)
+			FROM posts p`
+		if (blogId) getPostsQueryStr += ` WHERE blogid = ${blogId}`
+		getPostsQueryStr += ` ORDER BY ${sortBy} ${sortDirection} LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize}`
 
-			const totalPostsCount = getAllPostsRes[0].count
-			const pagesCount = Math.ceil(totalPostsCount / pageSize)
+		const getPostsRes: PGGetPostQuery[] = await this.dataSource.query(getPostsQueryStr, [])
 
-			const getPostsRes: PGGetPostQuery[] = await this.dataSource.query(
-				`SELECT *,
-       (SELECT COUNT(*) as likescount FROM postlikes WHERE p.id = postid AND status = 'Like'),
-       (SELECT COUNT(*) as dislikescount FROM postlikes WHERE p.id = postid AND status = 'Dislike'),
-       (SELECT name as blogname from blogs WHERE id = p.blogid)
-		FROM posts p WHERE blogid = ${blogId} ORDER BY ${sortBy} ${sortDirection} LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize}`,
-				[],
-			)
+		const items = await Promise.all(
+			getPostsRes.map(async (post) => {
+				const postId = post.id
 
-			const items = await Promise.all(
-				getPostsRes.map(async (post) => {
-					const postId = post.id
+				const newestPostLikes = await this.getNewestPostLikes(postId)
 
-					let currentUserCommentLikeStatus = DBTypes.LikeStatuses.None
-					if (userId) {
-						currentUserCommentLikeStatus =
-							await this.postLikesRepository.getUserPostLikeStatus(userId, postId)
-					}
+				return this.mapDbPostToOutputPost(post, newestPostLikes)
+			}),
+		)
 
-					const newestPostLikes = await this.getNewestPostLikes(postId)
-
-					return this.mapDbPostToOutputPost(
-						post,
-						currentUserCommentLikeStatus,
-						newestPostLikes,
-					)
-				}),
-			)
-
-			return {
-				pagesCount,
-				page: pageNumber,
-				pageSize,
-				totalCount: +totalPostsCount,
-				items,
-			}
+		return {
+			pagesCount,
+			page: pageNumber,
+			pageSize,
+			totalCount: +totalPostsCount,
+			items,
 		}
 	}
 
@@ -168,7 +145,8 @@ export class PostsQueryRepository {
 			`SELECT *,
        (SELECT COUNT(*) as likescount FROM postlikes WHERE p.id = postlikes.postid AND postlikes.status = 'Like'),
        (SELECT COUNT(*) as dislikescount FROM postlikes WHERE p.id = postlikes.postid AND postlikes.status = 'Dislike'),
-       (SELECT name as blogname from blogs WHERE id = p.blogid)
+       (SELECT name as blogname from blogs WHERE id = p.blogid),
+       (SELECT status as currentuserpostlikestatus FROM postlikes WHERE userid = ${userId || 0} AND postid = p.id)
        FROM posts p WHERE p.id=${postId}`,
 			[],
 		)
@@ -177,21 +155,9 @@ export class PostsQueryRepository {
 			return null
 		}
 
-		let currentUserCommentLikeStatus = DBTypes.LikeStatuses.None
-		if (userId) {
-			currentUserCommentLikeStatus = await this.postLikesRepository.getUserPostLikeStatus(
-				userId,
-				postId,
-			)
-		}
-
 		const newestPostLikes = await this.getNewestPostLikes(postId)
 
-		return this.mapDbPostToOutputPost(
-			getPostsRes[0],
-			currentUserCommentLikeStatus,
-			newestPostLikes,
-		)
+		return this.mapDbPostToOutputPost(getPostsRes[0], newestPostLikes)
 	}
 
 	/*async getPostByMongo(userId: undefined | string, postId: string): Promise<null | GetPostOutModel> {
@@ -225,6 +191,21 @@ export class PostsQueryRepository {
 	}*/
 
 	async getNewestPostLikes(postId: string): Promise<NewestLike[]> {
+		const getPostLikesRes = await this.dataSource.query(
+			'SELECT *, (SELECT login FROM users WHERE id = pl.userid) FROM postlikes pl WHERE postid = $1 ORDER BY "addedat" DESC LIMIT 3',
+			[postId],
+		)
+
+		return getPostLikesRes.map((postLike: any) => {
+			return {
+				addedAt: postLike.addedat,
+				userId: postLike.userid,
+				login: postLike.userlogin,
+			}
+		})
+	}
+
+	/*async getNewestPostLikesByMongo(postId: string): Promise<NewestLike[]> {
 		const getPostRes = await this.PostLikeModel.find({
 			postId,
 			status: DBTypes.LikeStatuses.Like,
@@ -245,13 +226,9 @@ export class PostsQueryRepository {
 				}
 			}),
 		)
-	}
+	}*/
 
-	mapDbPostToOutputPost(
-		DbPost: PGGetPostQuery,
-		currentUserCommentLikeStatus: DBTypes.LikeStatuses,
-		newestLikes: NewestLike[],
-	): PostOutModel {
+	mapDbPostToOutputPost(DbPost: PGGetPostQuery, newestLikes: NewestLike[]): PostOutModel {
 		return {
 			id: DbPost.id,
 			title: DbPost.title,
@@ -263,7 +240,7 @@ export class PostsQueryRepository {
 			extendedLikesInfo: {
 				likesCount: +DbPost.likescount,
 				dislikesCount: +DbPost.dislikescount,
-				myStatus: currentUserCommentLikeStatus,
+				myStatus: (DbPost.currentuserpostlikestatus as any) ?? DBTypes.LikeStatuses.None,
 				newestLikes,
 			},
 		}

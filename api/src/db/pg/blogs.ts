@@ -29,6 +29,7 @@ export type PGGetPostQuery = {
 	blogname: string
 	likescount: number
 	dislikescount: number
+	currentuserpostlikestatus: string
 }
 
 export type PGGetCommentQuery = {
