@@ -125,7 +125,7 @@ export function checkPostObj(
 		expect(postObj.extendedLikesInfo.newestLikes[0].addedAt).toMatch(
 			/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/,
 		)
-		expect(typeof postObj.extendedLikesInfo.newestLikes[0].userId).toBe('string')
+		expect(typeof postObj.extendedLikesInfo.newestLikes[0].userId).toBe('number')
 		expect(typeof postObj.extendedLikesInfo.newestLikes[0].login).toBe('string')
 	}
 }
@@ -153,7 +153,7 @@ export function createDtoAddUser(newUserObj: Partial<CreateUserDtoModel> = {}): 
 
 export function checkUserObj(userObj: any) {
 	expect(userObj._id).toBe(undefined)
-	expect(typeof userObj.id).toBe('string')
+	expect(typeof userObj.id).toBe('number')
 	expect(userObj.login).toMatch(/^[a-zA-Z0-9_-]*$/)
 	expect(typeof userObj.email).toBe('string')
 	expect(userObj.email).toMatch(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)

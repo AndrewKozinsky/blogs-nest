@@ -22,7 +22,7 @@ import {
 	userPassword,
 } from './utils/utils'
 
-it('123', async () => {
+it.only('123', async () => {
 	expect(2).toBe(2)
 })
 
@@ -418,7 +418,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.OK_200, successAnswer)
 		})
 
-		it.only('should return an object with property items contains array with 2 items after creating 2 posts', async () => {
+		it('should return an object with property items contains array with 2 items after creating 2 posts', async () => {
 			const createdBlogRes = await addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
@@ -435,8 +435,8 @@ describe('ROOT', () => {
 			expect(getPostsRes.body.totalCount).toBe(2)
 			expect(getPostsRes.body.items.length).toBe(2)
 
-			// checkPostObj(getPostsRes.body.items[0], 0, 0, DBTypes.LikeStatuses.None)
-			// checkPostObj(getPostsRes.body.items[1], 0, 0, DBTypes.LikeStatuses.None)
+			checkPostObj(getPostsRes.body.items[0], 0, 0, DBTypes.LikeStatuses.None)
+			checkPostObj(getPostsRes.body.items[1], 0, 0, DBTypes.LikeStatuses.None)
 		})
 
 		it('should return an array of objects matching the queries scheme', async () => {

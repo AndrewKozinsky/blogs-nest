@@ -19,6 +19,12 @@ import {
 	PostOutModel,
 } from './model/posts.output.model'
 
+type GetOneOrManyPostsSettings = {
+	blogId?: string
+	query: GetPostsQueries
+	postId: string
+}
+
 @Injectable()
 export class PostsQueryRepository {
 	constructor(
@@ -200,7 +206,7 @@ export class PostsQueryRepository {
 			return {
 				addedAt: postLike.addedat,
 				userId: postLike.userid,
-				login: postLike.userlogin,
+				login: postLike.login,
 			}
 		})
 	}

@@ -33,18 +33,17 @@ export class AuthRepository {
 		const refreshTokenData = this.jwtService.getRefreshTokenDataFromTokenStr(refreshTokenStr)
 
 		const devicesRes = await this.dataSource.query(
-			`SELECT * FROM devicetokens WHERE deviceId=${refreshTokenData!.deviceId}`,
-			[],
+			'SELECT * FROM devicetokens WHERE deviceid=$1',
+			[refreshTokenData!.deviceId],
 		)
 
 		if (!devicesRes.length) {
 			return null
 		}
 
-		const usersRes = await this.dataSource.query(
-			`SELECT * FROM users WHERE id='${devicesRes[0].userId}'`,
-			[],
-		)
+		const usersRes = await this.dataSource.query('SELECT * FROM users WHERE id=$1', [
+			devicesRes[0].userid,
+		])
 
 		if (!usersRes.length) {
 			return null
@@ -326,8 +325,8 @@ export class AuthRepository {
 		)
 
 		const updateDevicesRes = await this.dataSource.query(
-			`UPDATE devicetokens SET issuedat = $1, expirationdate = $2 WHERE deviceid = '${deviceId}'`,
-			[issuedAt, expirationDate],
+			'UPDATE devicetokens SET issuedat = $1, expirationdate = $2 WHERE deviceid = $3',
+			[issuedAt, expirationDate, deviceId],
 		)
 
 		return updateDevicesRes[1] === 1
@@ -365,8 +364,8 @@ export class AuthRepository {
 
 	async getUserDevicesByDeviceId(deviceId: string): Promise<LayerResult<DBTypes.DeviceToken[]>> {
 		const usersByDeviceTokenRes = await this.dataSource.query(
-			`SELECT 'userid' FROM devicetokens WHERE deviceId=${deviceId}`,
-			[],
+			'SELECT userid FROM devicetokens WHERE deviceid = $1',
+			[deviceId],
 		)
 
 		if (!usersByDeviceTokenRes.length) {
@@ -378,8 +377,8 @@ export class AuthRepository {
 		const userId = usersByDeviceTokenRes[0].userid
 
 		const userDevicesRes = await this.dataSource.query(
-			`SELECT * FROM devicetokens WHERE userId=${userId}`,
-			[],
+			'SELECT * FROM devicetokens WHERE userid = $1',
+			[userId],
 		)
 
 		if (!userDevicesRes.length) {

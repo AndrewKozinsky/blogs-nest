@@ -18,10 +18,11 @@ export class SecurityQueryRepository {
 
 	async getUserDevices(refreshToken: string): Promise<GetUserDevicesOutModel> {
 		const user = await this.authRepository.getUserByRefreshToken(refreshToken)
+		if (!user) return []
 
 		const userDevicesRes = await this.dataSource.query(
-			`SELECT * FROM devicetokens WHERE userId=${user!.id}`,
-			[],
+			'SELECT * FROM devicetokens WHERE userid = $1',
+			[user.id],
 		)
 
 		return userDevicesRes.map(this.mapDbUserDeviceToOutputUserDevice)

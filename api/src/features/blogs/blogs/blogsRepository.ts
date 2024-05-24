@@ -25,7 +25,7 @@ export class BlogsRepository {
 	}*/
 
 	async getBlogById(blogId: string) {
-		const blogsRes = await this.dataSource.query(`SELECT * FROM blogs WHERE id=${blogId}`, [])
+		const blogsRes = await this.dataSource.query('SELECT * FROM blogs WHERE id=$1', [blogId])
 
 		if (!blogsRes.length) {
 			return null

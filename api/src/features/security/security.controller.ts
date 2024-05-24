@@ -32,13 +32,14 @@ export class SecurityController {
 	// Returns all devices with active sessions for current user
 	@UseGuards(CheckDeviceRefreshTokenGuard)
 	@Get('devices')
-	async getUserDevices(@Req() req: Request, @Res() res: Response) {
+	@HttpCode(HttpStatus.OK)
+	async getUserDevices(@Req() req: Request) {
 		const refreshTokenFromCookie = this.requestService.getRefreshTokenStrFromReq(req) as string
 
 		const userDevices =
 			await this.securityQueryRepository.getUserDevices(refreshTokenFromCookie)
 
-		res.status(HttpStatus.OK).send(userDevices)
+		return userDevices
 	}
 
 	// Terminate all other (exclude current) device's sessions

@@ -47,7 +47,11 @@ describe('ROOT', () => {
 
 		it('should return an object with property items contains array with 2 items after creating 2 users', async () => {
 			await addUserByAdminRequest(app)
-			await addUserByAdminRequest(app)
+			await addUserByAdminRequest(app, {
+				login: 'my-login-2',
+				email: 'mail-2@email.com',
+				password: 'password-2',
+			})
 
 			const getUsersRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.USERS.value)
@@ -66,12 +70,36 @@ describe('ROOT', () => {
 
 		it('should return an array of objects matching the queries scheme', async () => {
 			await addUserByAdminRequest(app)
-			await addUserByAdminRequest(app)
-			await addUserByAdminRequest(app)
-			await addUserByAdminRequest(app)
-			await addUserByAdminRequest(app)
-			await addUserByAdminRequest(app)
-			await addUserByAdminRequest(app)
+			await addUserByAdminRequest(app, {
+				login: 'my-login-2',
+				email: 'mail-2@email.com',
+				password: 'password-2',
+			})
+			await addUserByAdminRequest(app, {
+				login: 'my-login3',
+				email: 'mail-3@email.com',
+				password: 'password-4',
+			})
+			await addUserByAdminRequest(app, {
+				login: 'my-login-4',
+				email: 'mail-4@email.com',
+				password: 'password-4',
+			})
+			await addUserByAdminRequest(app, {
+				login: 'my-login-5',
+				email: 'mail-5@email.com',
+				password: 'password-5',
+			})
+			await addUserByAdminRequest(app, {
+				login: 'my-login-6',
+				email: 'mail-6@email.com',
+				password: 'password-6',
+			})
+			await addUserByAdminRequest(app, {
+				login: 'my-login-7',
+				email: 'mail-7@email.com',
+				password: 'password-7',
+			})
 
 			const getUsersRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.USERS.value + '?pageNumber=2&pageSize=2')
@@ -141,7 +169,11 @@ describe('ROOT', () => {
 			checkUserObj(createdUserRes.body)
 
 			// Check if there are 2 users after adding another one
-			const createdUser2Res = await addUserByAdminRequest(app)
+			const createdUser2Res = await addUserByAdminRequest(app, {
+				login: 'my-login-2',
+				email: 'mail-2@email.com',
+				password: 'password-2',
+			})
 			expect(createdUser2Res.status).toBe(HTTP_STATUSES.CREATED_201)
 
 			const allUsersRes = await request(app.getHttpServer())
