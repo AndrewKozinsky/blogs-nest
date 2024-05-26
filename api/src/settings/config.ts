@@ -2,15 +2,15 @@ export const config = {
 	port: 3000,
 	refreshToken: {
 		name: 'refreshToken',
-		lifeDurationInMs: 1000 * 1000 * 20, // 20 sec
+		lifeDurationInMs: 100 * 20 * 1000, // 20 sec
 	},
 	accessToken: {
 		name: 'accessToken',
-		lifeDurationInMs: 1000 * 1000 * 10, // 10 sec
+		lifeDurationInMs: 100 * 10 * 1000, // 10 sec
 	},
 	reqLimit: {
 		max: 5,
-		durationInMs: 1000 * 10, // 10 seconds
+		durationInMs: 10 * 1000, // 10 seconds
 	},
 	JWT_SECRET: process.env.JWT_SECRET || '123',
 }

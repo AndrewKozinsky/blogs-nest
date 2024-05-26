@@ -118,7 +118,7 @@ export class PostsRepository {
 		// The query will return an array where the second element is a number of deleted documents
 		// [ [], 1 ]
 		const deleteBlogRes = await this.dataSource.query(
-			`DELETE FROM posts WHERE id='${+postIdNum}'`,
+			`DELETE FROM posts WHERE id='${postIdNum}'`,
 			[],
 		)
 
@@ -137,11 +137,11 @@ export class PostsRepository {
 
 	mapDbPostToClientPost(DbPost: PGGetPostQuery): PostServiceModel {
 		return {
-			id: DbPost.id,
+			id: DbPost.id.toString(),
 			title: DbPost.title,
 			shortDescription: DbPost.shortdescription,
 			content: DbPost.content,
-			blogId: DbPost.blogid,
+			blogId: DbPost.blogid.toString(),
 			blogName: DbPost.blogname,
 			createdAt: DbPost.createdat,
 		}

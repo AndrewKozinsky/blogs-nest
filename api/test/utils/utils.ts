@@ -12,7 +12,6 @@ import {
 } from '../../src/features/blogs/posts/model/posts.input.model'
 import { CreateUserDtoModel } from '../../src/features/users/models/users.input.model'
 // import { HTTP_STATUSES } from '../../../src/config/config'
-// import { CreateUserDtoModel } from '../../../src/models/input/users.input.model'
 
 // dotenv.config()
 
@@ -105,11 +104,11 @@ export function checkPostObj(
 	currentUserLikeStatus: DBTypes.LikeStatuses,
 ) {
 	expect(postObj._id).toBe(undefined)
-	expect(typeof postObj.id).toBe('number')
+	expect(typeof postObj.id).toBe('string')
 	expect(typeof postObj.title).toBe('string')
 	expect(typeof postObj.shortDescription).toBe('string')
 	expect(typeof postObj.content).toBe('string')
-	expect(typeof postObj.blogId).toBe('number')
+	expect(typeof postObj.blogId).toBe('string')
 	expect(typeof postObj.blogName).toBe('string')
 	expect(postObj.createdAt).toMatch(
 		/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/,
@@ -125,7 +124,7 @@ export function checkPostObj(
 		expect(postObj.extendedLikesInfo.newestLikes[0].addedAt).toMatch(
 			/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/,
 		)
-		expect(typeof postObj.extendedLikesInfo.newestLikes[0].userId).toBe('number')
+		expect(typeof postObj.extendedLikesInfo.newestLikes[0].userId).toBe('string')
 		expect(typeof postObj.extendedLikesInfo.newestLikes[0].login).toBe('string')
 	}
 }
@@ -153,7 +152,7 @@ export function createDtoAddUser(newUserObj: Partial<CreateUserDtoModel> = {}): 
 
 export function checkUserObj(userObj: any) {
 	expect(userObj._id).toBe(undefined)
-	expect(typeof userObj.id).toBe('number')
+	expect(typeof userObj.id).toBe('string')
 	expect(userObj.login).toMatch(/^[a-zA-Z0-9_-]*$/)
 	expect(typeof userObj.email).toBe('string')
 	expect(userObj.email).toMatch(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)

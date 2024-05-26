@@ -424,13 +424,13 @@ export class AuthRepository {
 		dbDevice: PGGetDeviceTokensQuery,
 	): DeviceRefreshTokenServiceModel {
 		return {
-			id: dbDevice.id,
+			id: dbDevice.id.toString(),
 			issuedAt: new Date(dbDevice.issuedat),
 			expirationDate: new Date(dbDevice.expirationdate),
 			deviceIP: dbDevice.deviceip,
 			deviceId: dbDevice.deviceid,
 			deviceName: dbDevice.devicename,
-			userId: dbDevice.userid,
+			userId: dbDevice.userid.toString(),
 		}
 	}
 }

@@ -32,11 +32,11 @@ export const RouteNames = {
 		},
 	},
 	USERS: {
-		value: 'users',
+		value: 'sa/users',
 		USER_ID(userId: string) {
 			return {
 				value: userId,
-				full: 'users/' + userId,
+				full: 'sa/users/' + userId,
 			}
 		},
 	},

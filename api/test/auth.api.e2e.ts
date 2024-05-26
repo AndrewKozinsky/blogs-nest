@@ -91,7 +91,7 @@ describe('ROOT', () => {
 				.send({ login, password, email })
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 
-			// await loginRequest(app, login, password).expect(HTTP_STATUSES.UNAUTHORIZED_401)
+			await loginRequest(app, login, password).expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
 		it('should return 200 and object with token and JWT refreshToken in cookie if the DTO is correct and user has verified email', async () => {
@@ -104,7 +104,7 @@ describe('ROOT', () => {
 
 			const loginRes = await loginRequest(app, login, password).expect(HTTP_STATUSES.OK_200)
 
-			// --- AccessToken
+			// --- Create similar AccessToken
 			const rightAccessToken = jwt.sign(
 				{ userId: createdUserRes.body.id },
 				config.JWT_SECRET,

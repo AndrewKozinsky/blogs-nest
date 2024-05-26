@@ -165,8 +165,8 @@ export class PostLikesRepository {
 
 	mapDbPostLikeToClientPostLike(DbPostLike: PGGetPostLikeQuery): PostLikeServiceModel {
 		return {
-			postId: DbPostLike.postid,
-			userId: DbPostLike.userid,
+			postId: DbPostLike.postid.toString(),
+			userId: DbPostLike.userid.toString(),
 			status: DbPostLike.status as DBTypes.LikeStatuses,
 		}
 	}

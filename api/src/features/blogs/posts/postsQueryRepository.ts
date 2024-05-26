@@ -205,7 +205,7 @@ export class PostsQueryRepository {
 		return getPostLikesRes.map((postLike: any) => {
 			return {
 				addedAt: postLike.addedat,
-				userId: postLike.userid,
+				userId: postLike.userid.toString(),
 				login: postLike.login,
 			}
 		})
@@ -236,11 +236,11 @@ export class PostsQueryRepository {
 
 	mapDbPostToOutputPost(DbPost: PGGetPostQuery, newestLikes: NewestLike[]): PostOutModel {
 		return {
-			id: DbPost.id,
+			id: DbPost.id.toString(),
 			title: DbPost.title,
 			shortDescription: DbPost.shortdescription,
 			content: DbPost.content,
-			blogId: DbPost.blogid,
+			blogId: DbPost.blogid.toString(),
 			blogName: DbPost.blogname,
 			createdAt: DbPost.createdat,
 			extendedLikesInfo: {

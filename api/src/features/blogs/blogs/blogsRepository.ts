@@ -24,8 +24,12 @@ export class BlogsRepository {
 		return getBlogsRes.map(this.mapDbBlogToServiceBlog)
 	}*/
 
-	async getBlogById(blogId: string) {
-		const blogsRes = await this.dataSource.query('SELECT * FROM blogs WHERE id=$1', [blogId])
+	async getBlogById(blogId?: string) {
+		if (!blogId) {
+			return null
+		}
+
+		const blogsRes = await this.dataSource.query('SELECT * FROM blogs WHERE id=$1', [+blogId])
 
 		if (!blogsRes.length) {
 			return null
@@ -109,7 +113,7 @@ export class BlogsRepository {
 		// The query will return an array where the second element is a number of deleted documents
 		// [ [], 1 ]
 		const deleteBlogRes = await this.dataSource.query(
-			`DELETE FROM blogs WHERE id='${+blogIdNum}'`,
+			`DELETE FROM blogs WHERE id='${blogIdNum}'`,
 			[],
 		)
 
@@ -128,7 +132,7 @@ export class BlogsRepository {
 
 	mapDbBlogToServiceBlog(DbBlog: PGGetBlogQuery): BlogServiceModel {
 		return {
-			id: DbBlog.id,
+			id: DbBlog.id.toString(),
 			name: DbBlog.name,
 			description: DbBlog.description,
 			websiteUrl: DbBlog.websiteurl,

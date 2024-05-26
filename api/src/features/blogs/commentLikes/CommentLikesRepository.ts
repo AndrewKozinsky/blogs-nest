@@ -147,7 +147,7 @@ export class CommentLikesRepository {
 		DbCommentLike: PGGetCommentLikeQuery,
 	): CommentLikeServiceModel {
 		return {
-			commentId: DbCommentLike.commentid,
+			commentId: DbCommentLike.commentid.toString(),
 			userId: DbCommentLike.userid,
 			status: DbCommentLike.status as DBTypes.LikeStatuses,
 		}

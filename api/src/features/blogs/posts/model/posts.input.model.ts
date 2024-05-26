@@ -21,9 +21,8 @@ import { BlogsRepository } from '../../blogs/blogsRepository'
 export class BlogIdValidation implements ValidatorConstraintInterface {
 	constructor(private readonly blogsRepository: BlogsRepository) {}
 
-	async validate(value: string): Promise<boolean> {
-		const blog = await this.blogsRepository.getBlogById(value)
-
+	async validate(blogId: string): Promise<boolean> {
+		const blog = await this.blogsRepository.getBlogById(blogId)
 		return !!blog
 	}
 
@@ -51,9 +50,9 @@ export class CreatePostDtoModel {
 	@MaxLength(1000, { message: 'Content is too long' })
 	content: string
 
-	@IsNumber()
+	@IsString({ message: 'BlogId must be a string' })
 	@Validate(BlogIdValidation)
-	blogId: number
+	blogId: string
 }
 
 export class UpdatePostDtoModel {
@@ -76,7 +75,7 @@ export class UpdatePostDtoModel {
 	@MaxLength(1000, { message: 'Content is too long' })
 	content: string
 
-	@IsNumber()
+	@IsString({ message: 'BlogId must be a string' })
 	@Validate(BlogIdValidation)
 	blogId: string
 }

@@ -131,7 +131,7 @@ export class BlogsQueryRepository {
 
 	mapDbBlogToOutputBlog(DbBlog: PGGetBlogQuery): BlogOutModel {
 		return {
-			id: DbBlog.id,
+			id: DbBlog.id.toString(),
 			name: DbBlog.name,
 			description: DbBlog.description,
 			websiteUrl: DbBlog.websiteurl,

@@ -75,7 +75,7 @@ export class AppModule implements NestModule {
 	email VARCHAR,
 	password VARCHAR,
 	passwordRecoveryCode VARCHAR,
-	createdAt TIMESTAMP,
+	createdAt timestamp with time zone,
 	emailConfirmationCode VARCHAR,
 	confirmationCodeExpirationDate TIMESTAMP,
 	isConfirmationEmailCodeConfirmed BOOLEAN

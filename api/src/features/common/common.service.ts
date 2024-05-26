@@ -94,7 +94,7 @@ export class CommonService {
 
 	mapDbUserToServiceUser(DbUser: PGGetUserQuery): UserServiceModel {
 		return {
-			id: DbUser.id,
+			id: DbUser.id.toString(),
 			account: {
 				login: DbUser.login,
 				email: DbUser.email,

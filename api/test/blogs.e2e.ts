@@ -345,7 +345,7 @@ describe('ROOT', () => {
 
 function checkBlogObj(blogObj: any) {
 	expect(typeof blogObj._id).toBe('undefined')
-	expect(typeof blogObj.id).toBe('number')
+	expect(typeof blogObj.id).toBe('string')
 	expect(typeof blogObj.name).toBe('string')
 	expect(typeof blogObj.description).toBe('string')
 	expect(blogObj.createdAt).toMatch(

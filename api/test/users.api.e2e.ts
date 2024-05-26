@@ -8,7 +8,7 @@ import { createTestApp } from './utils/common'
 import { clearAllDB } from './utils/db'
 import { addUserByAdminRequest, adminAuthorizationValue, checkUserObj } from './utils/utils'
 
-it.only('123', () => {
+it('123', () => {
 	expect(2).toBe(2)
 })
 
@@ -132,17 +132,39 @@ describe('ROOT', () => {
 				.set('authorization', adminAuthorizationValue)
 
 			expect(getUsersRes.body.page).toBe(2)
-			expect(getUsersRes.body.pagesCount).toBe(5)
-			expect(getUsersRes.body.totalCount).toBe(9)
+			expect(getUsersRes.body.pagesCount).toBe(3)
+			expect(getUsersRes.body.totalCount).toBe(5)
 			expect(getUsersRes.body.items.length).toBe(2)
-
-			// ---
 
 			const getUsers2Res = await request(app.getHttpServer())
 				.get('/' + RouteNames.USERS.value + '?pageNumber=2&pageSize=2')
 				.set('authorization', adminAuthorizationValue)
 			expect(getUsers2Res.body.items[0].email).toBe('email-8@email.com')
 			expect(getUsers2Res.body.items[1].email).toBe('email-7@email.ru')
+		})
+
+		it.only('should return filtered an array of objects sorted by login', async () => {
+			await addUserByAdminRequest(app, { login: 'login_1', email: 'email-1@email.com' })
+			await addUserByAdminRequest(app, { login: 'Login_2', email: 'email-2@email.com' })
+			await addUserByAdminRequest(app, { login: 'login_3', email: 'email-3@email.com' })
+
+			const getUsersRes = await request(app.getHttpServer())
+				.get('/' + RouteNames.USERS.value + '?sortDirection=asc&sortBy=login')
+				.set('authorization', adminAuthorizationValue)
+			console.log(getUsersRes.body)
+
+			expect(getUsersRes.body.items[0].login).toBe('login_1')
+			expect(getUsersRes.body.items[1].login).toBe('Login_2')
+			expect(getUsersRes.body.items[2].login).toBe('login_3')
+
+			const getUsersRes2 = await request(app.getHttpServer())
+				.get('/' + RouteNames.USERS.value + '?sortDirection=desc&sortBy=login')
+				.set('authorization', adminAuthorizationValue)
+
+			expect(getUsersRes2.body.items[0].login).toBe('login_3')
+			expect(getUsersRes2.body.items[1].login).toBe('Login_2')
+			expect(getUsersRes2.body.items[2].login).toBe('login_1')
+			console.log(getUsersRes2.body)
 		})
 	})
 

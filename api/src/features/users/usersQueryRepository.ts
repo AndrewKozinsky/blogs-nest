@@ -28,12 +28,20 @@ export class UsersQueryRepository {
 		const pageNumber = query.pageNumber ? +query.pageNumber : 1
 		const pageSize = query.pageSize ? +query.pageSize : 10
 
-		const usersCountRes = await this.dataSource.query('SELECT COUNT(*) FROM users', []) // [ { count: '18' } ]
+		const usersCountRes = await this.dataSource.query(
+			`SELECT COUNT(*) FROM users WHERE login ILIKE '%${login}%' OR email ILIKE '%${email}%'`,
+			[],
+		) // [ { count: '18' } ]
 		const totalUsersCount = +usersCountRes[0].count
 		const pagesCount = Math.ceil(totalUsersCount / pageSize)
 
+		// COLLATE "C"
 		const getUsersRes = await this.dataSource.query(
-			`SELECT * FROM users WHERE login ILIKE '%${login}%' OR email ILIKE '%${email}%' ORDER BY ${sortBy} ${sortDirection} LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize}`,
+			`SELECT * FROM users
+					WHERE login ILIKE '%${login}%' OR email ILIKE '%${email}%'
+					ORDER BY ${sortBy} ${sortDirection}
+					LIMIT ${pageSize}
+					OFFSET ${(pageNumber - 1) * pageSize}`,
 			[],
 		)
 
@@ -41,7 +49,7 @@ export class UsersQueryRepository {
 			pagesCount,
 			page: pageNumber,
 			pageSize,
-			totalCount: +totalUsersCount,
+			totalCount: totalUsersCount,
 			items: getUsersRes.map(this.mapDbUserToOutputUser),
 		}
 	}
@@ -107,7 +115,7 @@ export class UsersQueryRepository {
 
 	mapDbUserToOutputUser(DbUser: PGGetUserQuery): UserOutModel {
 		return {
-			id: DbUser.id,
+			id: DbUser.id.toString(),
 			email: DbUser.email,
 			login: DbUser.login,
 			createdAt: DbUser.createdat,
