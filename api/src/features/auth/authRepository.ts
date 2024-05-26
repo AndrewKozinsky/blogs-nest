@@ -319,7 +319,7 @@ export class AuthRepository {
 	}
 
 	async updateDeviceRefreshTokenDate(deviceId: string): Promise<boolean> {
-		const issuedAt = new Date()
+		const issuedAt = new Date().toISOString()
 		const expirationDate = new Date(
 			addMilliseconds(new Date(), config.refreshToken.lifeDurationInMs),
 		)

@@ -35,7 +35,7 @@ export class RequestsLimiterMiddleware implements NestMiddleware {
 		)
 
 		if (lastRequestsRes.length < config.reqLimit.max) {
-			const date = new Date()
+			const date = new Date().toISOString()
 			await this.dataSource.query(
 				'INSERT INTO ratelimites ("method", "path", "ip", "date") VALUES($1, $2, $3, $4)',
 				[method, path, ip, date],

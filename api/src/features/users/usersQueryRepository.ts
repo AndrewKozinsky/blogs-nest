@@ -35,11 +35,10 @@ export class UsersQueryRepository {
 		const totalUsersCount = +usersCountRes[0].count
 		const pagesCount = Math.ceil(totalUsersCount / pageSize)
 
-		// COLLATE "C"
 		const getUsersRes = await this.dataSource.query(
 			`SELECT * FROM users
 					WHERE login ILIKE '%${login}%' OR email ILIKE '%${email}%'
-					ORDER BY ${sortBy} ${sortDirection}
+					ORDER BY ${sortBy} COLLATE "C" ${sortDirection}
 					LIMIT ${pageSize}
 					OFFSET ${(pageNumber - 1) * pageSize}`,
 			[],
