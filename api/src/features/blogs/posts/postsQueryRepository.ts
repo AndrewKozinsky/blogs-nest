@@ -7,7 +7,7 @@ import { DataSource } from 'typeorm'
 import { DBTypes } from '../../../db/mongo/dbTypes'
 import { Post, PostDocument } from '../../../db/mongo/schemas/post.schema'
 import { PostLike } from '../../../db/mongo/schemas/postLike.schema'
-import { PGGetPostQuery } from '../../../db/pg/blogs'
+import { PGGetPostQuery } from '../../../db/pg/getPgDataTypes'
 import { convertToNumber } from '../../../utils/numbers'
 import { PostLikesRepository } from '../postLikes/postLikesRepository'
 import { UsersRepository } from '../../users/usersRepository'
@@ -19,12 +19,6 @@ import {
 	PostOutModel,
 } from './model/posts.output.model'
 
-type GetOneOrManyPostsSettings = {
-	blogId?: string
-	query: GetPostsQueries
-	postId: string
-}
-
 @Injectable()
 export class PostsQueryRepository {
 	constructor(
@@ -35,6 +29,53 @@ export class PostsQueryRepository {
 		@InjectDataSource() private dataSource: DataSource,
 	) {}
 
+	/*async getPosts(
+		userId: undefined | string,
+		query: GetPostsQueries,
+		blogId?: string,
+	): Promise<GetPostsOutModel> {
+		const sortBy = query.sortBy ?? 'createdat'
+		const sortDirection = query.sortDirection === 'asc' ? 'ASC' : 'DESC'
+
+		const pageNumber = query.pageNumber ? +query.pageNumber : 1
+		const pageSize = query.pageSize ? +query.pageSize : 10
+
+		// Get all posts count
+		let getAllPostsQueryStr = 'SELECT COUNT(*) FROM posts'
+		if (blogId) getAllPostsQueryStr += ` WHERE blogid = ${blogId}`
+		const getAllPostsRes = await this.dataSource.query(getAllPostsQueryStr, []) // [ { count: '18' } ]
+		const totalPostsCount = getAllPostsRes[0].count
+		const pagesCount = Math.ceil(totalPostsCount / pageSize)
+
+		let getPostsQueryStr = `SELECT id, title, shortDescription, content, createdAt, blogId,
+		   (SELECT COUNT(*) as likescount FROM postlikes WHERE p.id = postid AND status = 'Like') as likescount,
+		   (SELECT COUNT(*) as dislikescount FROM postlikes WHERE p.id = postid AND status = 'Dislike') as dislikescount,
+		   (SELECT name as blogname from blogs WHERE id = p.blogid) as blogname,
+		   (SELECT status as currentuserpostlikestatus FROM postlikes WHERE userid = ${userId || 0} AND postid = p.id) as currentuserpostlikestatus
+			FROM posts p`
+		if (blogId) getPostsQueryStr += ` WHERE blogid = ${blogId}`
+		getPostsQueryStr += ` ORDER BY ${sortBy} COLLATE "C" ${sortDirection} LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize}`
+
+		const getPostsRes: PGGetPostQuery[] = await this.dataSource.query(getPostsQueryStr)
+
+		const items = await Promise.all(
+			getPostsRes.map(async (post) => {
+				const postId = post.id
+
+				const newestPostLikes = await this.getNewestPostLikes(postId)
+
+				return this.mapDbPostToOutputPost(post, newestPostLikes)
+			}),
+		)
+
+		return {
+			pagesCount,
+			page: pageNumber,
+			pageSize,
+			totalCount: +totalPostsCount,
+			items,
+		}
+	}*/
 	async getPosts(
 		userId: undefined | string,
 		query: GetPostsQueries,
@@ -53,16 +94,16 @@ export class PostsQueryRepository {
 		const totalPostsCount = getAllPostsRes[0].count
 		const pagesCount = Math.ceil(totalPostsCount / pageSize)
 
-		let getPostsQueryStr = `SELECT *,
-		   (SELECT COUNT(*) as likescount FROM postlikes WHERE p.id = postid AND status = 'Like'),
-		   (SELECT COUNT(*) as dislikescount FROM postlikes WHERE p.id = postid AND status = 'Dislike'),
-		   (SELECT name as blogname from blogs WHERE id = p.blogid),
-		   (SELECT status as currentuserpostlikestatus FROM postlikes WHERE userid = ${userId || 0} AND postid = p.id)
+		let getPostsQueryStr = `SELECT id, title, shortDescription, content, createdAt, blogId,
+		   (SELECT COUNT(*) as likescount FROM postlikes WHERE p.id = postid AND status = 'Like') as likescount,
+		   (SELECT COUNT(*) as dislikescount FROM postlikes WHERE p.id = postid AND status = 'Dislike') as dislikescount,
+		   (SELECT name as blogname from blogs WHERE id = p.blogid) as blogname,
+		   (SELECT status as currentuserpostlikestatus FROM postlikes WHERE userid = ${userId || 0} AND postid = p.id) as currentuserpostlikestatus
 			FROM posts p`
 		if (blogId) getPostsQueryStr += ` WHERE blogid = ${blogId}`
-		getPostsQueryStr += ` ORDER BY ${sortBy} ${sortDirection} LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize}`
+		getPostsQueryStr += ` ORDER BY ${sortBy} COLLATE "C" ${sortDirection} LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize}`
 
-		const getPostsRes: PGGetPostQuery[] = await this.dataSource.query(getPostsQueryStr, [])
+		const getPostsRes: PGGetPostQuery[] = await this.dataSource.query(getPostsQueryStr)
 
 		const items = await Promise.all(
 			getPostsRes.map(async (post) => {

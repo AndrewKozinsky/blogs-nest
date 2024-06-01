@@ -19,81 +19,13 @@ import {
 } from './model/blogs.output.model'
 
 @Injectable()
-export class BlogsQueryRepository {
+export class SaBlogsQueryRepository {
 	constructor(
 		@InjectModel(Blog.name) private BlogModel: Model<Blog>,
 		@InjectModel(Post.name) private PostModel: Model<Post>,
 		private postsQueryRepository: PostsQueryRepository,
 		@InjectDataSource() private dataSource: DataSource,
 	) {}
-
-	async getBlogs(query: GetBlogsQueries): Promise<GetBlogsOutModel> {
-		const blogName = query.searchNameTerm || ''
-
-		const sortBy = query.sortBy ?? 'createdat'
-		const sortDirection = query.sortDirection === 'asc' ? 'ASC' : 'DESC'
-
-		const pageNumber = query.pageNumber ? +query.pageNumber : 1
-		const pageSize = query.pageSize ? +query.pageSize : 10
-
-		const getBlogsRes = await this.dataSource.query(
-			`
-			SELECT * FROM blogs
-			WHERE name ILIKE '%${blogName}%'
-			ORDER BY ${sortBy} COLLATE "C" ${sortDirection}
-			LIMIT ${pageSize}
-			OFFSET ${(pageNumber - 1) * pageSize}
-			`,
-			[],
-		)
-
-		const blogsCountRes = await this.dataSource.query(
-			`SELECT COUNT(*) FROM blogs WHERE name ILIKE '%${blogName}%'`,
-			[],
-		) // [ { count: '18' } ]
-		const totalBlogsCount = +blogsCountRes[0].count
-		const pagesCount = Math.ceil(totalBlogsCount / pageSize)
-
-		return {
-			pagesCount,
-			page: pageNumber,
-			pageSize,
-			totalCount: +totalBlogsCount,
-			items: getBlogsRes.map(this.mapDbBlogToOutputBlog),
-		}
-	}
-
-	/*async getBlogsByMongo(query: GetBlogsQueries): Promise<GetBlogsOutModel> {
-		const filter: FilterQuery<DBTypes.Blog> = {}
-
-		if (query.searchNameTerm) {
-			filter.name = { $regex: new RegExp(query.searchNameTerm, 'i') }
-		}
-
-		const sortBy = query.sortBy ?? 'createdAt'
-		const sortDirection = query.sortDirection ?? 'desc'
-		const sort = { [sortBy]: sortDirection }
-
-		const pageNumber = query.pageNumber ? +query.pageNumber : 1
-		const pageSize = query.pageSize ? +query.pageSize : 10
-
-		const totalBlogsCount = await this.BlogModel.countDocuments(filter)
-		const pagesCount = Math.ceil(totalBlogsCount / pageSize)
-
-		const getBlogsRes = await this.BlogModel.find(filter)
-			.sort(sort)
-			.skip((pageNumber - 1) * pageSize)
-			.limit(pageSize)
-			.lean()
-
-		return {
-			pagesCount,
-			page: pageNumber,
-			pageSize,
-			totalCount: totalBlogsCount,
-			items: getBlogsRes.map(this.mapDbBlogToOutputBlog),
-		}
-	}*/
 
 	async getBlogPosts(
 		userId: undefined | string,

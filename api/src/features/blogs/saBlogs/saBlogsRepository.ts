@@ -12,7 +12,7 @@ import { GetBlogOutModel as CreateBlogOutModel } from './model/blogs.output.mode
 import { BlogServiceModel } from './model/blogs.service.model'
 
 @Injectable()
-export class BlogsRepository {
+export class SaBlogsRepository {
 	constructor(
 		@InjectModel(Blog.name) private BlogModel: Model<Blog>,
 		@InjectDataSource() private dataSource: DataSource,

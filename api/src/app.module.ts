@@ -14,6 +14,7 @@ import { User, UserSchema } from './db/mongo/schemas/user.schema'
 import { PgTablesCreator } from './db/pg/TablesCreator'
 import { AuthModule } from './features/auth/auth.module'
 import { BlogsModule } from './features/blogs/blogs.module'
+import { SaBlogsController } from './features/blogs/saBlogs/saBlogs.controller'
 import { CommonService } from './features/common/common.service'
 import { SecurityModule } from './features/security/security.module'
 import { TestsModule } from './features/test/tests.module'
@@ -66,8 +67,8 @@ const { MONGO_URL, DB_NAME, DB_USER_NAME, DB_USER_PASSWORD, DB_TYPE, POSTGRES_PO
 export class AppModule implements NestModule {
 	constructor(private dataSource: DataSource) {}
 
-	// It creates empty Postgres tables if they are not exist
 	async onModuleInit() {
+		// It creates empty Postgres tables if they are not exist
 		await this.dataSource.query(
 			`CREATE TABLE IF NOT EXISTS users (
 	id SERIAL PRIMARY KEY,

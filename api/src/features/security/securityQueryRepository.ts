@@ -4,7 +4,7 @@ import { InjectDataSource } from '@nestjs/typeorm'
 import { Model } from 'mongoose'
 import { DataSource } from 'typeorm'
 import { DeviceToken, DeviceTokenDocument } from '../../db/mongo/schemas/deviceToken.schema'
-import { PGGetDeviceTokensQuery } from '../../db/pg/blogs'
+import { PGGetDeviceTokensQuery } from '../../db/pg/getPgDataTypes'
 import { AuthRepository } from '../auth/authRepository'
 import { GetUserDevicesOutModel, UserDeviceOutModel } from './model/security.output.model'
 

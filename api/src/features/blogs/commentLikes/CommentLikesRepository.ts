@@ -6,7 +6,7 @@ import { DataSource } from 'typeorm'
 import { DBTypes } from '../../../db/mongo/dbTypes'
 import { InjectModel } from '@nestjs/mongoose'
 import { CommentLike, CommentLikeDocument } from '../../../db/mongo/schemas/commentLike.schema'
-import { PGGetCommentLikeQuery } from '../../../db/pg/blogs'
+import { PGGetCommentLikeQuery } from '../../../db/pg/getPgDataTypes'
 import { convertToNumber } from '../../../utils/numbers'
 import { CommentLikeServiceModel } from './models/commentLikes.service.model'
 

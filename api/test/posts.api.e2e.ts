@@ -22,7 +22,7 @@ import {
 	userPassword,
 } from './utils/utils'
 
-it.only('123', async () => {
+it('123', async () => {
 	expect(2).toBe(2)
 })
 
@@ -460,6 +460,68 @@ describe('ROOT', () => {
 			expect(getPostsRes.body.totalCount).toBe(7)
 			expect(getPostsRes.body.items.length).toBe(2)
 		})
+
+		it('should return an array of objects matching the queries scheme', async () => {
+			const createdBlogRes = await addBlogRequest(app)
+			const blogId = createdBlogRes.body.id
+
+			await addPostRequest(app, blogId, { title: '3' })
+			await addPostRequest(app, blogId, { title: '5' })
+			await addPostRequest(app, blogId, { title: '1' })
+			await addPostRequest(app, blogId, { title: '12' })
+			await addPostRequest(app, blogId, { title: '4' })
+
+			const getPostsRes = await request(app.getHttpServer()).get('/' + RouteNames.POSTS.value)
+
+			const posts = getPostsRes.body.items
+			expect(posts[0].title).toBe('4')
+			expect(posts[1].title).toBe('12')
+			expect(posts[2].title).toBe('1')
+			expect(posts[3].title).toBe('5')
+			expect(posts[4].title).toBe('3')
+
+			const getPostsAscRes = await request(app.getHttpServer()).get(
+				'/' + RouteNames.POSTS.value + '?sortDirection=asc&sortBy=title',
+			)
+
+			const postsAsc = getPostsAscRes.body.items
+			expect(postsAsc[0].title).toBe('1')
+			expect(postsAsc[1].title).toBe('12')
+			expect(postsAsc[2].title).toBe('3')
+			expect(postsAsc[3].title).toBe('4')
+			expect(postsAsc[4].title).toBe('5')
+
+			const getPostsDesc = await request(app.getHttpServer()).get(
+				'/' + RouteNames.POSTS.value + '?sortDirection=desc&sortBy=title',
+			)
+
+			const postsDesc = getPostsDesc.body.items
+			expect(postsDesc[0].title).toBe('5')
+			expect(postsDesc[1].title).toBe('4')
+			expect(postsDesc[2].title).toBe('3')
+			expect(postsDesc[3].title).toBe('12')
+			expect(postsDesc[4].title).toBe('1')
+
+			const getPostsSortedByBlogName = await request(app.getHttpServer()).get(
+				'/' + RouteNames.POSTS.value + '?sortBy=blogname',
+			)
+		})
+
+		it.only('!!!', async () => {
+			const createdBlogRes = await addBlogRequest(app)
+			const blogId = createdBlogRes.body.id
+
+			await addPostRequest(app, blogId, { title: '1' })
+			await addPostRequest(app, blogId, { title: '2' })
+			await addPostRequest(app, blogId, { title: '3' })
+			await addPostRequest(app, blogId, { title: '4' })
+
+			const getPostsRes = await request(app.getHttpServer()).get(
+				'/' + RouteNames.POSTS.value + '?sortDirection=desc',
+			)
+
+			// const posts = getPostsRes.body.items.map((post) => post.title)
+		})
 	})
 
 	describe('Creating a post', () => {
@@ -554,6 +616,30 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.BAD_REQUEST_400)
 		})
 
+		it('should not update a post with wrong blog id', async () => {
+			const createdBlogRes = await addBlogRequest(app)
+			const blogId = createdBlogRes.body.id
+
+			const createdPostRes = await addPostRequest(app, blogId)
+			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const createdPostId = createdPostRes.body.id
+
+			const updatePostDto: CreatePostDtoModel = {
+				title: 'UPDATED title',
+				shortDescription: 'UPDATED shortDescription',
+				content: 'UPDATED content',
+				blogId: '12345',
+			}
+
+			await request(app.getHttpServer())
+				.put('/' + RouteNames.POSTS.POST_ID(createdPostId).full)
+				.send(updatePostDto)
+				.set('authorization', adminAuthorizationValue)
+				.set('Content-Type', 'application/json')
+				.set('Accept', 'application/json')
+				.expect(HTTP_STATUSES.BAD_REQUEST_400)
+		})
+
 		it('should update a post by correct dto', async () => {
 			const createdBlogRes = await addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
@@ -590,7 +676,7 @@ describe('ROOT', () => {
 
 	describe('Deleting a post', () => {
 		it('should forbid a request from an unauthorized user', async () => {
-			return request(app.getHttpServer()).put('/' + RouteNames.POSTS.value)
+			return request(app.getHttpServer()).delete('/' + RouteNames.POSTS.value)
 		})
 
 		it('should not delete a non existing post', async () => {

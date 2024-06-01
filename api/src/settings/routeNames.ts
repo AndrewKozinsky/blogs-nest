@@ -12,6 +12,25 @@ export const RouteNames = {
 			}
 		},
 	},
+	SA_BLOGS: {
+		value: 'sa/blogs',
+		SA_BLOG_ID(blogId: string) {
+			return {
+				value: blogId,
+				full: 'sa/blogs/' + blogId,
+				POSTS: {
+					value: 'posts',
+					full: 'sa/blogs/' + blogId + '/posts',
+				},
+				POST_ID(postId: string) {
+					return {
+						value: postId,
+						full: 'sa/blogs/' + blogId + '/posts/' + postId,
+					}
+				},
+			}
+		},
+	},
 	POSTS: {
 		value: 'posts',
 		POST_ID(postId: string) {

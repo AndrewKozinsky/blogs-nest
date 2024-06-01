@@ -5,7 +5,7 @@ import { loginRequest } from '../../../../test/utils/utils'
 import { DBTypes } from '../../../db/mongo/dbTypes'
 import { Comment, CommentDocument } from '../../../db/mongo/schemas/comment.schema'
 import { Post } from '../../../db/mongo/schemas/post.schema'
-import { PGGetCommentQuery, PGGetPostQuery } from '../../../db/pg/blogs'
+import { PGGetCommentQuery, PGGetPostQuery } from '../../../db/pg/getPgDataTypes'
 import { convertToNumber } from '../../../utils/numbers'
 import { CommentLikesRepository } from '../commentLikes/CommentLikesRepository'
 import { GetPostCommentsQueries } from '../posts/model/posts.input.model'
@@ -132,7 +132,7 @@ FROM comments c WHERE id=${commentId}`,
 		}
 
 		const totalPostCommentsCountRes = await this.dataSource.query(
-			'SELECT COUNT(*) FROM comments',
+			`SELECT COUNT(*) FROM comments WHERE postid = ${postId}`,
 			[],
 		) // [ { count: '18' } ]
 
@@ -150,7 +150,7 @@ FROM comments c WHERE id=${commentId}`,
 			queryStr += `, (SELECT '${DBTypes.LikeStatuses.None}' as currentusercommentlikestatus)`
 		}
 
-		queryStr += ` FROM comments c WHERE postid = ${postId} ORDER BY ${sortBy} ${sortDirection} LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize}`
+		queryStr += ` FROM comments c WHERE postid = ${postId} ORDER BY ${sortBy} COLLATE "C" ${sortDirection} LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize}`
 
 		const getPostCommentsRes: PGGetCommentQuery[] = await this.dataSource.query(queryStr, [])
 

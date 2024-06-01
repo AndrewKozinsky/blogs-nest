@@ -33,8 +33,24 @@ import { UpdateBlogUseCase } from './blogs/use-cases/UpdateBlogUseCase'
 import { DeletePostUseCase } from './posts/use-cases/deletePostUseCase'
 import { SetPostLikeStatusUseCase } from './posts/use-cases/setPostLikeStatusUseCase'
 import { UpdatePostUseCase } from './posts/use-cases/updatePostUseCase'
+import { SaBlogsController } from './saBlogs/saBlogs.controller'
+import { SaBlogsQueryRepository } from './saBlogs/saBlogsQueryRepository'
+import { SaBlogsRepository } from './saBlogs/saBlogsRepository'
+import { SaCreateBlogPostUseCase } from './saBlogs/use-cases/SaCreateBlogPostUseCase'
+import { SaCreateBlogUseCase } from './saBlogs/use-cases/SaCreateBlogUseCase'
+import { SaDeleteBlogPostUseCase } from './saBlogs/use-cases/saDeleteBlogPostUseCase'
+import { SaDeleteBlogUseCase } from './saBlogs/use-cases/SaDeleteBlogUseCase'
+import { SaUpdateBlogPostUseCase } from './saBlogs/use-cases/SaUpdateBlogPostUseCase'
+import { SaUpdateBlogUseCase } from './saBlogs/use-cases/SaUpdateBlogUseCase'
 
 const useCases = [
+	SaCreateBlogUseCase,
+	SaCreateBlogPostUseCase,
+	SaUpdateBlogUseCase,
+	SaDeleteBlogUseCase,
+	SaUpdateBlogPostUseCase,
+	SaDeleteBlogPostUseCase,
+
 	CreateBlogUseCase,
 	CreateBlogPostUseCase,
 	UpdateBlogUseCase,
@@ -60,9 +76,11 @@ const useCases = [
 			{ name: CommentLike.name, schema: CommentLikeSchema },
 		]),
 	],
-	controllers: [BlogsController, PostsController, CommentsController],
+	controllers: [SaBlogsController, BlogsController, PostsController, CommentsController],
 	providers: [
+		SaBlogsQueryRepository,
 		BlogsQueryRepository,
+		SaBlogsRepository,
 		BlogsRepository,
 		PostsQueryRepository,
 		PostLikesRepository,

@@ -33,27 +33,26 @@ export class DbService {
 
 	async drop() {
 		try {
-			const deleteCommentLikes = this.dataSource.query('DELETE FROM commentlikes', [])
-			const deleteComments = this.dataSource.query('DELETE FROM comments', [])
-			const deletePostLikes = this.dataSource.query('DELETE FROM postlikes', [])
-			const deletePosts = this.dataSource.query('DELETE FROM posts', [])
-			const deleteRateLimits = this.dataSource.query('DELETE FROM ratelimites', [])
-			const deleteDeviceTokens = this.dataSource.query('DELETE FROM devicetokens', [])
-			const deleteBlogs = this.dataSource.query('DELETE FROM blogs', [])
-			const deleteUsers = this.dataSource.query('DELETE FROM users', [])
-
-			const models = [
-				deleteCommentLikes,
-				deleteComments,
-				deletePostLikes,
-				deletePosts,
-				deleteRateLimits,
-				deleteDeviceTokens,
-				deleteBlogs,
-				deleteUsers,
+			const tablesNames = [
+				'commentlikes',
+				'postlikes',
+				'comments',
+				'posts',
+				'ratelimites',
+				'devicetokens',
+				'blogs',
+				'users',
 			]
 
-			await Promise.all(models)
+			await new Promise((resolve, reject) => {
+				tablesNames.forEach(async (tableName, i) => {
+					await this.dataSource.query('DELETE FROM ' + tableName, [])
+
+					if (i === tablesNames.length - 1) {
+						resolve(true)
+					}
+				})
+			})
 
 			return true
 		} catch (err: unknown) {

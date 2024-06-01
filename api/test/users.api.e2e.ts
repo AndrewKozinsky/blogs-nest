@@ -151,7 +151,6 @@ describe('ROOT', () => {
 			const getUsersRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.USERS.value + '?sortDirection=asc&sortBy=login')
 				.set('authorization', adminAuthorizationValue)
-			console.log(getUsersRes.body)
 
 			expect(getUsersRes.body.items[0].login).toBe('login_1')
 			expect(getUsersRes.body.items[1].login).toBe('Login_2')
@@ -164,7 +163,6 @@ describe('ROOT', () => {
 			expect(getUsersRes2.body.items[0].login).toBe('login_3')
 			expect(getUsersRes2.body.items[1].login).toBe('Login_2')
 			expect(getUsersRes2.body.items[2].login).toBe('login_1')
-			console.log(getUsersRes2.body)
 		})
 	})
 

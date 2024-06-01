@@ -6,8 +6,10 @@ import { Model } from 'mongoose'
 import { DataSource } from 'typeorm'
 import { DBTypes } from '../../../db/mongo/dbTypes'
 import { Post, PostDocument } from '../../../db/mongo/schemas/post.schema'
-import { PGGetPostQuery } from '../../../db/pg/blogs'
+import { PGGetPostQuery } from '../../../db/pg/getPgDataTypes'
 import { convertToNumber } from '../../../utils/numbers'
+import { BlogsRepository } from '../blogs/blogsRepository'
+import { UpdateBlogPostDtoModel } from '../saBlogs/model/blogs.input.model'
 import { CreatePostDtoModel, UpdatePostDtoModel } from './model/posts.input.model'
 import { CreatePostOutModel, PostOutModel } from './model/posts.output.model'
 import { PostServiceModel } from './model/posts.service.model'
@@ -17,6 +19,7 @@ export class PostsRepository {
 	constructor(
 		@InjectModel(Post.name) private PostModel: Model<Post>,
 		@InjectDataSource() private dataSource: DataSource,
+		private blogsRepository: BlogsRepository,
 	) {}
 
 	/*async getPosts() {
@@ -73,8 +76,8 @@ export class PostsRepository {
 	}*/
 
 	async updatePost(postId: string, updatePostDto: UpdatePostDtoModel): Promise<boolean> {
-		const blogIdNum = convertToNumber(postId)
-		if (!blogIdNum) {
+		const getBlogRes = await this.blogsRepository.getBlogById(updatePostDto.blogId)
+		if (!getBlogRes) {
 			return false
 		}
 
@@ -87,7 +90,7 @@ export class PostsRepository {
 			)
 		})
 		updateQueryStr += updateQueryStrParams.join(', ')
-		updateQueryStr += ` WHERE id = ${blogIdNum};`
+		updateQueryStr += ` WHERE id = ${postId};`
 
 		// The query will return an array where the second element is a number of updated documents
 		// [ [], 1 ]
@@ -123,6 +126,15 @@ export class PostsRepository {
 		)
 
 		return deleteBlogRes[1] === 1
+	}
+
+	async deleteBlogPost(blogId: string, postId: string): Promise<boolean> {
+		const post = await this.getPostById(postId)
+		if (!post || post.blogId !== blogId) {
+			return false
+		}
+
+		return this.deletePost(postId)
 	}
 
 	/*async deletePostByMongo(postId: string): Promise<boolean> {

@@ -6,7 +6,7 @@ import { Model } from 'mongoose'
 import { DataSource } from 'typeorm'
 import { DBTypes } from '../../../db/mongo/dbTypes'
 import { PostLike, PostLikeDocument } from '../../../db/mongo/schemas/postLike.schema'
-import { PGGetPostLikeQuery } from '../../../db/pg/blogs'
+import { PGGetPostLikeQuery } from '../../../db/pg/getPgDataTypes'
 import { convertToNumber } from '../../../utils/numbers'
 import { PostLikeServiceModel } from './models/postLikes.service.model'
 
