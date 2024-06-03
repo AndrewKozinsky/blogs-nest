@@ -29,53 +29,6 @@ export class PostsQueryRepository {
 		@InjectDataSource() private dataSource: DataSource,
 	) {}
 
-	/*async getPosts(
-		userId: undefined | string,
-		query: GetPostsQueries,
-		blogId?: string,
-	): Promise<GetPostsOutModel> {
-		const sortBy = query.sortBy ?? 'createdat'
-		const sortDirection = query.sortDirection === 'asc' ? 'ASC' : 'DESC'
-
-		const pageNumber = query.pageNumber ? +query.pageNumber : 1
-		const pageSize = query.pageSize ? +query.pageSize : 10
-
-		// Get all posts count
-		let getAllPostsQueryStr = 'SELECT COUNT(*) FROM posts'
-		if (blogId) getAllPostsQueryStr += ` WHERE blogid = ${blogId}`
-		const getAllPostsRes = await this.dataSource.query(getAllPostsQueryStr, []) // [ { count: '18' } ]
-		const totalPostsCount = getAllPostsRes[0].count
-		const pagesCount = Math.ceil(totalPostsCount / pageSize)
-
-		let getPostsQueryStr = `SELECT id, title, shortDescription, content, createdAt, blogId,
-		   (SELECT COUNT(*) as likescount FROM postlikes WHERE p.id = postid AND status = 'Like') as likescount,
-		   (SELECT COUNT(*) as dislikescount FROM postlikes WHERE p.id = postid AND status = 'Dislike') as dislikescount,
-		   (SELECT name as blogname from blogs WHERE id = p.blogid) as blogname,
-		   (SELECT status as currentuserpostlikestatus FROM postlikes WHERE userid = ${userId || 0} AND postid = p.id) as currentuserpostlikestatus
-			FROM posts p`
-		if (blogId) getPostsQueryStr += ` WHERE blogid = ${blogId}`
-		getPostsQueryStr += ` ORDER BY ${sortBy} COLLATE "C" ${sortDirection} LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize}`
-
-		const getPostsRes: PGGetPostQuery[] = await this.dataSource.query(getPostsQueryStr)
-
-		const items = await Promise.all(
-			getPostsRes.map(async (post) => {
-				const postId = post.id
-
-				const newestPostLikes = await this.getNewestPostLikes(postId)
-
-				return this.mapDbPostToOutputPost(post, newestPostLikes)
-			}),
-		)
-
-		return {
-			pagesCount,
-			page: pageNumber,
-			pageSize,
-			totalCount: +totalPostsCount,
-			items,
-		}
-	}*/
 	async getPosts(
 		userId: undefined | string,
 		query: GetPostsQueries,
@@ -94,14 +47,19 @@ export class PostsQueryRepository {
 		const totalPostsCount = getAllPostsRes[0].count
 		const pagesCount = Math.ceil(totalPostsCount / pageSize)
 
-		let getPostsQueryStr = `SELECT id, title, shortDescription, content, createdAt, blogId,
-		   (SELECT COUNT(*) as likescount FROM postlikes WHERE p.id = postid AND status = 'Like') as likescount,
-		   (SELECT COUNT(*) as dislikescount FROM postlikes WHERE p.id = postid AND status = 'Dislike') as dislikescount,
-		   (SELECT name as blogname from blogs WHERE id = p.blogid) as blogname,
-		   (SELECT status as currentuserpostlikestatus FROM postlikes WHERE userid = ${userId || 0} AND postid = p.id) as currentuserpostlikestatus
-			FROM posts p`
-		if (blogId) getPostsQueryStr += ` WHERE blogid = ${blogId}`
-		getPostsQueryStr += ` ORDER BY ${sortBy} COLLATE "C" ${sortDirection} LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize}`
+		let getPostsQueryStr = `SELECT p.id, p.title, p.shortdescription, p.content, p.createdat, p.blogid,
+			(SELECT COUNT(*) as likescount FROM postlikes WHERE postid = p.id AND status = '${DBTypes.LikeStatuses.Like}'),
+			(SELECT COUNT(*) as dislikescount FROM postlikes WHERE postid = p.id AND status = '${DBTypes.LikeStatuses.Dislike}'),
+			b.name as blogname,
+			(SELECT status as currentuserpostlikestatus FROM postlikes WHERE userid = ${userId || 0} AND postid = p.id)
+			FROM posts p
+			LEFT JOIN blogs b ON p.blogid = b.id
+			LEFT JOIN postlikes pl ON p.id = pl.postid`
+		if (blogId) getPostsQueryStr += ` WHERE p.blogid = ${blogId}`
+		getPostsQueryStr += ` GROUP BY p.id, p.title, p.shortdescription, p.content, p.createdat, p.blogid, b.name
+		ORDER BY ${sortBy} ${sortDirection}
+		LIMIT ${pageSize}
+		OFFSET ${(pageNumber - 1) * pageSize}`
 
 		const getPostsRes: PGGetPostQuery[] = await this.dataSource.query(getPostsQueryStr)
 
@@ -276,6 +234,7 @@ export class PostsQueryRepository {
 	}*/
 
 	mapDbPostToOutputPost(DbPost: PGGetPostQuery, newestLikes: NewestLike[]): PostOutModel {
+		console.log(newestLikes)
 		return {
 			id: DbPost.id.toString(),
 			title: DbPost.title,

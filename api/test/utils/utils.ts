@@ -1,5 +1,6 @@
 // import dotenv from 'dotenv'
 import { agent as request } from 'supertest'
+import { HTTP_STATUSES } from '../../src/settings/config'
 import RouteNames from '../../src/settings/routeNames'
 import { DBTypes } from '../../src/db/mongo/dbTypes'
 import {
@@ -231,4 +232,19 @@ export function checkCommentObj(
 	expect(commentObj.createdAt).toMatch(
 		/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/,
 	)
+}
+
+export async function setPostLikeStatus(
+	app: any,
+	postId: string,
+	userToken: string,
+	likeStatus: DBTypes.LikeStatuses,
+) {
+	await request(app.getHttpServer())
+		.put('/' + RouteNames.POSTS.POST_ID(postId).LIKE_STATUS.full)
+		.set('authorization', 'Bearer ' + userToken)
+		.send(JSON.stringify({ likeStatus }))
+		.set('Content-Type', 'application/json')
+		.set('Accept', 'application/json')
+		.expect(HTTP_STATUSES.NO_CONTENT_204)
 }

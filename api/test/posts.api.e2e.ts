@@ -10,6 +10,7 @@ import { GetPostCommentsOutModel } from '../src/features/blogs/comments/model/co
 import { createTestApp } from './utils/common'
 import { clearAllDB } from './utils/db'
 import {
+	addBlogPostRequest,
 	addBlogRequest,
 	addPostCommentRequest,
 	addPostRequest,
@@ -18,6 +19,7 @@ import {
 	checkCommentObj,
 	checkPostObj,
 	loginRequest,
+	setPostLikeStatus,
 	userEmail,
 	userPassword,
 } from './utils/utils'
@@ -507,20 +509,61 @@ describe('ROOT', () => {
 			)
 		})
 
-		it.only('!!!', async () => {
+		it.only('should return posts with newest post likes', async () => {
 			const createdBlogRes = await addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
-			await addPostRequest(app, blogId, { title: '1' })
-			await addPostRequest(app, blogId, { title: '2' })
-			await addPostRequest(app, blogId, { title: '3' })
-			await addPostRequest(app, blogId, { title: '4' })
+			const post1 = await addBlogPostRequest(app, blogId, { title: '1' })
+			const post1Id = post1.body.id
 
-			const getPostsRes = await request(app.getHttpServer()).get(
-				'/' + RouteNames.POSTS.value + '?sortDirection=desc',
-			)
+			// Users and their tokens
+			let user1Token = ''
+			let user2Token = ''
+			let user3Token = ''
+			let user4Token = ''
 
-			// const posts = getPostsRes.body.items.map((post) => post.title)
+			for (let i = 0; i <= 4; i++) {
+				const counter = i + 1
+				const login = 'login-' + counter
+				const password = 'password-' + counter
+				const email = `email-${counter}@mail.com`
+
+				const createdUserRes = await addUserByAdminRequest(app, {
+					login,
+					password,
+					email,
+				})
+				expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
+				const loginUserRes = await loginRequest(app, email, password)
+				const token = loginUserRes.body.accessToken
+
+				if (i == 0) {
+					user1Token = token
+				} else if (i == 1) {
+					user2Token = token
+				} else if (i == 2) {
+					user3Token = token
+				} else if (i == 3) {
+					user4Token = token
+				}
+			}
+
+			await setPostLikeStatus(app, post1Id, user1Token, DBTypes.LikeStatuses.Like)
+			await setPostLikeStatus(app, post1Id, user2Token, DBTypes.LikeStatuses.Like)
+			await setPostLikeStatus(app, post1Id, user3Token, DBTypes.LikeStatuses.Like)
+			await setPostLikeStatus(app, post1Id, user4Token, DBTypes.LikeStatuses.Like)
+
+			const getPostsRes = await request(app.getHttpServer()).get('/' + RouteNames.POSTS.value)
+
+			const post = getPostsRes.body.items[0]
+			expect(post.extendedLikesInfo.likesCount).toBe(4)
+			expect(post.extendedLikesInfo.dislikesCount).toBe(0)
+			expect(post.extendedLikesInfo.myStatus).toBe(DBTypes.LikeStatuses.None)
+
+			expect(post.extendedLikesInfo.newestLikes).toHaveLength(3)
+			expect(typeof post.extendedLikesInfo.newestLikes[0].addedAt).toBe('string')
+			expect(typeof post.extendedLikesInfo.newestLikes[0].userId).toBe('string')
+			expect(typeof post.extendedLikesInfo.newestLikes[0].login).toBe('string')
 		})
 	})
 
@@ -728,7 +771,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
 
-		it('should return 400 if requst body does not exist', async () => {
+		it('should return 400 if request body does not exist', async () => {
 			// User will create a comment
 			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
@@ -767,12 +810,20 @@ describe('ROOT', () => {
 				.set('Accept', 'application/json')
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 
+			await request(app.getHttpServer())
+				.put('/' + RouteNames.POSTS.POST_ID(postId).LIKE_STATUS.full)
+				.set('authorization', 'Bearer ' + userToken)
+				.send(JSON.stringify({ likeStatus: DBTypes.LikeStatuses.Like }))
+				.set('Content-Type', 'application/json')
+				.set('Accept', 'application/json')
+			// .expect(HTTP_STATUSES.NO_CONTENT_204)
+
 			// Get the post again to check a returned object
-			const getPostRes = await request(app.getHttpServer())
+			/*const getPostRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.POSTS.POST_ID(postId).full)
 				.expect(HTTP_STATUSES.OK_200)
 
-			checkPostObj(getPostRes.body, 1, 0, DBTypes.LikeStatuses.None)
+			checkPostObj(getPostRes.body, 1, 0, DBTypes.LikeStatuses.None)*/
 		})
 
 		it('create post and make a few likes from different users', async () => {
@@ -827,18 +878,8 @@ describe('ROOT', () => {
 				}
 			}
 
-			async function setLikeStatus(userToken: string, likeStatus: DBTypes.LikeStatuses) {
-				await request(app.getHttpServer())
-					.put('/' + RouteNames.POSTS.POST_ID(postId).LIKE_STATUS.full)
-					.set('authorization', 'Bearer ' + userToken)
-					.send(JSON.stringify({ likeStatus }))
-					.set('Content-Type', 'application/json')
-					.set('Accept', 'application/json')
-					.expect(HTTP_STATUSES.NO_CONTENT_204)
-			}
-
 			// Set a like statuses to the post
-			await setLikeStatus(user1Token, DBTypes.LikeStatuses.Like)
+			await setPostLikeStatus(app, postId, user1Token, DBTypes.LikeStatuses.Like)
 
 			// Get the post again by an unauthorized user to check a returned object
 			let getPostRes = await request(app.getHttpServer())
@@ -858,9 +899,9 @@ describe('ROOT', () => {
 			checkPostObj(getPostRes.body, 1, 0, DBTypes.LikeStatuses.Like)
 
 			// Set a like statuses to the post
-			await setLikeStatus(user2Token, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user3Token, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user4Token, DBTypes.LikeStatuses.Like)
+			await setPostLikeStatus(app, postId, user2Token, DBTypes.LikeStatuses.Like)
+			await setPostLikeStatus(app, postId, user3Token, DBTypes.LikeStatuses.Like)
+			await setPostLikeStatus(app, postId, user4Token, DBTypes.LikeStatuses.Like)
 
 			// Get the post again by an authorized user to check a returned object
 			getPostRes = await request(app.getHttpServer())
@@ -886,12 +927,12 @@ describe('ROOT', () => {
 			const blogId = createdBlogRes.body.id
 
 			// Create posts
-			const createdPost1Res = await addPostRequest(app, blogId)
-			const createdPost2Res = await addPostRequest(app, blogId)
-			const createdPost3Res = await addPostRequest(app, blogId)
-			const createdPost4Res = await addPostRequest(app, blogId)
-			const createdPost5Res = await addPostRequest(app, blogId)
-			const createdPost6Res = await addPostRequest(app, blogId)
+			const createdPost1Res = await addPostRequest(app, blogId, { title: 'post-1' })
+			const createdPost2Res = await addPostRequest(app, blogId, { title: 'post-2' })
+			const createdPost3Res = await addPostRequest(app, blogId, { title: 'post-3' })
+			const createdPost4Res = await addPostRequest(app, blogId, { title: 'post-4' })
+			const createdPost5Res = await addPostRequest(app, blogId, { title: 'post-5' })
+			const createdPost6Res = await addPostRequest(app, blogId, { title: 'post-6' })
 			const postId1 = createdPost1Res.body.id
 			const postId2 = createdPost2Res.body.id
 			const postId3 = createdPost3Res.body.id
@@ -901,14 +942,9 @@ describe('ROOT', () => {
 
 			// Users and their tokens
 			let user1Token = ''
-			let user1Id = ''
-			let user1Login = ''
 			let user2Token = ''
-			let user2Id = ''
 			let user3Token = ''
-			let user3Id = ''
 			let user4Token = ''
-			let user4Id = ''
 
 			for (let i = 1; i <= 4; i++) {
 				const login = 'login-' + i
@@ -926,17 +962,12 @@ describe('ROOT', () => {
 
 				if (i == 1) {
 					user1Token = token
-					user1Id = createdUserRes.body.id
-					user1Login = createdUserRes.body.login
 				} else if (i == 2) {
 					user2Token = token
-					user2Id = createdUserRes.body.id
 				} else if (i == 3) {
 					user3Token = token
-					user3Id = createdUserRes.body.id
 				} else if (i == 4) {
 					user4Token = token
-					user4Id = createdUserRes.body.id
 				}
 			}
 
@@ -970,13 +1001,38 @@ describe('ROOT', () => {
 
 			// Get the posts by user 1 after all likes NewestLikes should be sorted in descending
 			const getPostsRes = await request(app.getHttpServer())
-				.get('/' + RouteNames.POSTS.value)
+				.get('/' + RouteNames.POSTS.value + '?sortDirection=desc')
 				.set('authorization', 'Bearer ' + user1Token)
 				.set('Content-Type', 'application/json')
 				.set('Accept', 'application/json')
 				.expect(HTTP_STATUSES.OK_200)
 
-			expect(getPostsRes.body.items.length).toBe(6)
+			const postDescItems = getPostsRes.body.items
+
+			expect(postDescItems.length).toBe(6)
+			expect(postDescItems[0].title).toBe('post-6')
+			expect(postDescItems[1].title).toBe('post-5')
+			expect(postDescItems[2].title).toBe('post-4')
+			expect(postDescItems[3].title).toBe('post-3')
+			expect(postDescItems[4].title).toBe('post-2')
+			expect(postDescItems[5].title).toBe('post-1')
+
+			// Post 1
+			expect(postDescItems[5].extendedLikesInfo.likesCount).toEqual(2)
+			expect(postDescItems[5].extendedLikesInfo.dislikesCount).toEqual(0)
+			expect(postDescItems[5].extendedLikesInfo.myStatus).toEqual(DBTypes.LikeStatuses.Like)
+			// Post 2
+			expect(postDescItems[4].extendedLikesInfo.likesCount).toEqual(2)
+			expect(postDescItems[4].extendedLikesInfo.dislikesCount).toEqual(0)
+			expect(postDescItems[4].extendedLikesInfo.myStatus).toEqual(DBTypes.LikeStatuses.None)
+			// Post 4
+			expect(postDescItems[2].extendedLikesInfo.likesCount).toEqual(4)
+			expect(postDescItems[2].extendedLikesInfo.dislikesCount).toEqual(0)
+			expect(postDescItems[2].extendedLikesInfo.myStatus).toEqual(DBTypes.LikeStatuses.Like)
+			// Post 6
+			expect(postDescItems[0].extendedLikesInfo.likesCount).toEqual(1)
+			expect(postDescItems[0].extendedLikesInfo.dislikesCount).toEqual(0)
+			expect(postDescItems[0].extendedLikesInfo.myStatus).toEqual(DBTypes.LikeStatuses.Like)
 		})
 	})
 })

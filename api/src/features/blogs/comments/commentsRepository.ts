@@ -148,10 +148,10 @@ export class CommentsRepository {
 
 	mapDbCommentToClientComment(DbComment: PGGetCommentQuery): CommentServiceModel {
 		return {
-			id: DbComment.id,
+			id: DbComment.id.toString(),
 			content: DbComment.content,
 			commentatorInfo: {
-				userId: DbComment.userid,
+				userId: DbComment.userid.toString(),
 				userLogin: DbComment.userlogin,
 			},
 			createdAt: DbComment.createdat,

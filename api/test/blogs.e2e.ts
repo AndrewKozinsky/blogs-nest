@@ -11,12 +11,15 @@ import { clearAllDB } from './utils/db'
 import {
 	addBlogPostRequest,
 	addBlogRequest,
+	addUserByAdminRequest,
 	adminAuthorizationValue,
 	checkPostObj,
 	createDtoAddBlogPost,
+	loginRequest,
+	setPostLikeStatus,
 } from './utils/utils'
 
-it.only('123', async () => {
+it('123', async () => {
 	expect(2).toBe(2)
 })
 
@@ -138,7 +141,7 @@ describe('ROOT', () => {
 	})
 
 	describe('Getting a blog posts', () => {
-		it("should return a 404 if a blog doesn't exists", async () => {
+		it("should return a 404 if a blog posts doesn't exists", async () => {
 			await request(app.getHttpServer())
 				.get('/' + RouteNames.BLOGS.BLOG_ID('999').POSTS.full)
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
@@ -182,18 +185,15 @@ describe('ROOT', () => {
 			checkPostObj(getBlogPostsRes.body.items[1], 0, 0, DBTypes.LikeStatuses.None)
 		})
 
-		it('should return an object with properties with specific values after creating 5 blog posts', async () => {
+		it('should return an object with properties with specific values after creating 7 blog posts', async () => {
 			const createdBlogRes = await addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
-			await addBlogPostRequest(app, blogId)
-			await addBlogPostRequest(app, blogId)
-			await addBlogPostRequest(app, blogId)
-			await addBlogPostRequest(app, blogId)
-			await addBlogPostRequest(app, blogId)
-			await addBlogPostRequest(app, blogId)
-			await addBlogPostRequest(app, blogId)
+			for (let i = 0; i < 7; i++) {
+				await addBlogPostRequest(app, blogId, { title: 'title ' + i })
+			}
 
+			// Get blogs with default (ASC) sorting
 			const getBlogsRes = await request(app.getHttpServer()).get(
 				'/' + RouteNames.BLOGS.BLOG_ID(blogId).POSTS.full + '?pageNumber=2&pageSize=2',
 			)
@@ -202,6 +202,78 @@ describe('ROOT', () => {
 			expect(getBlogsRes.body.pagesCount).toBe(4)
 			expect(getBlogsRes.body.totalCount).toBe(7)
 			expect(getBlogsRes.body.items.length).toBe(2)
+			const blogItems = getBlogsRes.body.items
+
+			expect(blogItems[0].title).toBe('title 4')
+			expect(blogItems[1].title).toBe('title 3')
+		})
+
+		it('should return array of blog posts appropriated CreatedAd ASC or DSC sorting', async () => {
+			const createdBlogRes = await addBlogRequest(app)
+			const blogId = createdBlogRes.body.id
+
+			for (let i = 0; i < 7; i++) {
+				await addBlogPostRequest(app, blogId, { title: 'title ' + i })
+			}
+
+			// Get blogs with default (DESC) sorting
+			const getBlogsDESCRes = await request(app.getHttpServer()).get(
+				'/' + RouteNames.BLOGS.BLOG_ID(blogId).POSTS.full + '?',
+			)
+
+			expect(getBlogsDESCRes.body.items.length).toBe(7)
+			const blogDESCItems = getBlogsDESCRes.body.items
+
+			for (let i = 0; i < 7; i++) {
+				expect(blogDESCItems[i].title).toBe('title ' + +(6 - i))
+			}
+
+			// Get blogs with ASC sorting
+			const getBlogsASCRes = await request(app.getHttpServer()).get(
+				'/' + RouteNames.BLOGS.BLOG_ID(blogId).POSTS.full + '?sortDirection=asc',
+			)
+
+			const getBlogsASCResItems = getBlogsASCRes.body.items
+
+			for (let i = 0; i < 7; i++) {
+				expect(getBlogsASCResItems[i].title).toBe('title ' + i)
+			}
+		})
+
+		it('should return array of blog posts sorted by title field', async () => {
+			const createdBlogRes = await addBlogRequest(app)
+			const blogId = createdBlogRes.body.id
+
+			await Promise.all([
+				addBlogPostRequest(app, blogId, { title: '3' }),
+				addBlogPostRequest(app, blogId, { title: '2' }),
+				addBlogPostRequest(app, blogId, { title: '4' }),
+				addBlogPostRequest(app, blogId, { title: '1' }),
+			])
+
+			const getASCBlogPostsRes = await request(app.getHttpServer()).get(
+				'/' +
+					RouteNames.BLOGS.BLOG_ID(blogId).POSTS.full +
+					'?sortDirection=asc&sortBy=title',
+			)
+			const blogsPostsASC = getASCBlogPostsRes.body.items
+
+			expect(blogsPostsASC[0].title).toBe('1')
+			expect(blogsPostsASC[1].title).toBe('2')
+			expect(blogsPostsASC[2].title).toBe('3')
+			expect(blogsPostsASC[3].title).toBe('4')
+
+			const getDESCBlogPostsRes = await request(app.getHttpServer()).get(
+				'/' +
+					RouteNames.BLOGS.BLOG_ID(blogId).POSTS.full +
+					'?sortDirection=desc&sortBy=title',
+			)
+			const blogsPostsDESC = getDESCBlogPostsRes.body.items
+
+			expect(blogsPostsDESC[0].title).toBe('4')
+			expect(blogsPostsDESC[1].title).toBe('3')
+			expect(blogsPostsDESC[2].title).toBe('2')
+			expect(blogsPostsDESC[3].title).toBe('1')
 		})
 	})
 

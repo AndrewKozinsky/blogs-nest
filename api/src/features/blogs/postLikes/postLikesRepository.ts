@@ -25,7 +25,7 @@ export class PostLikesRepository {
 		}
 
 		const postLikesRes = await this.dataSource.query(
-			`SELECT * FROM postlikes WHERE userid=${userId} AND postId=${postId}`,
+			`SELECT * FROM postlikes WHERE userid = ${userId} AND postId = ${postId}`,
 			[],
 		)
 
@@ -33,7 +33,7 @@ export class PostLikesRepository {
 			return null
 		}
 
-		return this.mapDbPostLikeToClientPostLike(postLikesRes)
+		return this.mapDbPostLikeToClientPostLike(postLikesRes[0])
 	}
 
 	/*async getPostLikeByUserByMongo(userId: string, postId: string) {
@@ -80,7 +80,7 @@ export class PostLikesRepository {
 		}
 
 		const updatePostLikeRes = await this.dataSource.query(
-			'UPDATE postlikes SET status = $1 WHERE userid = $2 AND postid=$3',
+			'UPDATE postlikes SET status = $1 WHERE userid = $2 AND postid = $3',
 			[likeStatus, userId, postId],
 		)
 

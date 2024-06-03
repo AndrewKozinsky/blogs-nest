@@ -34,12 +34,12 @@ export class DbService {
 	async drop() {
 		try {
 			const tablesNames = [
-				'commentlikes',
-				'postlikes',
-				'comments',
-				'posts',
 				'ratelimites',
 				'devicetokens',
+				'commentlikes',
+				'comments',
+				'postlikes',
+				'posts',
 				'blogs',
 				'users',
 			]
