@@ -103,7 +103,10 @@ export class BlogsQueryRepository {
 		const pageNumber = queries.pageNumber ? +queries.pageNumber : 1
 		const pageSize = queries.pageSize ? +queries.pageSize : 10
 
-		const blogPostsCountRes = await this.dataSource.query('SELECT COUNT(*) FROM posts', []) // [ { count: '18' } ]
+		const blogPostsCountRes = await this.dataSource.query(
+			`SELECT COUNT(*) FROM posts WHERE blogid = ${blogId}`,
+			[],
+		) // [ { count: '18' } ]
 		const totalBlogPostsCount = blogPostsCountRes[0].count
 		const pagesCount = Math.ceil(totalBlogPostsCount / pageSize)
 

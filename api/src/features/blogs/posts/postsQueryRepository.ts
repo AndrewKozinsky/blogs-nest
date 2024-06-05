@@ -197,8 +197,12 @@ export class PostsQueryRepository {
 
 	async getNewestPostLikes(postId: string): Promise<NewestLike[]> {
 		const getPostLikesRes = await this.dataSource.query(
-			'SELECT *, (SELECT login FROM users WHERE id = pl.userid) FROM postlikes pl WHERE postid = $1 ORDER BY "addedat" DESC LIMIT 3',
-			[postId],
+			`SELECT *,
+					(SELECT login FROM users WHERE id = pl.userid)
+					FROM postlikes pl
+					WHERE postid = $1 AND status = $2
+					ORDER BY "addedat" DESC LIMIT 3`,
+			[postId, DBTypes.LikeStatuses.Like],
 		)
 
 		return getPostLikesRes.map((postLike: any) => {
@@ -234,7 +238,6 @@ export class PostsQueryRepository {
 	}*/
 
 	mapDbPostToOutputPost(DbPost: PGGetPostQuery, newestLikes: NewestLike[]): PostOutModel {
-		console.log(newestLikes)
 		return {
 			id: DbPost.id.toString(),
 			title: DbPost.title,

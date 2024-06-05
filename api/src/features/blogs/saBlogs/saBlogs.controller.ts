@@ -101,6 +101,7 @@ export class SaBlogsController {
 		}
 
 		const posts = await this.saBlogsQueryRepository.getBlogPosts(user?.id, blogId, req.query)
+
 		if (!posts) {
 			throw new NotFoundException()
 		}

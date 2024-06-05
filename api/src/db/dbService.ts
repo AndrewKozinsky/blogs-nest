@@ -44,15 +44,13 @@ export class DbService {
 				'users',
 			]
 
-			await new Promise((resolve, reject) => {
-				tablesNames.forEach(async (tableName, i) => {
-					await this.dataSource.query('DELETE FROM ' + tableName, [])
+			let query = ''
 
-					if (i === tablesNames.length - 1) {
-						resolve(true)
-					}
-				})
+			tablesNames.forEach((tableName) => {
+				query += `DELETE FROM ${tableName}; `
 			})
+
+			await this.dataSource.query(query, [])
 
 			return true
 		} catch (err: unknown) {

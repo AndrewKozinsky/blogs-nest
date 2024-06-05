@@ -71,13 +71,15 @@ export class BlogsController {
 		@Req() req: Request,
 	) {
 		const { user } = req
-
+		console.log('-------------------')
+		console.log({ user })
 		const blog = await this.blogsRepository.getBlogById(blogId)
 		if (!blog) {
 			throw new NotFoundException()
 		}
 
 		const posts = await this.blogsQueryRepository.getBlogPosts(user?.id, blogId, req.query)
+
 		if (!posts) {
 			throw new NotFoundException()
 		}

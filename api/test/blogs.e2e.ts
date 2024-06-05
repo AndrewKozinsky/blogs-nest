@@ -11,6 +11,7 @@ import { clearAllDB } from './utils/db'
 import {
 	addBlogPostRequest,
 	addBlogRequest,
+	addPostRequest,
 	addUserByAdminRequest,
 	adminAuthorizationValue,
 	checkPostObj,
@@ -274,6 +275,110 @@ describe('ROOT', () => {
 			expect(blogsPostsDESC[1].title).toBe('3')
 			expect(blogsPostsDESC[2].title).toBe('2')
 			expect(blogsPostsDESC[3].title).toBe('1')
+		})
+
+		it.only('create 6 posts then: like post 1 by user 1, user 2; like post 2 by user 2, user 3; dislike post 3 by user 1; like post 4 by user 1, user 4, user 2, user 3; like post 5 by user 2, dislike by user 3; like post 6 by user 1, dislike by user 2. Get the posts by user 1 after all likes NewestLikes should be sorted in descending', async () => {
+			// Create a blog
+			const createdBlogRes = await addBlogRequest(app)
+			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const blogId = createdBlogRes.body.id
+
+			// Create posts
+			const createdPost1Res = await addPostRequest(app, blogId, { title: 'post-1' })
+			const createdPost2Res = await addPostRequest(app, blogId, { title: 'post-2' })
+			const createdPost3Res = await addPostRequest(app, blogId, { title: 'post-3' })
+			const createdPost4Res = await addPostRequest(app, blogId, { title: 'post-4' })
+			const createdPost5Res = await addPostRequest(app, blogId, { title: 'post-5' })
+			const createdPost6Res = await addPostRequest(app, blogId, { title: 'post-6' })
+			const postId1 = createdPost1Res.body.id
+			const postId2 = createdPost2Res.body.id
+			const postId3 = createdPost3Res.body.id
+			const postId4 = createdPost4Res.body.id
+			const postId5 = createdPost5Res.body.id
+			const postId6 = createdPost6Res.body.id
+
+			// Users and their tokens
+			let user1Token = ''
+			let user2Token = ''
+			let user3Token = ''
+			let user4Token = ''
+
+			for (let i = 1; i <= 4; i++) {
+				const login = 'login-' + i
+				const password = 'password-' + i
+				const email = `email-${i}@mail.com`
+
+				const createdUserRes = await addUserByAdminRequest(app, {
+					login,
+					password,
+					email,
+				})
+				expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
+				const loginUserRes = await loginRequest(app, email, password)
+				const token = loginUserRes.body.accessToken
+
+				if (i == 1) {
+					user1Token = token
+				} else if (i == 2) {
+					user2Token = token
+				} else if (i == 3) {
+					user3Token = token
+				} else if (i == 4) {
+					user4Token = token
+				}
+			}
+
+			async function setLikeStatus(
+				userToken: string,
+				postId: string,
+				likeStatus: DBTypes.LikeStatuses,
+			) {
+				await request(app.getHttpServer())
+					.put('/' + RouteNames.POSTS.POST_ID(postId).LIKE_STATUS.full)
+					.set('authorization', 'Bearer ' + userToken)
+					.send(JSON.stringify({ likeStatus }))
+					.set('Content-Type', 'application/json')
+					.set('Accept', 'application/json')
+					.expect(HTTP_STATUSES.NO_CONTENT_204)
+			}
+
+			// Set a like statuses to the posts
+			await setLikeStatus(user1Token, postId1, DBTypes.LikeStatuses.Like)
+			await setLikeStatus(user2Token, postId1, DBTypes.LikeStatuses.Like)
+			await setLikeStatus(user2Token, postId2, DBTypes.LikeStatuses.Like)
+			await setLikeStatus(user3Token, postId2, DBTypes.LikeStatuses.Like)
+			await setLikeStatus(user1Token, postId3, DBTypes.LikeStatuses.Dislike)
+			await setLikeStatus(user1Token, postId4, DBTypes.LikeStatuses.Like)
+			await setLikeStatus(user4Token, postId4, DBTypes.LikeStatuses.Like)
+			await setLikeStatus(user2Token, postId4, DBTypes.LikeStatuses.Like)
+			await setLikeStatus(user3Token, postId4, DBTypes.LikeStatuses.Like)
+			await setLikeStatus(user2Token, postId5, DBTypes.LikeStatuses.Like)
+			await setLikeStatus(user3Token, postId5, DBTypes.LikeStatuses.Dislike)
+			await setLikeStatus(user1Token, postId6, DBTypes.LikeStatuses.Like)
+
+			// Get the posts by user 1 after all likes NewestLikes should be sorted in descending
+			const getPostsRes = await request(app.getHttpServer())
+				.get('/' + RouteNames.BLOGS.BLOG_ID(blogId).POSTS.full + '?sortDirection=asc')
+				.set('authorization', 'Bearer ' + user1Token)
+				.set('Content-Type', 'application/json')
+				.set('Accept', 'application/json')
+				.expect(HTTP_STATUSES.OK_200)
+
+			expect(getPostsRes.body.totalCount).toBe(6)
+			const postDescItems = getPostsRes.body.items
+
+			expect(postDescItems.length).toBe(6)
+			expect(postDescItems[0].title).toBe('post-1')
+			expect(postDescItems[1].title).toBe('post-2')
+			expect(postDescItems[2].title).toBe('post-3')
+			expect(postDescItems[3].title).toBe('post-4')
+			expect(postDescItems[4].title).toBe('post-5')
+			expect(postDescItems[5].title).toBe('post-6')
+
+			expect(postDescItems[0].extendedLikesInfo.myStatus).toBe(DBTypes.LikeStatuses.Like)
+			expect(postDescItems[2].extendedLikesInfo.myStatus).toBe(DBTypes.LikeStatuses.Dislike)
+			expect(postDescItems[3].extendedLikesInfo.myStatus).toBe(DBTypes.LikeStatuses.Like)
+			expect(postDescItems[5].extendedLikesInfo.myStatus).toBe(DBTypes.LikeStatuses.Like)
 		})
 	})
 
