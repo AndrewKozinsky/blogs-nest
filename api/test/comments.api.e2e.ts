@@ -42,6 +42,45 @@ describe('ROOT', () => {
 			expect(getCommentRes.status).toBe(HTTP_STATUSES.NOT_FOUNT_404)
 		})
 
+		it('should return an existing comment taken by unauthorized user', async () => {
+			const createdBlogRes = await addBlogRequest(app)
+			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const blogId = createdBlogRes.body.id
+
+			const createdPostRes = await addPostRequest(app, blogId)
+			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const postId = createdPostRes.body.id
+
+			const createdUserRes = await addUserByAdminRequest(app)
+			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const loginUserRes = await loginRequest(app, userEmail, userPassword)
+			const userToken = loginUserRes.body.accessToken
+
+			const createdCommentRes = await addPostCommentRequest(app, userToken, postId)
+			const commentId = createdCommentRes.body.id
+
+			await request(app.getHttpServer())
+				.put('/' + RouteNames.COMMENTS.COMMENT_ID(commentId).LIKE_STATUS.full)
+				.set('authorization', 'Bearer ' + userToken)
+				.send(JSON.stringify({ likeStatus: DBTypes.LikeStatuses.Like }))
+				.set('Content-Type', 'application/json')
+				.set('Accept', 'application/json')
+				.expect(HTTP_STATUSES.NO_CONTENT_204)
+
+			const getCommentRes = await request(app.getHttpServer())
+				.get('/' + RouteNames.COMMENTS.COMMENT_ID(commentId).full)
+				.expect(HTTP_STATUSES.OK_200)
+
+			checkCommentObj(
+				getCommentRes.body,
+				createdUserRes.body.id,
+				createdUserRes.body.login,
+				1,
+				0,
+				DBTypes.LikeStatuses.None,
+			)
+		})
+
 		it('should return an existing comment', async () => {
 			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
@@ -72,6 +111,84 @@ describe('ROOT', () => {
 				0,
 				DBTypes.LikeStatuses.None,
 			)
+		})
+
+		it(' create comment then: like the comment by user 1, user 2, user 3, user 4. Dislike by user 3. Get the comment by user 1.', async () => {
+			// Users and their tokens
+			let user1Token = ''
+			let user2Token = ''
+			let user3Token = ''
+			let user4Token = ''
+
+			for (let i = 1; i <= 4; i++) {
+				const login = 'login-' + i
+				const password = 'password-' + i
+				const email = `email-${i}@mail.com`
+
+				const createdUserRes = await addUserByAdminRequest(app, {
+					login,
+					password,
+					email,
+				})
+				expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
+				const loginUserRes = await loginRequest(app, email, password)
+				const token = loginUserRes.body.accessToken
+
+				if (i == 1) {
+					user1Token = token
+				} else if (i == 2) {
+					user2Token = token
+				} else if (i == 3) {
+					user3Token = token
+				} else if (i == 4) {
+					user4Token = token
+				}
+			}
+
+			const createdBlogRes = await addBlogRequest(app)
+			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const blogId = createdBlogRes.body.id
+
+			const createdPostRes = await addPostRequest(app, blogId)
+			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const postId = createdPostRes.body.id
+
+			const createdCommentRes = await addPostCommentRequest(app, user1Token, postId)
+			const commentId = createdCommentRes.body.id
+
+			let userToken = user1Token
+			for (let i = 1; i <= 4; i++) {
+				if (i == 2) userToken = user2Token
+				if (i == 3) userToken = user3Token
+				if (i == 4) userToken = user4Token
+
+				// Set a like status to the comment
+				await request(app.getHttpServer())
+					.put('/' + RouteNames.COMMENTS.COMMENT_ID(commentId).LIKE_STATUS.full)
+					.set('authorization', 'Bearer ' + userToken)
+					.send(JSON.stringify({ likeStatus: DBTypes.LikeStatuses.Like }))
+					.set('Content-Type', 'application/json')
+					.set('Accept', 'application/json')
+					.expect(HTTP_STATUSES.NO_CONTENT_204)
+			}
+
+			// Dislike the comment by user 3
+			await request(app.getHttpServer())
+				.put('/' + RouteNames.COMMENTS.COMMENT_ID(commentId).LIKE_STATUS.full)
+				.set('authorization', 'Bearer ' + user3Token)
+				.send(JSON.stringify({ likeStatus: DBTypes.LikeStatuses.Dislike }))
+				.set('Content-Type', 'application/json')
+				.set('Accept', 'application/json')
+				.expect(HTTP_STATUSES.NO_CONTENT_204)
+
+			const getCommentRes = await request(app.getHttpServer())
+				.get('/' + RouteNames.COMMENTS.COMMENT_ID(commentId).full)
+				.set('authorization', 'Bearer ' + userToken)
+				.expect(HTTP_STATUSES.OK_200)
+
+			expect(getCommentRes.body.likesInfo.myStatus).toBe(DBTypes.LikeStatuses.Like)
+			expect(getCommentRes.body.likesInfo.likesCount).toBe(3)
+			expect(getCommentRes.body.likesInfo.dislikesCount).toBe(1)
 		})
 	})
 
@@ -365,6 +482,27 @@ describe('ROOT', () => {
 				1,
 				DBTypes.LikeStatuses.Dislike,
 			)
+		})
+		it('create comment then: like the comment by user 1, user 2, user 3, user 4. get the comment after each like by user 1', async () => {
+			// Create a blog
+			const createdBlogRes = await addBlogRequest(app)
+			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const blogId = createdBlogRes.body.id
+
+			// Create a post in the blog
+			const createdPostRes = await addPostRequest(app, blogId)
+			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const postId = createdPostRes.body.id
+
+			// Create a user on behalf of which requests will be made
+			const createdUserRes = await addUserByAdminRequest(app)
+			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const loginUserRes = await loginRequest(app, userEmail, userPassword)
+			const userToken = loginUserRes.body.accessToken
+
+			// Create a comment
+			const createdCommentRes = await addPostCommentRequest(app, userToken, postId)
+			const commentId = createdCommentRes.body.id
 		})
 	})
 })

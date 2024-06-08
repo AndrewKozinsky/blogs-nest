@@ -19,7 +19,7 @@ import {
 	createDtoAddBlogPost,
 } from './utils/utils'
 
-it('123', async () => {
+it.only('123', async () => {
 	expect(2).toBe(2)
 })
 
@@ -285,7 +285,7 @@ describe('ROOT', () => {
 		})
 	})
 
-	describe.only('Updating a blog', () => {
+	describe('Updating a blog', () => {
 		it('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
 				.put('/' + RouteNames.SA_BLOGS.SA_BLOG_ID('999').full)

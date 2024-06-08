@@ -53,10 +53,10 @@ export class CommentsQueryRepository {
 
 		const commentsRes = await this.dataSource.query(
 			`SELECT *,
-(SELECT COUNT(*) as likescount FROM commentlikes WHERE userId = c.userid AND status = '${DBTypes.LikeStatuses.Like}'),
-(SELECT COUNT(*) as dislikescount FROM commentlikes WHERE userId = c.userid AND status = '${DBTypes.LikeStatuses.Dislike}'),
+(SELECT COUNT(*) as likescount FROM commentlikes WHERE status = '${DBTypes.LikeStatuses.Like}' AND commentid = ${commentId}),
+(SELECT COUNT(*) as dislikescount FROM commentlikes WHERE  status = '${DBTypes.LikeStatuses.Dislike}' AND commentid = ${commentId}),
 (SELECT login as userlogin FROM users WHERE id = c.userid),
-(SELECT status as currentusercommentlikestatus FROM commentlikes WHERE userid = c.userid AND commentid = c.id)
+(SELECT status as currentusercommentlikestatus FROM commentlikes WHERE userid = ${userId || 0} AND commentid = c.id)
 FROM comments c WHERE id=${commentId}`,
 			[],
 		)
@@ -64,11 +64,6 @@ FROM comments c WHERE id=${commentId}`,
 		if (!commentsRes.length) {
 			return null
 		}
-
-		/*if (userId) {
-			currentUserCommentLikeStatus =
-				await this.commentLikesRepository.getUserCommentLikeStatus(userId, commentId)
-		}*/
 
 		return this.mapDbCommentToOutputComment(commentsRes[0])
 	}

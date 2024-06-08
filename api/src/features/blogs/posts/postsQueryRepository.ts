@@ -47,6 +47,7 @@ export class PostsQueryRepository {
 		const totalPostsCount = getAllPostsRes[0].count
 		const pagesCount = Math.ceil(totalPostsCount / pageSize)
 
+		// let getPostsQueryStr = `SELECT p.*,
 		let getPostsQueryStr = `SELECT p.id, p.title, p.shortdescription, p.content, p.createdat, p.blogid,
 			(SELECT COUNT(*) as likescount FROM postlikes WHERE postid = p.id AND status = '${DBTypes.LikeStatuses.Like}'),
 			(SELECT COUNT(*) as dislikescount FROM postlikes WHERE postid = p.id AND status = '${DBTypes.LikeStatuses.Dislike}'),
@@ -148,8 +149,8 @@ export class PostsQueryRepository {
 
 		const getPostsRes = await this.dataSource.query(
 			`SELECT *,
-       (SELECT COUNT(*) as likescount FROM postlikes WHERE p.id = postlikes.postid AND postlikes.status = 'Like'),
-       (SELECT COUNT(*) as dislikescount FROM postlikes WHERE p.id = postlikes.postid AND postlikes.status = 'Dislike'),
+       (SELECT COUNT(*) as likescount FROM postlikes WHERE postid = p.id AND status = '${DBTypes.LikeStatuses.Like}'),
+       (SELECT COUNT(*) as dislikescount FROM postlikes WHERE postid = p.id AND status = '${DBTypes.LikeStatuses.Dislike}'),
        (SELECT name as blogname from blogs WHERE id = p.blogid),
        (SELECT status as currentuserpostlikestatus FROM postlikes WHERE userid = ${userId || 0} AND postid = p.id)
        FROM posts p WHERE p.id=${postId}`,
@@ -198,7 +199,7 @@ export class PostsQueryRepository {
 	async getNewestPostLikes(postId: string): Promise<NewestLike[]> {
 		const getPostLikesRes = await this.dataSource.query(
 			`SELECT *,
-					(SELECT login FROM users WHERE id = pl.userid)
+					(SELECT login FROM users WHERE id = pl.userid) as login
 					FROM postlikes pl
 					WHERE postid = $1 AND status = $2
 					ORDER BY "addedat" DESC LIMIT 3`,

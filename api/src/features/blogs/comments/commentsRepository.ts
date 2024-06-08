@@ -27,7 +27,7 @@ export class CommentsRepository {
 		}
 
 		const commentsRes = await this.dataSource.query(
-			`SELECT *, (SELECT 'my user login' as userlogin) FROM comments WHERE id=${commentId}`,
+			`SELECT *, (SELECT login as userlogin FROM users WHERE id = c.userid) FROM comments c WHERE id=${commentId}`,
 			[],
 		)
 
