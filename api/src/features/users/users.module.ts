@@ -16,12 +16,7 @@ import { UsersRepository } from './usersRepository'
 const useCases = [DeleteUserUseCase, CreateUserUseCase]
 
 @Module({
-	imports: [
-		MongooseModule.forFeature([
-			{ name: User.name, schema: UserSchema },
-			{ name: DeviceToken.name, schema: DeviceToken },
-		]),
-	],
+	imports: [],
 	controllers: [UsersController],
 	providers: [
 		UsersQueryRepository,

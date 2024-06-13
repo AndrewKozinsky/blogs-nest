@@ -1,21 +1,18 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { InjectDataSource } from '@nestjs/typeorm'
-import { ObjectId } from 'mongodb'
 import { Model } from 'mongoose'
 import { DataSource } from 'typeorm'
 import { HashAdapter } from '../../base/adapters/hash.adapter'
-import { DBTypes } from '../../db/mongo/dbTypes'
 import { PGGetUserQuery } from '../../db/pg/getPgDataTypes'
 import { convertToNumber } from '../../utils/numbers'
 import { CommonService } from '../common/common.service'
-import { User, UserDocument } from '../../db/mongo/schemas/user.schema'
+import { User } from '../../db/mongo/schemas/user.schema'
 import { UserServiceModel } from './models/users.service.model'
 
 @Injectable()
 export class UsersRepository {
 	constructor(
-		@InjectModel(User.name) private UserModel: Model<User>,
 		private commonService: CommonService,
 		private hashAdapter: HashAdapter,
 		@InjectDataSource() private dataSource: DataSource,
@@ -35,18 +32,6 @@ export class UsersRepository {
 
 		return this.mapDbUserToServiceUser(usersRes[0])
 	}
-	/*async getUserByIdByMongo(userId: string) {
-		if (!ObjectId.isValid(userId)) {
-			return null
-		}
-
-		const getUserRes = await this.UserModel.findOne({ _id: new ObjectId(userId) })
-
-		if (!getUserRes) return null
-
-		// @ts-ignore
-		return this.mapDbUserToServiceUser(getUserRes)
-	}*/
 
 	async getUserByPasswordRecoveryCode(passwordRecoveryCode: string) {
 		const usersRes = await this.dataSource.query(
@@ -60,16 +45,6 @@ export class UsersRepository {
 
 		return this.mapDbUserToServiceUser(usersRes[0])
 	}
-
-	/*async getUserByPasswordRecoveryCodeByMongo(passwordRecoveryCode: string) {
-		const getUserRes = await this.UserModel.findOne({
-			'account.passwordRecoveryCode': passwordRecoveryCode,
-		})
-
-		if (!getUserRes) return null
-
-		return this.mapDbUserToServiceUser(getUserRes)
-	}*/
 
 	async createUser(dto: Omit<PGGetUserQuery, 'id'>) {
 		return this.commonService.createUser(dto)
@@ -90,13 +65,6 @@ export class UsersRepository {
 		)
 	}
 
-	/*async setPasswordRecoveryCodeToUserByMongo(userId: string, recoveryCode: null | string) {
-		await this.UserModel.updateOne(
-			{ _id: new ObjectId(userId) },
-			{ $set: { 'account.passwordRecoveryCode': recoveryCode } },
-		)
-	}*/
-
 	async setNewPasswordToUser(userId: string, newPassword: string) {
 		const passwordHash = await this.hashAdapter.hashString(newPassword)
 
@@ -105,13 +73,4 @@ export class UsersRepository {
 			[passwordHash, userId],
 		)
 	}
-
-	/*async setNewPasswordToUserByMongo(userId: string, newPassword: string) {
-		const passwordHash = await this.hashAdapter.hashString(newPassword)
-
-		await this.UserModel.updateOne(
-			{ _id: new ObjectId(userId) },
-			{ $set: { 'account.password': passwordHash } },
-		)
-	}*/
 }

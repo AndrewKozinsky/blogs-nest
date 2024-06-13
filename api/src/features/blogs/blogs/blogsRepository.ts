@@ -1,28 +1,17 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { InjectDataSource } from '@nestjs/typeorm'
-import { ObjectId } from 'mongodb'
 import { Model } from 'mongoose'
 import { DataSource } from 'typeorm'
-import { Blog, BlogDocument } from '../../../db/mongo/schemas/blog.schema'
+import { Blog } from '../../../db/mongo/schemas/blog.schema'
 import { PGGetBlogQuery } from '../../../db/pg/getPgDataTypes'
 import { convertToNumber } from '../../../utils/numbers'
 import { CreateBlogDtoModel, UpdateBlogDtoModel } from './model/blogs.input.model'
-import { GetBlogOutModel as CreateBlogOutModel } from './model/blogs.output.model'
 import { BlogServiceModel } from './model/blogs.service.model'
 
 @Injectable()
 export class BlogsRepository {
-	constructor(
-		@InjectModel(Blog.name) private BlogModel: Model<Blog>,
-		@InjectDataSource() private dataSource: DataSource,
-	) {}
-
-	/*async getBlogs() {
-		const getBlogsRes = await this.BlogModel.find({}).lean()
-
-		return getBlogsRes.map(this.mapDbBlogToServiceBlog)
-	}*/
+	constructor(@InjectDataSource() private dataSource: DataSource) {}
 
 	async getBlogById(blogId?: string) {
 		if (!blogId) {
@@ -38,16 +27,6 @@ export class BlogsRepository {
 		return this.mapDbBlogToServiceBlog(blogsRes[0])
 	}
 
-	/*async getBlogByIdBuMongo(blogId: string) {
-		if (!ObjectId.isValid(blogId)) {
-			return null
-		}
-
-		const getBlogRes = await this.BlogModel.findOne({ _id: new ObjectId(blogId) })
-
-		return getBlogRes ? this.mapDbBlogToServiceBlog(getBlogRes) : null
-	}*/
-
 	async createBlog(dto: CreateBlogDtoModel) {
 		// Current data like '2024-05-19T14:36:40.112Z'
 		const createdAt = new Date().toISOString()
@@ -62,12 +41,6 @@ export class BlogsRepository {
 
 		return newBlogsIdRes[0].id
 	}
-
-	/*async createBlogByMongo(dto: CreateBlogOutModel) {
-		const createBlogRes = await this.BlogModel.create({ ...dto, isMembership: false })
-
-		return createBlogRes.id
-	}*/
 
 	async updateBlog(blogId: string, updateBlogDto: UpdateBlogDtoModel): Promise<boolean> {
 		const blogIdNum = convertToNumber(blogId)
@@ -91,19 +64,6 @@ export class BlogsRepository {
 		return updateBlogRes[1] === 1
 	}
 
-	/*async updateBlogByMongo(blogId: string, updateBlogDto: UpdateBlogDtoModel): Promise<boolean> {
-		if (!ObjectId.isValid(blogId)) {
-			return false
-		}
-
-		const updateBlogRes = await this.BlogModel.updateOne(
-			{ _id: new ObjectId(blogId) },
-			{ $set: updateBlogDto },
-		)
-
-		return updateBlogRes.modifiedCount === 1
-	}*/
-
 	async deleteBlog(blogId: string): Promise<boolean> {
 		const blogIdNum = convertToNumber(blogId)
 		if (!blogIdNum) {
@@ -119,16 +79,6 @@ export class BlogsRepository {
 
 		return deleteBlogRes[1] === 1
 	}
-
-	/*async deleteBlogByMongo(blogId: string): Promise<boolean> {
-		if (!ObjectId.isValid(blogId)) {
-			return false
-		}
-
-		const result = await this.BlogModel.deleteOne({ _id: new ObjectId(blogId) })
-
-		return result.deletedCount === 1
-	}*/
 
 	mapDbBlogToServiceBlog(DbBlog: PGGetBlogQuery): BlogServiceModel {
 		return {

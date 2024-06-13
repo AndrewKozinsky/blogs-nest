@@ -1,24 +1,19 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { Model } from 'mongoose'
-import { ObjectId } from 'mongodb'
 import { InjectModel } from '@nestjs/mongoose'
 import { DataSource } from 'typeorm'
 import { PGGetCommentQuery } from '../../../db/pg/getPgDataTypes'
 import { convertToNumber } from '../../../utils/numbers'
 import { CreatePostCommentDtoModel } from '../posts/model/posts.input.model'
 import { UserServiceModel } from '../../users/models/users.service.model'
-import { CommentDocument } from '../../../db/mongo/schemas/comment.schema'
 import { UpdateCommentDtoModel } from './model/comments.input.model'
 import { CommentServiceModel } from './model/comments.service.model'
 import { Comment } from '../../../db/mongo/schemas/comment.schema'
 
 @Injectable()
 export class CommentsRepository {
-	constructor(
-		@InjectModel(Comment.name) private CommentModel: Model<Comment>,
-		@InjectDataSource() private dataSource: DataSource,
-	) {}
+	constructor(@InjectDataSource() private dataSource: DataSource) {}
 
 	async getComment(commentId: string) {
 		const commentIdNum = convertToNumber(commentId)
@@ -37,16 +32,6 @@ export class CommentsRepository {
 
 		return this.mapDbCommentToClientComment(commentsRes[0])
 	}
-
-	/*async getCommentByMongo(commentId: string) {
-		if (!ObjectId.isValid(commentId)) {
-			return null
-		}
-
-		const getCommentRes = await this.CommentModel.findOne({ _id: new ObjectId(commentId) })
-
-		return getCommentRes ? this.mapDbCommentToClientComment(getCommentRes) : null
-	}*/
 
 	async createPostComment(
 		user: UserServiceModel,
@@ -67,26 +52,6 @@ export class CommentsRepository {
 		return newPostCommentsIdRes[0].id
 	}
 
-	/*async createPostCommentByMongo(
-		user: UserServiceModel,
-		postId: string,
-		commentDto: CreatePostCommentDtoModel,
-	) {
-		const newPostComment = {
-			postId,
-			content: commentDto.content,
-			commentatorInfo: {
-				userId: user.id,
-				userLogin: user.account.login,
-			},
-			createdAt: new Date().toISOString(),
-		}
-
-		const createdPostCommentRes = await this.CommentModel.create(newPostComment)
-		const postClientComment = this.mapDbCommentToClientComment(createdPostCommentRes as any)
-		return postClientComment.id
-	}*/
-
 	async updateComment(
 		commentId: string,
 		updateCommentDto: UpdateCommentDtoModel,
@@ -104,22 +69,6 @@ export class CommentsRepository {
 		return updateCommentRes[1] === 1
 	}
 
-	/*async updateCommentByMongo(
-		commentId: string,
-		updateCommentDto: UpdateCommentDtoModel,
-	): Promise<boolean> {
-		if (!ObjectId.isValid(commentId)) {
-			return false
-		}
-
-		const updateCommentRes = await this.CommentModel.updateOne(
-			{ _id: new ObjectId(commentId) },
-			{ $set: updateCommentDto },
-		)
-
-		return updateCommentRes.modifiedCount === 1
-	}*/
-
 	async deleteComment(commentId: string): Promise<boolean> {
 		const commentIdNum = convertToNumber(commentId)
 		if (!commentIdNum) {
@@ -135,16 +84,6 @@ export class CommentsRepository {
 
 		return deleteCommentRes[1] === 1
 	}
-
-	/*async deleteCommentByMongo(commentId: string): Promise<boolean> {
-		if (!ObjectId.isValid(commentId)) {
-			return false
-		}
-
-		const result = await this.CommentModel.deleteOne({ _id: new ObjectId(commentId) })
-
-		return result.deletedCount === 1
-	}*/
 
 	mapDbCommentToClientComment(DbComment: PGGetCommentQuery): CommentServiceModel {
 		return {

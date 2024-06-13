@@ -1,28 +1,18 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { InjectDataSource } from '@nestjs/typeorm'
-import { FilterQuery, Model } from 'mongoose'
-import { ObjectId } from 'mongodb'
+import { Model } from 'mongoose'
 import { DataSource } from 'typeorm'
-import { DBTypes } from '../../../db/mongo/dbTypes'
-import { Blog, BlogDocument } from '../../../db/mongo/schemas/blog.schema'
+import { Blog } from '../../../db/mongo/schemas/blog.schema'
 import { Post } from '../../../db/mongo/schemas/post.schema'
 import { PGGetBlogQuery } from '../../../db/pg/getPgDataTypes'
-import { PostOutModel } from '../posts/model/posts.output.model'
 import { PostsQueryRepository } from '../posts/postsQueryRepository'
 import { GetBlogPostsQueries, GetBlogsQueries } from './model/blogs.input.model'
-import {
-	BlogOutModel,
-	GetBlogOutModel,
-	GetBlogPostsOutModel,
-	GetBlogsOutModel,
-} from './model/blogs.output.model'
+import { BlogOutModel, GetBlogOutModel, GetBlogPostsOutModel } from './model/blogs.output.model'
 
 @Injectable()
 export class SaBlogsQueryRepository {
 	constructor(
-		@InjectModel(Blog.name) private BlogModel: Model<Blog>,
-		@InjectModel(Post.name) private PostModel: Model<Post>,
 		private postsQueryRepository: PostsQueryRepository,
 		@InjectDataSource() private dataSource: DataSource,
 	) {}
@@ -59,16 +49,6 @@ export class SaBlogsQueryRepository {
 
 		return this.mapDbBlogToOutputBlog(blogsRes[0])
 	}
-
-	/*async getBlogByMongo(blogId: string): Promise<null | GetBlogOutModel> {
-		if (!ObjectId.isValid(blogId)) {
-			return null
-		}
-
-		const getBlogRes = await this.BlogModel.findOne({ _id: new ObjectId(blogId) })
-
-		return getBlogRes ? this.mapDbBlogToOutputBlog(getBlogRes) : null
-	}*/
 
 	mapDbBlogToOutputBlog(DbBlog: PGGetBlogQuery): BlogOutModel {
 		return {

@@ -19,17 +19,7 @@ const mongoURI = process.env.MONGO_URL
 
 @Injectable()
 export class DbService {
-	constructor(
-		@InjectModel(Blog.name) private BlogModel: Model<Blog>,
-		@InjectModel(Comment.name) private CommentModel: Model<Comment>,
-		@InjectModel(CommentLike.name) private CommentLikeModel: Model<CommentLike>,
-		@InjectModel(DeviceToken.name) private DeviceTokenModel: Model<DeviceToken>,
-		@InjectModel(Post.name) private PostModel: Model<Post>,
-		@InjectModel(PostLike.name) private PostLikeModel: Model<PostLike>,
-		@InjectModel(RateLimit.name) private RateLimitModel: Model<RateLimit>,
-		@InjectModel(User.name) private UserModel: Model<User>,
-		@InjectDataSource() private dataSource: DataSource,
-	) {}
+	constructor(@InjectDataSource() private dataSource: DataSource) {}
 
 	async drop() {
 		try {
@@ -61,29 +51,4 @@ export class DbService {
 			return false
 		}
 	}
-
-	/*async dropByMongo() {
-		try {
-			const models = [
-				this.BlogModel.deleteMany(),
-				this.CommentModel.deleteMany(),
-				this.CommentLikeModel.deleteMany(),
-				this.DeviceTokenModel.deleteMany(),
-				this.PostModel.deleteMany(),
-				this.PostLikeModel.deleteMany(),
-				this.RateLimitModel.deleteMany(),
-				this.UserModel.deleteMany(),
-			]
-
-			await Promise.all(models)
-
-			return true
-		} catch (err: unknown) {
-			if (err instanceof Error) {
-				console.log(err.message)
-			}
-
-			return false
-		}
-	}*/
 }

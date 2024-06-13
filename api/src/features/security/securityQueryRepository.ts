@@ -11,7 +11,6 @@ import { GetUserDevicesOutModel, UserDeviceOutModel } from './model/security.out
 @Injectable()
 export class SecurityQueryRepository {
 	constructor(
-		@InjectModel(DeviceToken.name) private DeviceTokenModel: Model<DeviceToken>,
 		private authRepository: AuthRepository,
 		@InjectDataSource() private dataSource: DataSource,
 	) {}

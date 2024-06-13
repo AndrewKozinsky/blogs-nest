@@ -66,16 +66,7 @@ const useCases = [
 ]
 
 @Module({
-	imports: [
-		MongooseModule.forFeature([
-			{ name: User.name, schema: UserSchema },
-			{ name: Blog.name, schema: BlogSchema },
-			{ name: Post.name, schema: PostSchema },
-			{ name: PostLike.name, schema: PostLikeSchema },
-			{ name: Comment.name, schema: CommentSchema },
-			{ name: CommentLike.name, schema: CommentLikeSchema },
-		]),
-	],
+	imports: [],
 	controllers: [SaBlogsController, BlogsController, PostsController, CommentsController],
 	providers: [
 		SaBlogsQueryRepository,

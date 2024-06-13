@@ -19,12 +19,7 @@ const useCases = [
 ]
 
 @Module({
-	imports: [
-		MongooseModule.forFeature([
-			{ name: User.name, schema: UserSchema },
-			{ name: DeviceToken.name, schema: DeviceTokenSchema },
-		]),
-	],
+	imports: [],
 	controllers: [SecurityController],
 	providers: [
 		RequestService,

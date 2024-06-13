@@ -1,20 +1,15 @@
 import { HttpStatus, Injectable, NestMiddleware } from '@nestjs/common'
-import { InjectModel } from '@nestjs/mongoose'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { NextFunction, Request, Response } from 'express'
-import { Model } from 'mongoose'
 import { DataSource } from 'typeorm'
 import { BrowserService } from '../../base/application/browser.service'
 import { addMilliseconds } from 'date-fns'
-import { DBTypes } from '../../db/mongo/dbTypes'
-import { RateLimit } from '../../db/mongo/schemas/rateLimit.schema'
 import { config } from '../../settings/config'
 
 @Injectable()
 export class RequestsLimiterMiddleware implements NestMiddleware {
 	constructor(
 		private browserService: BrowserService,
-		@InjectModel(RateLimit.name) private RateLimitModel: Model<RateLimit>,
 		@InjectDataSource() private dataSource: DataSource,
 	) {}
 

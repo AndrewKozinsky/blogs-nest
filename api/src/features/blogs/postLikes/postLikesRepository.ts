@@ -12,10 +12,7 @@ import { PostLikeServiceModel } from './models/postLikes.service.model'
 
 @Injectable()
 export class PostLikesRepository {
-	constructor(
-		@InjectModel(PostLike.name) private PostLikeModel: Model<PostLike>,
-		@InjectDataSource() private dataSource: DataSource,
-	) {}
+	constructor(@InjectDataSource() private dataSource: DataSource) {}
 
 	async getPostLikeByUser(userId: string, postId: string) {
 		const userIdNum = convertToNumber(userId)
@@ -36,16 +33,6 @@ export class PostLikesRepository {
 		return this.mapDbPostLikeToClientPostLike(postLikesRes[0])
 	}
 
-	/*async getPostLikeByUserByMongo(userId: string, postId: string) {
-		if (!ObjectId.isValid(userId) || !ObjectId.isValid(postId)) {
-			return null
-		}
-
-		const getPostLikeRes = await this.PostLikeModel.findOne({ userId, postId: postId })
-
-		return getPostLikeRes ? this.mapDbPostLikeToClientPostLike(getPostLikeRes) : null
-	}*/
-
 	async createPostLike(userId: string, postId: string, likeStatus: DBTypes.LikeStatuses) {
 		const addedAt = new Date().toISOString()
 
@@ -56,17 +43,6 @@ export class PostLikesRepository {
 			[userId, postId, likeStatus, addedAt],
 		)
 	}
-
-	/*async createPostLikeByMongo(userId: string, postId: string, likeStatus: DBTypes.LikeStatuses) {
-		const newPostLike: DBTypes.PostLike = {
-			userId,
-			postId,
-			status: likeStatus,
-			addedAt: new Date().toISOString(),
-		}
-
-		await this.PostLikeModel.create(newPostLike)
-	}*/
 
 	async updatePostLike(
 		userId: string,
@@ -86,23 +62,6 @@ export class PostLikesRepository {
 
 		return updatePostLikeRes[1] === 1
 	}
-
-	/*async updatePostLikeByMongo(
-		userId: string,
-		postId: string,
-		likeStatus: DBTypes.LikeStatuses,
-	): Promise<boolean> {
-		if (!ObjectId.isValid(userId) || !ObjectId.isValid(postId)) {
-			return false
-		}
-
-		const updatePostRes = await this.PostLikeModel.updateOne(
-			{ userId, postId },
-			{ $set: { status: likeStatus } },
-		)
-
-		return updatePostRes.modifiedCount === 1
-	}*/
 
 	async getPostLikesStats(
 		postId: string,
@@ -130,29 +89,6 @@ export class PostLikesRepository {
 
 		return { likesCount, dislikesCount }
 	}
-
-	/*async getPostLikesStatsByMongo(
-		postId: string,
-	): Promise<{ likesCount: number; dislikesCount: number }> {
-		if (!ObjectId.isValid(postId)) {
-			return { likesCount: 0, dislikesCount: 0 }
-		}
-
-		const getPostLikesRes = await this.PostLikeModel.find({ postId }).lean()
-
-		let likesCount = 0
-		let dislikesCount = 0
-
-		getPostLikesRes.forEach((likeObj) => {
-			if (likeObj.status === DBTypes.LikeStatuses.Like) {
-				likesCount++
-			} else if (likeObj.status === DBTypes.LikeStatuses.Dislike) {
-				dislikesCount++
-			}
-		})
-
-		return { likesCount, dislikesCount }
-	}*/
 
 	async getUserPostLikeStatus(userId: string, postId: string): Promise<DBTypes.LikeStatuses> {
 		const postLikeRes = await this.getPostLikeByUser(userId, postId)

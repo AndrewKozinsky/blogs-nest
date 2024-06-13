@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { addMilliseconds } from 'date-fns'
-import { ObjectId } from 'mongodb'
 import { Model } from 'mongoose'
 import { DataSource } from 'typeorm'
 import { HashAdapter } from '../../base/adapters/hash.adapter'
@@ -10,8 +9,8 @@ import { JwtService } from '../../base/application/jwt.service'
 import { PGGetDeviceTokensQuery, PGGetUserQuery } from '../../db/pg/getPgDataTypes'
 import { config } from '../../settings/config'
 import { DBTypes } from '../../db/mongo/dbTypes'
-import { User, UserDocument } from '../../db/mongo/schemas/user.schema'
-import { DeviceToken, DeviceTokenDocument } from '../../db/mongo/schemas/deviceToken.schema'
+import { User } from '../../db/mongo/schemas/user.schema'
+import { DeviceToken } from '../../db/mongo/schemas/deviceToken.schema'
 import { LayerResult, LayerResultCode } from '../../types/resultCodes'
 import { createUniqString } from '../../utils/stringUtils'
 import { CommonService } from '../common/common.service'
@@ -21,8 +20,6 @@ import { DeviceRefreshTokenServiceModel } from './model/auth.service.model'
 @Injectable()
 export class AuthRepository {
 	constructor(
-		@InjectModel(User.name) private UserModel: Model<User>,
-		@InjectModel(DeviceToken.name) private DeviceTokenModel: Model<DeviceToken>,
 		private hashService: HashAdapter,
 		private commonService: CommonService,
 		private jwtService: JwtService,
@@ -52,28 +49,6 @@ export class AuthRepository {
 		return this.mapDbUserToServiceUser(usersRes[0])
 	}
 
-	/*async getUserByRefreshTokenByMongo(refreshTokenStr: string) {
-		const refreshTokenData = this.jwtService.getRefreshTokenDataFromTokenStr(refreshTokenStr)
-
-		const getDeviceRes = await this.DeviceTokenModel.findOne({
-			deviceId: refreshTokenData!.deviceId,
-		}).lean()
-
-		if (!getDeviceRes) {
-			return null
-		}
-
-		const getUserRes = await this.UserModel.findOne({
-			_id: new ObjectId(getDeviceRes.userId),
-		})
-
-		if (!getUserRes) {
-			return null
-		}
-
-		return this.mapDbUserToServiceUser(getUserRes)
-	}*/
-
 	async getUserByEmail(loginOrEmail: string) {
 		const usersRes = await this.dataSource.query(
 			`SELECT * FROM users WHERE email='${loginOrEmail}'`,
@@ -87,18 +62,6 @@ export class AuthRepository {
 		return this.mapDbUserToServiceUser(usersRes[0])
 	}
 
-	/*async getUserByEmailByMongo(loginOrEmail: string) {
-		const getUserRes = await this.UserModel.findOne({
-			'account.email': loginOrEmail,
-		})
-
-		if (!getUserRes) {
-			return null
-		}
-
-		return this.mapDbUserToServiceUser(getUserRes)
-	}*/
-
 	async getUserByLoginOrEmail(loginOrEmail: string) {
 		const usersRes = await this.dataSource.query(
 			`SELECT * FROM users WHERE login='${loginOrEmail}' OR email='${loginOrEmail}'`,
@@ -111,18 +74,6 @@ export class AuthRepository {
 
 		return this.mapDbUserToServiceUser(usersRes[0])
 	}
-
-	/*async getUserByLoginOrEmailByMongo(loginOrEmail: string) {
-		const getUserRes = await this.UserModel.findOne({
-			$or: [{ 'account.login': loginOrEmail }, { 'account.email': loginOrEmail }],
-		})
-
-		if (!getUserRes) {
-			return null
-		}
-
-		return this.mapDbUserToServiceUser(getUserRes)
-	}*/
 
 	async getUserByLoginOrEmailAndPassword(loginDto: { loginOrEmail: string; password: string }) {
 		const usersRes = await this.dataSource.query(
@@ -145,30 +96,6 @@ export class AuthRepository {
 
 		return this.mapDbUserToServiceUser(usersRes[0])
 	}
-
-	/*async getUserByLoginOrEmailAndPasswordByMongo(loginDto: { loginOrEmail: string; password: string }) {
-		const getUserRes = await this.UserModel.findOne({
-			$or: [
-				{ 'account.login': loginDto.loginOrEmail },
-				{ 'account.email': loginDto.loginOrEmail },
-			],
-		})
-
-		if (!getUserRes) {
-			return null
-		}
-
-		const isPasswordMath = await this.hashService.compare(
-			loginDto.password,
-			getUserRes.account.password,
-		)
-
-		if (!isPasswordMath) {
-			return null
-		}
-
-		return this.mapDbUserToServiceUser(getUserRes)
-	}*/
 
 	async getConfirmedUserByLoginOrEmailAndPassword(loginDto: {
 		loginOrEmail: string
@@ -201,25 +128,9 @@ export class AuthRepository {
 		return this.mapDbUserToServiceUser(usersRes[0])
 	}
 
-	/*async getUserByConfirmationCodeByMongo(confirmationCode: string) {
-		const getUserRes = await this.UserModel.findOne({
-			'emailConfirmation.confirmationCode': confirmationCode,
-		})
-
-		if (!getUserRes) {
-			return null
-		}
-
-		return this.mapDbUserToServiceUser(getUserRes)
-	}*/
-
 	async createUser(dto: Omit<PGGetUserQuery, 'id'>) {
 		return this.commonService.createUser(dto)
 	}
-
-	/*async createUserByMongo(dto: DBTypes.User) {
-		return this.commonService.createUser(dto)
-	}*/
 
 	async makeUserEmailConfirmed(userId: string) {
 		const updateUserRes = await this.dataSource.query(
@@ -229,15 +140,6 @@ export class AuthRepository {
 
 		return updateUserRes[1] === 1
 	}
-
-	/*async makeUserEmailConfirmedByMongo(userId: string) {
-		const updateUserRes = await this.UserModel.updateOne(
-			{ _id: new ObjectId(userId) },
-			{ $set: { 'emailConfirmation.isConfirmed': true } },
-		)
-
-		return updateUserRes.modifiedCount === 1
-	}*/
 
 	async setNewEmailConfirmationCode(userId: string) {
 		const confirmationCode = createUniqString()
@@ -249,17 +151,6 @@ export class AuthRepository {
 
 		return confirmationCode
 	}
-
-	/*async setNewEmailConfirmationCodeByMongo(userId: string) {
-		const confirmationCode = createUniqString()
-
-		await this.UserModel.updateOne(
-			{ _id: new ObjectId(userId) },
-			{ $set: { 'emailConfirmation.confirmationCode': confirmationCode } },
-		)
-
-		return confirmationCode
-	}*/
 
 	async deleteUser(userId: string): Promise<boolean> {
 		return this.commonService.deleteUser(userId)
@@ -281,10 +172,6 @@ export class AuthRepository {
 		)
 	}
 
-	/*async insertDeviceRefreshTokenByMongo(deviceRefreshToken: DBTypes.DeviceToken) {
-		await this.DeviceTokenModel.insertMany(deviceRefreshToken)
-	}*/
-
 	async getDeviceRefreshTokenByDeviceId(deviceId: string): Promise<null | DBTypes.DeviceToken> {
 		const tokensRes = await this.dataSource.query(
 			`SELECT * FROM devicetokens WHERE deviceId='${deviceId}'`,
@@ -297,15 +184,6 @@ export class AuthRepository {
 
 		return this.mapDbDeviceRefreshTokenToServiceDeviceRefreshToken(tokensRes[0])
 	}
-
-	/*async getDeviceRefreshTokenByDeviceIdByMongo(deviceId: string): Promise<null | DBTypes.DeviceToken> {
-		const getTokenRes = await this.DeviceTokenModel.findOne({
-			deviceId,
-		})
-		if (!getTokenRes) return null
-
-		return this.mapDbDeviceRefreshTokenToServiceDeviceRefreshToken(getTokenRes)
-	}*/
 
 	async deleteDeviceRefreshTokenByDeviceId(deviceId: string): Promise<boolean> {
 		// The query will return an array where the second element is a number of deleted documents
@@ -332,23 +210,6 @@ export class AuthRepository {
 		return updateDevicesRes[1] === 1
 	}
 
-	/*async updateDeviceRefreshTokenDateByMongo(deviceId: string): Promise<boolean> {
-		const result = await this.DeviceTokenModel.updateOne(
-			{ deviceId },
-			{
-				$set: {
-					issuedAt: new Date(),
-					expirationDate: addMilliseconds(
-						new Date(),
-						config.refreshToken.lifeDurationInMs,
-					),
-				},
-			},
-		)
-
-		return result.modifiedCount === 1
-	}*/
-
 	async getDeviceRefreshTokenByTokenStr(tokenStr: string): Promise<null | DBTypes.DeviceToken> {
 		try {
 			const refreshTokenPayload = this.jwtService.getRefreshTokenDataFromTokenStr(tokenStr)
@@ -357,10 +218,6 @@ export class AuthRepository {
 			return null
 		}
 	}
-
-	/*async findDeviceRefreshTokenInDb(deviceId: string) {
-		return this.DeviceTokenModel.findOne({ deviceId }).lean()
-	}*/
 
 	async getUserDevicesByDeviceId(deviceId: string): Promise<LayerResult<DBTypes.DeviceToken[]>> {
 		const usersByDeviceTokenRes = await this.dataSource.query(
@@ -392,29 +249,6 @@ export class AuthRepository {
 			data: userDevicesRes.map(this.mapDbDeviceRefreshTokenToServiceDeviceRefreshToken),
 		}
 	}
-
-	/*async getUserDevicesByDeviceIdByMongo(deviceId: string): Promise<LayerResult<DBTypes.DeviceToken[]>> {
-		const userDevice = await this.DeviceTokenModel.findOne({ deviceId }).lean()
-
-		if (!userDevice) {
-			return {
-				code: LayerResultCode.NotFound,
-			}
-		}
-
-		const userDevices = await this.DeviceTokenModel.find({ userId: userDevice.userId }).lean()
-
-		if (!userDevices) {
-			return {
-				code: LayerResultCode.NotFound,
-			}
-		}
-
-		return {
-			code: LayerResultCode.Success,
-			data: userDevices.map(this.mapDbDeviceRefreshTokenToServiceDeviceRefreshToken),
-		}
-	}*/
 
 	mapDbUserToServiceUser(dbUser: PGGetUserQuery): UserServiceModel {
 		return this.commonService.mapDbUserToServiceUser(dbUser)

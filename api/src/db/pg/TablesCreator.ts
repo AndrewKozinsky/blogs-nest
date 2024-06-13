@@ -1,4 +1,3 @@
-import { OnModuleInit } from '@nestjs/common'
 import { DataSource } from 'typeorm'
 
 // It creates empty Postgres tables if they are not exist

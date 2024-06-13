@@ -5,17 +5,14 @@ import { Injectable } from '@nestjs/common'
 import { DataSource } from 'typeorm'
 import { DBTypes } from '../../../db/mongo/dbTypes'
 import { InjectModel } from '@nestjs/mongoose'
-import { CommentLike, CommentLikeDocument } from '../../../db/mongo/schemas/commentLike.schema'
+import { CommentLike } from '../../../db/mongo/schemas/commentLike.schema'
 import { PGGetCommentLikeQuery } from '../../../db/pg/getPgDataTypes'
 import { convertToNumber } from '../../../utils/numbers'
 import { CommentLikeServiceModel } from './models/commentLikes.service.model'
 
 @Injectable()
 export class CommentLikesRepository {
-	constructor(
-		@InjectModel(CommentLike.name) private CommentLikeModel: Model<CommentLike>,
-		@InjectDataSource() private dataSource: DataSource,
-	) {}
+	constructor(@InjectDataSource() private dataSource: DataSource) {}
 
 	async getCommentLikeByUser(userId: string, commentId: string) {
 		const userIdNum = convertToNumber(userId)
@@ -36,18 +33,6 @@ export class CommentLikesRepository {
 		return this.mapDbCommentLikeToClientCommentLike(commentLikesRes[0])
 	}
 
-	/*async getCommentLikeByUserByMongo(userId: string, commentId: string) {
-		if (!ObjectId.isValid(userId) || !ObjectId.isValid(commentId)) {
-			return null
-		}
-
-		const getCommentLikeRes = await this.CommentLikeModel.findOne({ userId, commentId })
-
-		return getCommentLikeRes
-			? this.mapDbCommentLikeToClientCommentLike(getCommentLikeRes)
-			: null
-	}*/
-
 	async createCommentLike(userId: string, commentId: string, likeStatus: DBTypes.LikeStatuses) {
 		// Insert new blog and to get an array like this: [ { id: 10 } ]
 		const newCommentLikeIdRes = await this.dataSource.query(
@@ -57,20 +42,6 @@ export class CommentLikesRepository {
 			[userId, commentId, likeStatus],
 		)
 	}
-
-	/*async createCommentLikeByMongo(userId: string, commentId: string, likeStatus: DBTypes.LikeStatuses) {
-		const newCommentLike: DBTypes.CommentLike = {
-			userId,
-			commentId,
-			status: likeStatus,
-		}
-
-		try {
-			await this.CommentLikeModel.create(newCommentLike)
-		} catch (err: unknown) {
-			console.log(err)
-		}
-	}*/
 
 	async updateCommentLike(
 		userId: string,
@@ -91,24 +62,7 @@ export class CommentLikesRepository {
 		return updateCommentLikeStatusRes[1] === 1
 	}
 
-	/*async updateCommentLikeByMongo(
-		userId: string,
-		commentId: string,
-		likeStatus: DBTypes.LikeStatuses,
-	): Promise<boolean> {
-		if (!ObjectId.isValid(userId) || !ObjectId.isValid(commentId)) {
-			return false
-		}
-
-		const updateCommentRes = await this.CommentLikeModel.updateOne(
-			{ userId, commentId },
-			{ $set: { status: likeStatus } },
-		)
-
-		return updateCommentRes.modifiedCount === 1
-	}*/
-
-	async getCommentLikesStats(
+	/*async getCommentLikesStats(
 		commentId: string,
 	): Promise<{ likesCount: number; dislikesCount: number }> {
 		if (!ObjectId.isValid(commentId)) {
@@ -129,7 +83,7 @@ export class CommentLikesRepository {
 		})
 
 		return { likesCount, dislikesCount }
-	}
+	}*/
 
 	async getUserCommentLikeStatus(
 		userId: string,

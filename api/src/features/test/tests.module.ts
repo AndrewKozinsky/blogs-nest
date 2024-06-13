@@ -12,20 +12,7 @@ import { User, UserSchema } from '../../db/mongo/schemas/user.schema'
 import { TestsController } from './tests.controller'
 
 @Module({
-	imports: [
-		MongooseModule.forFeature([
-			{ name: User.name, schema: UserSchema },
-			{ name: DeviceToken.name, schema: DeviceTokenSchema },
-			{ name: Blog.name, schema: BlogSchema },
-			{ name: Post.name, schema: PostSchema },
-			{ name: PostLike.name, schema: PostLikeSchema },
-			{ name: User.name, schema: UserSchema },
-			{ name: Comment.name, schema: CommentSchema },
-			{ name: CommentLike.name, schema: CommentLikeSchema },
-			{ name: DeviceToken.name, schema: DeviceTokenSchema },
-			{ name: RateLimit.name, schema: RateLimitSchema },
-		]),
-	],
+	imports: [],
 	controllers: [TestsController],
 	providers: [DbService],
 })

@@ -1,20 +1,13 @@
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-import { MongooseModule } from '@nestjs/mongoose'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
 import { HashAdapter } from './base/adapters/hash.adapter'
 import { BrowserService } from './base/application/browser.service'
 import { JwtService } from './base/application/jwt.service'
 import { RequestService } from './base/application/request.service'
-import { CommentLike } from './db/mongo/schemas/commentLike.schema'
-import { DeviceToken } from './db/mongo/schemas/deviceToken.schema'
-import { RateLimit, RateLimitSchema } from './db/mongo/schemas/rateLimit.schema'
-import { User, UserSchema } from './db/mongo/schemas/user.schema'
-import { PgTablesCreator } from './db/pg/TablesCreator'
 import { AuthModule } from './features/auth/auth.module'
 import { BlogsModule } from './features/blogs/blogs.module'
-import { SaBlogsController } from './features/blogs/saBlogs/saBlogs.controller'
 import { CommonService } from './features/common/common.service'
 import { SecurityModule } from './features/security/security.module'
 import { TestsModule } from './features/test/tests.module'
@@ -24,18 +17,13 @@ import { RequestsLimiterMiddleware } from './infrastructure/middlewares/requests
 import { SetReqUserMiddleware } from './infrastructure/middlewares/setReqUser.middleware'
 import { RouteNames } from './settings/routeNames'
 
-const { MONGO_URL, DB_NAME, DB_USER_NAME, DB_USER_PASSWORD, DB_TYPE, POSTGRES_PORT } = process.env
+const { DB_NAME, DB_USER_NAME, DB_USER_PASSWORD, DB_TYPE, POSTGRES_PORT } = process.env
 
 @Module({
 	imports: [
 		ConfigModule.forRoot(),
-		MongooseModule.forRoot(MONGO_URL, { dbName: DB_NAME }),
 		// Ограничитель можно сделать отдельным пакетом Limit throtller
 		// Схемы в папку feature
-		MongooseModule.forFeature([
-			{ name: User.name, schema: UserSchema },
-			{ name: RateLimit.name, schema: RateLimitSchema },
-		]),
 		TypeOrmModule.forRoot({
 			// url: 'postgresql://blogs_owner:ybZpRe4Es5oA@ep-curly-voice-a2q1fh7d.eu-central-1.aws.neon.tech/blogs?sslmode=require',
 			type: 'postgres',
@@ -44,7 +32,7 @@ const { MONGO_URL, DB_NAME, DB_USER_NAME, DB_USER_PASSWORD, DB_TYPE, POSTGRES_PO
 			username: DB_USER_NAME,
 			password: DB_USER_PASSWORD,
 			database: DB_NAME,
-			entities: [],
+			entities: ['./db/pg/entities/*.entity.ts'],
 			autoLoadEntities: false,
 			synchronize: false,
 		}),

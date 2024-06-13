@@ -1,12 +1,10 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { InjectDataSource } from '@nestjs/typeorm'
-import { ObjectId } from 'mongodb'
 import { Model } from 'mongoose'
 import { DataSource } from 'typeorm'
 import { HashAdapter } from '../../base/adapters/hash.adapter'
-import { DBTypes } from '../../db/mongo/dbTypes'
-import { User, UserDocument } from '../../db/mongo/schemas/user.schema'
+import { User } from '../../db/mongo/schemas/user.schema'
 import { PGGetUserQuery } from '../../db/pg/getPgDataTypes'
 import { convertToNumber } from '../../utils/numbers'
 import { createUniqString } from '../../utils/stringUtils'
@@ -16,7 +14,6 @@ import { add } from 'date-fns'
 @Injectable()
 export class CommonService {
 	constructor(
-		@InjectModel(User.name) private UserModel: Model<User>,
 		private hashAdapter: HashAdapter,
 		@InjectDataSource() private dataSource: DataSource,
 	) {}
@@ -61,11 +58,6 @@ export class CommonService {
 		return newBlogsIdRes[0].id
 	}
 
-	/*async createUserByMongo(dto: DBTypes.User) {
-		const userRes = await this.UserModel.create(dto)
-		return userRes.id
-	}*/
-
 	async deleteUser(userId: string): Promise<boolean> {
 		const userIdNum = convertToNumber(userId)
 		if (!userIdNum) {
@@ -81,16 +73,6 @@ export class CommonService {
 
 		return deleteBlogRes[1] === 1
 	}
-
-	/*async deleteUserByMongo(userId: string): Promise<boolean> {
-		if (!ObjectId.isValid(userId)) {
-			return false
-		}
-
-		const result = await this.UserModel.deleteOne({ _id: new ObjectId(userId) })
-
-		return result.deletedCount === 1
-	}*/
 
 	mapDbUserToServiceUser(DbUser: PGGetUserQuery): UserServiceModel {
 		return {

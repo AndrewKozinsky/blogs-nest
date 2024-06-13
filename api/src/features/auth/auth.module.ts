@@ -15,7 +15,6 @@ import { UsersService } from '../users/users.service'
 import { AuthController } from './auth.controller'
 import { AuthRepository } from './authRepository'
 import {
-	AuthRegistrationDtoModel,
 	IsEmailExistsValidation,
 	IsLoginExistsValidation,
 } from './model/authRegistration.input.model'
@@ -45,12 +44,7 @@ const useCases = [
 ]
 
 @Module({
-	imports: [
-		MongooseModule.forFeature([
-			{ name: User.name, schema: UserSchema },
-			{ name: DeviceToken.name, schema: DeviceTokenSchema },
-		]),
-	],
+	imports: [],
 	controllers: [AuthController],
 	providers: [
 		JwtService,
