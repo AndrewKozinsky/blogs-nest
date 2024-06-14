@@ -1,6 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
-/*@Entity()
+@Entity()
 export class User {
 	@PrimaryGeneratedColumn()
 	id: number
@@ -26,6 +26,6 @@ export class User {
 	@Column('varchar')
 	confirmationCodeExpirationDate: string
 
-	@Column('boolean')
+	@Column('varchar')
 	isConfirmationEmailCodeConfirmed: boolean
-}*/
+}

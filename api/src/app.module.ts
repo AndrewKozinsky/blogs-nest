@@ -3,21 +3,30 @@ import { ConfigModule } from '@nestjs/config'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
 import { HashAdapter } from './base/adapters/hash.adapter'
-import { BrowserService } from './base/application/browser.service'
 import { JwtService } from './base/application/jwt.service'
+import { BrowserService } from './base/application/browser.service'
+import { Blog } from './db/pg/entities/blog.entity'
 import { RequestService } from './base/application/request.service'
+import { Comment } from './db/pg/entities/comment'
+import { CommentLikes } from './db/pg/entities/commentLikes'
+import { DeviceToken } from './db/pg/entities/deviceToken'
+import { Post } from './db/pg/entities/post'
+import { PostLikes } from './db/pg/entities/postLikes'
+import { RateLimit } from './db/pg/entities/rateLimit'
+import { User } from './db/pg/entities/user'
 import { AuthModule } from './features/auth/auth.module'
-import { BlogsModule } from './features/blogs/blogs.module'
 import { CommonService } from './features/common/common.service'
+import { BlogsModule } from './features/blogs/blogs.module'
 import { SecurityModule } from './features/security/security.module'
 import { TestsModule } from './features/test/tests.module'
 import { UsersModule } from './features/users/users.module'
-import { UsersRepository } from './features/users/usersRepository'
 import { RequestsLimiterMiddleware } from './infrastructure/middlewares/requestsLimiter.middleware'
-import { SetReqUserMiddleware } from './infrastructure/middlewares/setReqUser.middleware'
+import { UsersRepository } from './features/users/usersRepository'
 import { RouteNames } from './settings/routeNames'
+import { SetReqUserMiddleware } from './infrastructure/middlewares/setReqUser.middleware'
+import 'reflect-metadata'
 
-const { DB_NAME, DB_USER_NAME, DB_USER_PASSWORD, DB_TYPE, POSTGRES_PORT } = process.env
+const { DB_NAME, DB_USER_NAME, DB_USER_PASSWORD, POSTGRES_PORT } = process.env
 
 @Module({
 	imports: [
@@ -32,9 +41,10 @@ const { DB_NAME, DB_USER_NAME, DB_USER_PASSWORD, DB_TYPE, POSTGRES_PORT } = proc
 			username: DB_USER_NAME,
 			password: DB_USER_PASSWORD,
 			database: DB_NAME,
-			entities: ['./db/pg/entities/*.entity.ts'],
-			autoLoadEntities: false,
-			synchronize: false,
+			entities: [User, Blog, Post, PostLikes, Comment, CommentLikes, RateLimit, DeviceToken],
+			// entities: ['./db/pg/entities/*.entity.ts'],
+			autoLoadEntities: true,
+			synchronize: true,
 		}),
 		AuthModule,
 		BlogsModule,
@@ -55,7 +65,7 @@ const { DB_NAME, DB_USER_NAME, DB_USER_PASSWORD, DB_TYPE, POSTGRES_PORT } = proc
 export class AppModule implements NestModule {
 	constructor(private dataSource: DataSource) {}
 
-	async onModuleInit() {
+	/*async onModuleInit() {
 		// It creates empty Postgres tables if they are not exist
 		await this.dataSource.query(
 			`CREATE TABLE IF NOT EXISTS users (
@@ -155,7 +165,7 @@ export class AppModule implements NestModule {
 		} catch (error) {
 			console.log(error)
 		}
-	}
+	}*/
 
 	configure(consumer: MiddlewareConsumer) {
 		consumer
