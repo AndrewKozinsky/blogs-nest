@@ -1,11 +1,11 @@
-import { InjectDataSource } from '@nestjs/typeorm'
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
 import { Injectable } from '@nestjs/common'
-import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
-import { DataSource } from 'typeorm'
+import { DataSource, FindManyOptions, ILike, Repository } from 'typeorm'
 import { DBTypes } from '../../../db/mongo/dbTypes'
-import { Post } from '../../../db/mongo/schemas/post.schema'
-import { PostLike } from '../../../db/mongo/schemas/postLike.schema'
+import { Blog } from '../../../db/pg/entities/blog'
+import { Post } from '../../../db/pg/entities/post'
+import { PostLikes } from '../../../db/pg/entities/postLikes'
+import { User } from '../../../db/pg/entities/user'
 import { PGGetPostQuery } from '../../../db/pg/getPgDataTypes'
 import { convertToNumber } from '../../../utils/numbers'
 import { PostLikesRepository } from '../postLikes/postLikesRepository'
@@ -20,9 +20,106 @@ import {
 
 @Injectable()
 export class PostsQueryRepository {
-	constructor(@InjectDataSource() private dataSource: DataSource) {}
+	constructor(
+		@InjectDataSource() private dataSource: DataSource,
+		@InjectRepository(Post) private readonly postsTypeORM: Repository<Post>,
+	) {}
 
 	async getPosts(
+		userId: undefined | string,
+		query: GetPostsQueries,
+		blogId?: string,
+	): Promise<GetPostsOutModel> {
+		const sortBy = query.sortBy ?? 'createdAt'
+		const sortDirection = query.sortDirection === 'asc' ? 'ASC' : 'DESC'
+
+		const pageNumber = query.pageNumber ? +query.pageNumber : 1
+		const pageSize = query.pageSize ? +query.pageSize : 10
+
+		const totalPostsQuery = this.postsTypeORM.createQueryBuilder('post')
+		if (blogId) {
+			totalPostsQuery.where({ blogId })
+		}
+		const totalPostsCount = await totalPostsQuery.getCount()
+
+		const pagesCount = Math.ceil(totalPostsCount / pageSize)
+
+		const findPostsOptions: FindManyOptions<Post> = {
+			relations: {
+				blog: true,
+			},
+			order: {
+				[sortBy]: sortDirection,
+			},
+			skip: (pageNumber - 1) * pageSize,
+			take: pageSize,
+		}
+		if (blogId) {
+			findPostsOptions.where = { blogId }
+		}
+
+		const posts = await this.postsTypeORM.find(findPostsOptions)
+
+		const allLikes = await this.dataSource
+			.createQueryBuilder(PostLikes, 'pl')
+			.andWhere('pl.status = :status', { status: DBTypes.LikeStatuses.Like })
+			.getMany()
+
+		const allDislikes = await this.dataSource
+			.createQueryBuilder(PostLikes, 'pl')
+			.andWhere('pl.status = :status', { status: DBTypes.LikeStatuses.Dislike })
+			.getMany()
+
+		const currentUserAllPostLikeStatuses = await this.dataSource
+			.createQueryBuilder(PostLikes, 'pl')
+			.andWhere('pl.userId = :userId', { userId })
+			.getMany()
+
+		const items = await Promise.all(
+			posts.map(async (post) => {
+				const postId = post.id
+
+				const newestPostLikes = await this.getNewestPostLikes(postId)
+
+				const postLikesCount = allLikes.filter((like) => {
+					return (like.postId = postId)
+				}).length
+
+				const postDislikesCount = allLikes.filter((dislike) => {
+					return (dislike.postId = postId)
+				}).length
+
+				const currentUserPostLikeStatuses = currentUserAllPostLikeStatuses.filter(
+					(status) => {
+						return (status.postId = postId)
+					},
+				)
+				let currentUserPostLikeStatus: DBTypes.LikeStatuses = DBTypes.LikeStatuses.None
+				if (currentUserPostLikeStatuses.length) {
+					currentUserPostLikeStatus = currentUserPostLikeStatuses[0]
+						.status as DBTypes.LikeStatuses
+				}
+
+				return this.mapDbPostToOutputPost(
+					post,
+					postLikesCount,
+					postDislikesCount,
+					currentUserPostLikeStatus,
+					newestPostLikes,
+				)
+			}),
+		)
+
+		return {
+			pagesCount,
+			page: pageNumber,
+			pageSize,
+			totalCount: +totalPostsCount,
+			items,
+		}
+	}
+
+	/*async getPostsNative(
 		userId: undefined | string,
 		query: GetPostsQueries,
 		blogId?: string,
@@ -74,9 +171,52 @@ export class PostsQueryRepository {
 			totalCount: +totalPostsCount,
 			items,
 		}
-	}
+	}*/
 
 	async getPost(userId: undefined | string, postId: string): Promise<null | GetPostOutModel> {
+		const post = await this.postsTypeORM
+			.createQueryBuilder('p')
+			.where('p.id = :id', { id: postId })
+			.leftJoinAndSelect('p.blog', 'b')
+			.getOne()
+
+		if (!post) return null
+
+		const likesCount = await this.dataSource
+			.createQueryBuilder(PostLikes, 'pl')
+			.where('pl.postId = :id', { id: postId })
+			.andWhere('pl.status = :status', { status: DBTypes.LikeStatuses.Like })
+			.getCount()
+
+		const dislikesCount = await this.dataSource
+			.createQueryBuilder(PostLikes, 'pl')
+			.where('pl.postId = :id', { id: postId })
+			.andWhere('pl.status = :status', { status: DBTypes.LikeStatuses.Dislike })
+			.getCount()
+
+		const currentUserPostLike = await this.dataSource
+			.createQueryBuilder(PostLikes, 'pl')
+			.where('pl.userId = :userId', { userId })
+			.andWhere('pl.postId = :postId', { postId })
+			.getOne()
+
+		let currentUserPostLikeStatus: DBTypes.LikeStatuses = DBTypes.LikeStatuses.None
+		if (currentUserPostLike && currentUserPostLike.status) {
+			currentUserPostLikeStatus = currentUserPostLike.status as DBTypes.LikeStatuses
+		}
+
+		const newestPostLikes = await this.getNewestPostLikes(postId)
+
+		return this.mapDbPostToOutputPost(
+			post,
+			likesCount,
+			dislikesCount,
+			currentUserPostLikeStatus,
+			newestPostLikes,
+		)
+	}
+
+	/*async getPostNative(userId: undefined | string, postId: string): Promise<null | GetPostOutModel> {
 		const postIdNum = convertToNumber(postId)
 		if (!postIdNum) {
 			return null
@@ -99,9 +239,26 @@ export class PostsQueryRepository {
 		const newestPostLikes = await this.getNewestPostLikes(postId)
 
 		return this.mapDbPostToOutputPost(getPostsRes[0], newestPostLikes)
-	}
+	}*/
 
 	async getNewestPostLikes(postId: string): Promise<NewestLike[]> {
+		const postLikes = await this.dataSource
+			.createQueryBuilder(PostLikes, 'pl')
+			.where('pl.postId = :postId', { postId })
+			.andWhere('pl.status = :status', { status: DBTypes.LikeStatuses.Like })
+			.addSelect('pl.user')
+			.getMany()
+
+		return postLikes.map((postLike) => {
+			return {
+				addedAt: postLike.addedAt,
+				userId: postLike.user.id.toString(),
+				login: postLike.user.login,
+			}
+		})
+	}
+
+	/*async getNewestPostLikesNative(postId: string): Promise<NewestLike[]> {
 		const getPostLikesRes = await this.dataSource.query(
 			`SELECT *,
 					(SELECT login FROM users WHERE id = pl.userid) as login
@@ -118,21 +275,27 @@ export class PostsQueryRepository {
 				login: postLike.login,
 			}
 		})
-	}
+	}*/
 
-	mapDbPostToOutputPost(DbPost: PGGetPostQuery, newestLikes: NewestLike[]): PostOutModel {
+	mapDbPostToOutputPost(
+		DbPost: Post,
+		likesCount: number,
+		dislikesCount: number,
+		currentUserPostLikeStatus: DBTypes.LikeStatuses,
+		newestLikes: NewestLike[],
+	): PostOutModel {
 		return {
 			id: DbPost.id.toString(),
 			title: DbPost.title,
-			shortDescription: DbPost.shortdescription,
+			shortDescription: DbPost.shortDescription,
 			content: DbPost.content,
-			blogId: DbPost.blogid.toString(),
-			blogName: DbPost.blogname,
-			createdAt: DbPost.createdat,
+			blogId: DbPost.blogId.toString(),
+			blogName: DbPost.blog.name,
+			createdAt: DbPost.createdAt,
 			extendedLikesInfo: {
-				likesCount: +DbPost.likescount,
-				dislikesCount: +DbPost.dislikescount,
-				myStatus: (DbPost.currentuserpostlikestatus as any) ?? DBTypes.LikeStatuses.None,
+				likesCount: likesCount,
+				dislikesCount: dislikesCount,
+				myStatus: currentUserPostLikeStatus ?? DBTypes.LikeStatuses.None,
 				newestLikes,
 			},
 		}

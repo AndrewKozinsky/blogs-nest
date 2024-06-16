@@ -63,11 +63,11 @@ export class BlogsController {
 	}
 
 	// Returns all posts for specified blog
+	@HttpCode(HttpStatus.OK)
 	@Get(':blogId/posts')
 	async getBlogPosts(
 		@Query(new GetBlogPostsQueriesPipe()) query: GetBlogPostsQueries,
 		@Param('blogId') blogId: string,
-		@Res() res: Response,
 		@Req() req: Request,
 	) {
 		const { user } = req
@@ -83,7 +83,7 @@ export class BlogsController {
 			throw new NotFoundException()
 		}
 
-		res.status(HttpStatus.OK).send(posts)
+		return posts
 	}
 
 	// Create new post for specific blog

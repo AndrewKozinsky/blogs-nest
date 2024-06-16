@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
-import { MongooseModule } from '@nestjs/mongoose'
+import { TypeOrmModule } from '@nestjs/typeorm'
 import { HashAdapter } from '../../base/adapters/hash.adapter'
 import { JwtService } from '../../base/application/jwt.service'
-import { DeviceToken } from '../../db/mongo/schemas/deviceToken.schema'
-import { User, UserSchema } from '../../db/mongo/schemas/user.schema'
+import { User } from '../../db/pg/entities/user'
 import { AuthRepository } from '../auth/authRepository'
 import { CommonService } from '../common/common.service'
 import { CreateUserUseCase } from './use-cases/createUser.useCase'
@@ -16,7 +15,7 @@ import { UsersRepository } from './usersRepository'
 const useCases = [DeleteUserUseCase, CreateUserUseCase]
 
 @Module({
-	imports: [],
+	imports: [TypeOrmModule.forFeature([User])],
 	controllers: [UsersController],
 	providers: [
 		UsersQueryRepository,

@@ -3,7 +3,7 @@ import { User } from './user'
 
 export class DeviceToken {
 	@PrimaryGeneratedColumn()
-	id: number
+	id: string
 
 	@Column('varchar')
 	issuedAt: string

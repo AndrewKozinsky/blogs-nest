@@ -4,7 +4,7 @@ import { User } from './user'
 
 export class CommentLikes {
 	@PrimaryGeneratedColumn()
-	id: number
+	id: string
 
 	@ManyToOne(() => Comment)
 	comment: Comment

@@ -1,19 +1,20 @@
 import { Module } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
-import { MongooseModule } from '@nestjs/mongoose'
+import { TypeOrmModule } from '@nestjs/typeorm'
 import { EmailAdapter } from '../../base/adapters/email.adapter'
 import { HashAdapter } from '../../base/adapters/hash.adapter'
 import { BrowserService } from '../../base/application/browser.service'
 import { JwtService } from '../../base/application/jwt.service'
 import { RequestService } from '../../base/application/request.service'
 import { EmailManager } from '../../base/managers/email.manager'
-import { DeviceToken, DeviceTokenSchema } from '../../db/mongo/schemas/deviceToken.schema'
-import { User, UserSchema } from '../../db/mongo/schemas/user.schema'
+import { Blog } from '../../db/pg/entities/blog'
+import { Post } from '../../db/pg/entities/post'
+import { User } from '../../db/pg/entities/user'
 import { CommonService } from '../common/common.service'
 import { UsersRepository } from '../users/usersRepository'
 import { UsersService } from '../users/users.service'
-import { AuthController } from './auth.controller'
 import { AuthRepository } from './authRepository'
+import { AuthController } from './auth.controller'
 import {
 	IsEmailExistsValidation,
 	IsLoginExistsValidation,
@@ -44,7 +45,7 @@ const useCases = [
 ]
 
 @Module({
-	imports: [],
+	imports: [TypeOrmModule.forFeature([User])],
 	controllers: [AuthController],
 	providers: [
 		JwtService,

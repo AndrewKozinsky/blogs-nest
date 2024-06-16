@@ -1,12 +1,10 @@
 import { Module } from '@nestjs/common'
 import { MongooseModule } from '@nestjs/mongoose'
+import { TypeOrmModule } from '@nestjs/typeorm'
 import { HashAdapter } from '../../base/adapters/hash.adapter'
-import { Blog, BlogSchema } from '../../db/mongo/schemas/blog.schema'
-import { Comment, CommentSchema } from '../../db/mongo/schemas/comment.schema'
-import { CommentLike, CommentLikeSchema } from '../../db/mongo/schemas/commentLike.schema'
-import { Post, PostSchema } from '../../db/mongo/schemas/post.schema'
-import { PostLike, PostLikeSchema } from '../../db/mongo/schemas/postLike.schema'
-import { User, UserSchema } from '../../db/mongo/schemas/user.schema'
+import { Blog } from '../../db/pg/entities/blog'
+import { Post } from '../../db/pg/entities/post'
+import { User } from '../../db/pg/entities/user'
 import { BlogsQueryRepository } from './blogs/blogsQueryRepository'
 import { CommentLikesRepository } from './commentLikes/CommentLikesRepository'
 import { CommentsController } from './comments/comments.controller'
@@ -66,7 +64,7 @@ const useCases = [
 ]
 
 @Module({
-	imports: [],
+	imports: [TypeOrmModule.forFeature([Blog, Post, User])],
 	controllers: [SaBlogsController, BlogsController, PostsController, CommentsController],
 	providers: [
 		SaBlogsQueryRepository,

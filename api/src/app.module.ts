@@ -1,19 +1,11 @@
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-import { TypeOrmModule } from '@nestjs/typeorm'
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
 import { HashAdapter } from './base/adapters/hash.adapter'
 import { JwtService } from './base/application/jwt.service'
 import { BrowserService } from './base/application/browser.service'
-import { Blog } from './db/pg/entities/blog.entity'
 import { RequestService } from './base/application/request.service'
-import { Comment } from './db/pg/entities/comment'
-import { CommentLikes } from './db/pg/entities/commentLikes'
-import { DeviceToken } from './db/pg/entities/deviceToken'
-import { Post } from './db/pg/entities/post'
-import { PostLikes } from './db/pg/entities/postLikes'
-import { RateLimit } from './db/pg/entities/rateLimit'
-import { User } from './db/pg/entities/user'
 import { AuthModule } from './features/auth/auth.module'
 import { CommonService } from './features/common/common.service'
 import { BlogsModule } from './features/blogs/blogs.module'
@@ -28,24 +20,26 @@ import 'reflect-metadata'
 
 const { DB_NAME, DB_USER_NAME, DB_USER_PASSWORD, POSTGRES_PORT } = process.env
 
+const typeORMOptions: TypeOrmModuleOptions = {
+	// url: 'postgresql://blogs_owner:ybZpRe4Es5oA@ep-curly-voice-a2q1fh7d.eu-central-1.aws.neon.tech/blogs?sslmode=require',
+	type: 'postgres',
+	host: 'blogs-postgres',
+	port: POSTGRES_PORT,
+	username: DB_USER_NAME,
+	password: DB_USER_PASSWORD,
+	database: DB_NAME,
+	// entities: [User, Blog, Post, PostLikes, Comment, CommentLikes, RateLimit, DeviceToken],
+	entities: [__dirname + '/db/pg/entities/*.ts'],
+	autoLoadEntities: true,
+	synchronize: true,
+}
+
 @Module({
 	imports: [
 		ConfigModule.forRoot(),
 		// Ограничитель можно сделать отдельным пакетом Limit throtller
 		// Схемы в папку feature
-		TypeOrmModule.forRoot({
-			// url: 'postgresql://blogs_owner:ybZpRe4Es5oA@ep-curly-voice-a2q1fh7d.eu-central-1.aws.neon.tech/blogs?sslmode=require',
-			type: 'postgres',
-			host: 'blogs-postgres',
-			port: POSTGRES_PORT,
-			username: DB_USER_NAME,
-			password: DB_USER_PASSWORD,
-			database: DB_NAME,
-			entities: [User, Blog, Post, PostLikes, Comment, CommentLikes, RateLimit, DeviceToken],
-			// entities: ['./db/pg/entities/*.entity.ts'],
-			autoLoadEntities: true,
-			synchronize: true,
-		}),
+		TypeOrmModule.forRoot(typeORMOptions),
 		AuthModule,
 		BlogsModule,
 		UsersModule,

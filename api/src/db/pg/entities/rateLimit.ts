@@ -2,7 +2,7 @@ import { Column, PrimaryGeneratedColumn } from 'typeorm'
 
 export class RateLimit {
 	@PrimaryGeneratedColumn()
-	id: number
+	id: string
 
 	@Column('varchar')
 	ip: string

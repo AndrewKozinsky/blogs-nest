@@ -1,10 +1,10 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
-import { Blog } from './blog.entity'
+import { Blog } from './blog'
 
 @Entity()
 export class Post {
 	@PrimaryGeneratedColumn()
-	id: number
+	id: string
 
 	@Column('varchar')
 	title: string
@@ -19,5 +19,8 @@ export class Post {
 	createdAt: string
 
 	@ManyToOne(() => Blog)
-	blog: boolean
+	blog: Blog
+
+	@Column('varchar')
+	blogId: string
 }

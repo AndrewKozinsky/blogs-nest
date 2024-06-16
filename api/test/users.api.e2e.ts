@@ -8,7 +8,7 @@ import { createTestApp } from './utils/common'
 import { clearAllDB } from './utils/db'
 import { addUserByAdminRequest, adminAuthorizationValue, checkUserObj } from './utils/utils'
 
-it('123', () => {
+it.only('123', () => {
 	expect(2).toBe(2)
 })
 
@@ -143,7 +143,7 @@ describe('ROOT', () => {
 			expect(getUsers2Res.body.items[1].email).toBe('email-7@email.ru')
 		})
 
-		it.only('should return filtered an array of objects sorted by login', async () => {
+		it('should return filtered an array of objects sorted by login', async () => {
 			await addUserByAdminRequest(app, { login: 'login_1', email: 'email-1@email.com' })
 			await addUserByAdminRequest(app, { login: 'Login_2', email: 'email-2@email.com' })
 			await addUserByAdminRequest(app, { login: 'login_3', email: 'email-3@email.com' })

@@ -4,7 +4,7 @@ import { User } from './user'
 
 export class Comment {
 	@PrimaryGeneratedColumn()
-	id: number
+	id: string
 
 	@Column('text')
 	content: string

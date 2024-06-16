@@ -1,10 +1,8 @@
 import { Injectable } from '@nestjs/common'
-import { InjectModel } from '@nestjs/mongoose'
-import { InjectDataSource } from '@nestjs/typeorm'
-import { Model } from 'mongoose'
-import { DataSource } from 'typeorm'
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
+import { DataSource, Repository } from 'typeorm'
 import { HashAdapter } from '../../base/adapters/hash.adapter'
-import { User } from '../../db/mongo/schemas/user.schema'
+import { User } from '../../db/pg/entities/user'
 import { PGGetUserQuery } from '../../db/pg/getPgDataTypes'
 import { convertToNumber } from '../../utils/numbers'
 import { createUniqString } from '../../utils/stringUtils'
@@ -16,6 +14,7 @@ export class CommonService {
 	constructor(
 		private hashAdapter: HashAdapter,
 		@InjectDataSource() private dataSource: DataSource,
+		@InjectRepository(User) private readonly usersTypeORM: Repository<User>,
 	) {}
 
 	// Return object which can be saved in DB to create a new user
@@ -37,7 +36,23 @@ export class CommonService {
 		}
 	}
 
-	async createUser(dto: Omit<PGGetUserQuery, 'id'>) {
+	async createUser(dto: Omit<PGGetUserQuery, 'id'>): Promise<string> {
+		const newUserRes = await this.usersTypeORM.insert({
+			login: dto.login,
+			email: dto.email,
+			password: dto.password,
+			passwordRecoveryCode: dto.passwordrecoverycode,
+			createdAt: dto.createdat,
+			emailConfirmationCode: dto.emailconfirmationcode,
+			confirmationCodeExpirationDate: dto.confirmationcodeexpirationdate,
+			isConfirmationEmailCodeConfirmed: dto.isconfirmationemailcodeconfirmed,
+		})
+		console.log(newUserRes)
+
+		return '1'
+	}
+
+	/*async createUserNative(dto: Omit<PGGetUserQuery, 'id'>) {
 		// Insert new user and to get an array like this: [ { id: 10 } ]
 		const newBlogsIdRes = await this.dataSource.query(
 			`INSERT INTO users
@@ -56,7 +71,7 @@ export class CommonService {
 		)
 
 		return newBlogsIdRes[0].id
-	}
+	}*/
 
 	async deleteUser(userId: string): Promise<boolean> {
 		const userIdNum = convertToNumber(userId)
@@ -74,20 +89,20 @@ export class CommonService {
 		return deleteBlogRes[1] === 1
 	}
 
-	mapDbUserToServiceUser(DbUser: PGGetUserQuery): UserServiceModel {
+	mapDbUserToServiceUser(DbUser: User): UserServiceModel {
 		return {
 			id: DbUser.id.toString(),
 			account: {
 				login: DbUser.login,
 				email: DbUser.email,
 				password: DbUser.password,
-				passwordRecoveryCode: DbUser.passwordrecoverycode,
-				createdAt: DbUser.createdat,
+				passwordRecoveryCode: DbUser.passwordRecoveryCode,
+				createdAt: DbUser.createdAt,
 			},
 			emailConfirmation: {
-				confirmationCode: DbUser.emailconfirmationcode,
-				expirationDate: new Date(DbUser.confirmationcodeexpirationdate),
-				isConfirmed: DbUser.isconfirmationemailcodeconfirmed,
+				confirmationCode: DbUser.emailConfirmationCode,
+				expirationDate: new Date(DbUser.confirmationCodeExpirationDate),
+				isConfirmed: DbUser.isConfirmationEmailCodeConfirmed,
 			},
 		}
 	}

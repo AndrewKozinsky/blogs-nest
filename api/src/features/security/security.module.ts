@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common'
-import { MongooseModule } from '@nestjs/mongoose'
+import { TypeOrmModule } from '@nestjs/typeorm'
 import { HashAdapter } from '../../base/adapters/hash.adapter'
 import { JwtService } from '../../base/application/jwt.service'
 import { RequestService } from '../../base/application/request.service'
-import { DeviceToken, DeviceTokenSchema } from '../../db/mongo/schemas/deviceToken.schema'
-import { User, UserSchema } from '../../db/mongo/schemas/user.schema'
+import { User } from '../../db/pg/entities/user'
 import { AuthRepository } from '../auth/authRepository'
 import { CommonService } from '../common/common.service'
 import { SecurityController } from './security.controller'
@@ -19,7 +18,7 @@ const useCases = [
 ]
 
 @Module({
-	imports: [],
+	imports: [TypeOrmModule.forFeature([User])],
 	controllers: [SecurityController],
 	providers: [
 		RequestService,
