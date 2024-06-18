@@ -321,20 +321,6 @@ export class AuthRepository {
 		if (!token) return null
 
 		return this.mapDbDeviceRefreshTokenToServiceDeviceRefreshToken(token)
-
-		/*const tokensRes = await this.dataSource.query(
-			`SELECT * FROM devicetokens WHERE deviceId='${deviceId}'`,
-			[],
-		)*/
-
-		/*if (!tokensRes.length) {
-			return null
-		}*/
-
-		// return this.mapDbDeviceRefreshTokenToServiceDeviceRefreshToken(tokensRes[0])
-		// --
-		// @ts-ignore
-		return null
 	}
 
 	/*async getDeviceRefreshTokenByDeviceIdNative(deviceId: string): Promise<null | DBTypes.DeviceToken> {

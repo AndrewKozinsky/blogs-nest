@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common'
+import { BlogsRepository } from '../../blogs/blogsRepository'
 import { SaBlogsRepository } from '../saBlogsRepository'
 
 @Injectable()
 export class SaDeleteBlogUseCase {
-	constructor(private saBlogsRepository: SaBlogsRepository) {}
+	constructor(private blogsRepository: BlogsRepository) {}
 
 	async execute(blogId: string) {
-		return this.saBlogsRepository.deleteBlog(blogId)
+		return this.blogsRepository.deleteBlog(blogId)
 	}
 }

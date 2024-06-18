@@ -1,5 +1,4 @@
 import { INestApplication } from '@nestjs/common'
-import { describe } from 'node:test'
 import { HTTP_STATUSES } from '../src/settings/config'
 import RouteNames from '../src/settings/routeNames'
 import { agent as request } from 'supertest'
@@ -8,7 +7,7 @@ import { createTestApp } from './utils/common'
 import { clearAllDB } from './utils/db'
 import { addUserByAdminRequest, adminAuthorizationValue, checkUserObj } from './utils/utils'
 
-it.only('123', () => {
+it('123', () => {
 	expect(2).toBe(2)
 })
 
@@ -215,7 +214,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
 
-		it('should delete an user', async () => {
+		it.only('should delete an user', async () => {
 			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const createdUserId = createdUserRes.body.id

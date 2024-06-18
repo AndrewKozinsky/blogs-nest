@@ -42,29 +42,8 @@ export class SaBlogsRepository {
 		return newBlogsIdRes[0].id
 	}
 
-	async updateBlog(blogId: string, updateBlogDto: UpdateBlogDtoModel): Promise<boolean> {
-		const blogIdNum = convertToNumber(blogId)
-		if (!blogIdNum || !Object.keys(updateBlogDto).length) {
-			return false
-		}
-
-		let updateQueryStr = 'UPDATE blogs SET '
-
-		const updateQueryStrParams = Object.keys(updateBlogDto).map((updateBlogParamKey) => {
-			// @ts-ignore
-			return updateBlogParamKey + ' = ' + `'${updateBlogDto[updateBlogParamKey]}'`
-		})
-		updateQueryStr += updateQueryStrParams.join(', ')
-		updateQueryStr += ` WHERE id = ${blogIdNum};`
-
-		// The query will return an array where the second element is a number of updated documents
-		// [ [], 1 ]
-		const updateBlogRes = await this.dataSource.query(updateQueryStr, [])
-
-		return updateBlogRes[1] === 1
-	}
-
-	async deleteBlog(blogId: string): Promise<boolean> {
+	// DELETE
+	/*async deleteBlog(blogId: string): Promise<boolean> {
 		const blogIdNum = convertToNumber(blogId)
 		if (!blogIdNum) {
 			return false
@@ -78,7 +57,7 @@ export class SaBlogsRepository {
 		)
 
 		return deleteBlogRes[1] === 1
-	}
+	}*/
 
 	mapDbBlogToServiceBlog(DbBlog: PGGetBlogQuery): BlogServiceModel {
 		return {

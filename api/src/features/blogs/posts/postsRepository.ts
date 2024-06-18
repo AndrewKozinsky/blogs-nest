@@ -1,11 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
 import { DataSource, Repository } from 'typeorm'
-import { Blog } from '../../../db/pg/entities/blog'
-import { Post } from '../../../db/pg/entities/post'
-import { PGGetPostQuery } from '../../../db/pg/getPgDataTypes'
-import { convertToNumber } from '../../../utils/numbers'
 import { BlogsRepository } from '../blogs/blogsRepository'
+import { Post } from '../../../db/pg/entities/post'
 import { CreatePostDtoModel, UpdatePostDtoModel } from './model/posts.input.model'
 import { PostServiceModel } from './model/posts.service.model'
 
@@ -80,31 +77,14 @@ export class PostsRepository {
 	}*/
 
 	async updatePost(postId: string, updatePostDto: UpdatePostDtoModel): Promise<boolean> {
-		// const getBlogRes = await this.blogsRepository.getBlogById(updatePostDto.blogId)
-		/*if (!getBlogRes) {
+		const getBlogRes = await this.blogsRepository.getBlogById(updatePostDto.blogId)
+		if (!getBlogRes) {
 			return false
-		}*/
+		}
 
-		/*let updateQueryStr = 'UPDATE posts SET '
+		const updatePostRes = await this.postsTypeORM.update(postId, updatePostDto)
 
-		const updateQueryStrParams = Object.keys(updatePostDto).map((updateBlogParamKey) => {
-			return (
-				// @ts-ignore
-				updateBlogParamKey.toLowerCase() + ' = ' + `'${updatePostDto[updateBlogParamKey]}'`
-			)
-		})
-		updateQueryStr += updateQueryStrParams.join(', ')
-		updateQueryStr += ` WHERE id = ${postId};`*/
-
-		// The query will return an array where the second element is a number of updated documents
-		// [ [], 1 ]
-		// const updatePostRes = await this.dataSource.query(updateQueryStr, [])
-
-		// return updatePostRes[1] === 1
-
-		// --
-		// @ts-ignore
-		return null
+		return updatePostRes.affected == 1
 	}
 
 	/*async updatePostNative(postId: string, updatePostDto: UpdatePostDtoModel): Promise<boolean> {
@@ -132,23 +112,9 @@ export class PostsRepository {
 	}*/
 
 	async deletePost(postId: string): Promise<boolean> {
-		// const postIdNum = convertToNumber(postId)
-		/*if (!postIdNum) {
-			return false
-		}*/
+		const deleteBlogRes = await this.postsTypeORM.delete(postId)
 
-		// The query will return an array where the second element is a number of deleted documents
-		// [ [], 1 ]
-		/*const deleteBlogRes = await this.dataSource.query(
-			`DELETE FROM posts WHERE id='${postIdNum}'`,
-			[],
-		)*/
-
-		// return deleteBlogRes[1] === 1
-
-		// --
-		// @ts-ignore
-		return null
+		return deleteBlogRes.affected === 1
 	}
 
 	/*async deletePostNative(postId: string): Promise<boolean> {
@@ -168,16 +134,12 @@ export class PostsRepository {
 	}*/
 
 	async deleteBlogPost(blogId: string, postId: string): Promise<boolean> {
-		// const post = await this.getPostById(postId)
-		/*if (!post || post.blogId !== blogId) {
+		const post = await this.getPostById(postId)
+		if (!post || post.blogId !== blogId) {
 			return false
-		}*/
+		}
 
-		// return this.deletePost(postId)
-
-		// --
-		// @ts-ignore
-		return null
+		return this.deletePost(postId)
 	}
 
 	/*async deleteBlogPostNative(blogId: string, postId: string): Promise<boolean> {

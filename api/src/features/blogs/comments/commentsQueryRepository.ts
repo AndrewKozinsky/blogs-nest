@@ -93,18 +93,11 @@ FROM comments c WHERE id=${commentId}`,
 		postId: string,
 		query: GetPostCommentsQueries,
 	): Promise<GetPostCommentsResult> {
-		// const sortBy = query.sortBy ?? 'createdat'
-		// const sortDirection = query.sortDirection === 'asc' ? 'ASC' : 'DESC'
+		const sortBy = query.sortBy ?? 'createdat'
+		const sortDirection = query.sortDirection === 'asc' ? 'ASC' : 'DESC'
 
-		// const pageNumber = query.pageNumber ? +query.pageNumber : 1
-		// const pageSize = query.pageSize ? +query.pageSize : 10
-
-		/*const postIdNum = convertToNumber(postId)
-		if (!postIdNum) {
-			return {
-				status: 'postNotValid',
-			}
-		}*/
+		const pageNumber = query.pageNumber ? +query.pageNumber : 1
+		const pageSize = query.pageSize ? +query.pageSize : 10
 
 		/*const getPostsRes: PGGetPostQuery[] = await this.dataSource.query(
 			'SELECT * FROM posts WHERE id = $1',

@@ -1,7 +1,8 @@
-import { Column, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
 import { Post } from './post'
 import { User } from './user'
 
+@Entity()
 export class Comment {
 	@PrimaryGeneratedColumn()
 	id: string

@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common'
-import { SaBlogsRepository } from '../saBlogsRepository'
+import { BlogsRepository } from '../../blogs/blogsRepository'
 import { UpdateBlogDtoModel } from '../model/blogs.input.model'
 
 @Injectable()
 export class SaUpdateBlogUseCase {
-	constructor(private saBlogsRepository: SaBlogsRepository) {}
+	constructor(private blogsRepository: BlogsRepository) {}
 
 	async execute(blogId: string, updateBlogDto: UpdateBlogDtoModel) {
-		return this.saBlogsRepository.updateBlog(blogId, updateBlogDto)
+		return this.blogsRepository.updateBlog(blogId, updateBlogDto)
 	}
 }

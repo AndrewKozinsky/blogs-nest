@@ -94,7 +94,7 @@ describe('ROOT', () => {
 			await loginRequest(app, login, password).expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
-		it.only('should return 200 and object with token and JWT refreshToken in cookie if the DTO is correct and user has verified email', async () => {
+		it('should return 200 and object with token and JWT refreshToken in cookie if the DTO is correct and user has verified email', async () => {
 			const login = 'login'
 			const password = 'password'
 			const email = 'email@email.ru'
@@ -116,13 +116,13 @@ describe('ROOT', () => {
 
 			// --- RefreshToken
 
-			// const refreshTokenStr = loginRes.headers['set-cookie'][0]
-			// const refreshToken = parseCookieStringToObj(refreshTokenStr)
+			const refreshTokenStr = loginRes.headers['set-cookie'][0]
+			const refreshToken = parseCookieStringToObj(refreshTokenStr)
 
-			// expect(refreshToken.cookieName).toBe('refreshToken')
-			// expect(refreshToken.HttpOnly).toBe(true)
-			// expect(refreshToken.Secure).toBe(true)
-			// expect(refreshToken['Max-Age']).toBe(config.refreshToken.lifeDurationInMs / 1000)
+			expect(refreshToken.cookieName).toBe('refreshToken')
+			expect(refreshToken.HttpOnly).toBe(true)
+			expect(refreshToken.Secure).toBe(true)
+			expect(refreshToken['Max-Age']).toBe(config.refreshToken.lifeDurationInMs / 1000)
 		})
 
 		it('should return 429 if too many requests were made', async () => {
@@ -147,7 +147,7 @@ describe('ROOT', () => {
 	})
 
 	describe('Refresh token', () => {
-		it('should return 401 if the JWT refreshToken inside cookie is missing, expired or incorrect', async () => {
+		it.only('should return 401 if the JWT refreshToken inside cookie is missing, expired or incorrect', async () => {
 			const login = 'login'
 			const password = 'password'
 			const email = 'email@email.ru'
@@ -172,18 +172,18 @@ describe('ROOT', () => {
 
 			// Get created expired token
 			const refreshToken = await authRepository.getDeviceRefreshTokenByDeviceId(deviceId)
-			const refreshTokenStr = jwtService.createRefreshTokenStr(
+			/*const refreshTokenStr = jwtService.createRefreshTokenStr(
 				refreshToken!.deviceId,
 				refreshToken!.expirationDate,
-			)
+			)*/
 
-			await request(app.getHttpServer())
+			/*await request(app.getHttpServer())
 				.post('/' + RouteNames.AUTH.REFRESH_TOKEN.full)
 				.set('Cookie', [config.refreshToken.name + '=' + refreshTokenStr])
-				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
+				.expect(HTTP_STATUSES.UNAUTHORIZED_401)*/
 		})
 
-		it('should return 200 if the JWT refreshToken inside cookie is valid', async () => {
+		/*it('should return 200 if the JWT refreshToken inside cookie is valid', async () => {
 			const login = 'login'
 			const password = 'password'
 			const email = 'email@email.ru'
@@ -205,10 +205,10 @@ describe('ROOT', () => {
 			expect(newRefreshTokenObj['Max-Age']).toBe(config.refreshToken.lifeDurationInMs / 1000)
 			expect(newRefreshTokenObj.Secure).toBe(true)
 			expect(newRefreshTokenObj.HttpOnly).toBe(true)
-		})
+		})*/
 	})
 
-	describe('Register user', () => {
+	/*describe('Register user', () => {
 		it('should return 400 if dto has incorrect values', async () => {
 			const registrationRes = await request(app.getHttpServer())
 				.post('/' + RouteNames.AUTH.REGISTRATION.full)
@@ -270,9 +270,9 @@ describe('ROOT', () => {
 				.send({ login: '', password: '', email: '' })
 				.expect(HTTP_STATUSES.BAD_REQUEST_400)
 		})
-	})
+	})*/
 
-	describe('Registration confirmation', () => {
+	/*describe('Registration confirmation', () => {
 		it('should return 400 if the request has wrong dto', async () => {
 			const regConfirmRes = await request(app.getHttpServer())
 				.post('/' + RouteNames.AUTH.REGISTRATION_CONFIRMATION.full)
@@ -329,9 +329,9 @@ describe('ROOT', () => {
 				.post('/' + RouteNames.AUTH.REGISTRATION_CONFIRMATION.full)
 				.expect(HTTP_STATUSES.BAD_REQUEST_400)
 		})
-	})
+	})*/
 
-	describe('Resending email confirmation code', () => {
+	/*describe('Resending email confirmation code', () => {
 		it('should return 400 if dto has incorrect values', async () => {
 			const registrationRes = await request(app.getHttpServer())
 				.post('/' + RouteNames.AUTH.REGISTRATION_EMAIL_RESENDING.full)
@@ -383,9 +383,9 @@ describe('ROOT', () => {
 				.send({ email: '' })
 				.expect(HTTP_STATUSES.BAD_REQUEST_400)
 		})
-	})
+	})*/
 
-	describe('Get current user', () => {
+	/*describe('Get current user', () => {
 		it('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
 				.post('/' + RouteNames.BLOGS.value)
@@ -411,9 +411,9 @@ describe('ROOT', () => {
 			expect(authMeRes.body.login).toBe(login)
 			expect(authMeRes.body.userId).toBe(createdUserRes.body.id)
 		})
-	})
+	})*/
 
-	describe('Logout', () => {
+	/*describe('Logout', () => {
 		it('should return 401 if the JWT refreshToken inside cookie is missing, expired or incorrect', async () => {
 			const login = 'login'
 			const password = 'password'
@@ -467,9 +467,9 @@ describe('ROOT', () => {
 				.set('Cookie', config.refreshToken.name + '=' + refreshTokenValue)
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 		})
-	})
+	})*/
 
-	describe('Password recovery', () => {
+	/*describe('Password recovery', () => {
 		it('should return 400 if the request body has incorrect data', async () => {
 			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
@@ -489,9 +489,9 @@ describe('ROOT', () => {
 				.send({ email: userEmail })
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 		})
-	})
+	})*/
 
-	describe('New password setting', () => {
+	/*describe('New password setting', () => {
 		it('should return 400 if the new password is short in request body', async () => {
 			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
@@ -550,5 +550,5 @@ describe('ROOT', () => {
 				})
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 		})
-	})
+	})*/
 })

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { HashAdapter } from '../../base/adapters/hash.adapter'
 import { Blog } from '../../db/pg/entities/blog'
+import { DeviceToken } from '../../db/pg/entities/deviceToken'
 import { Post } from '../../db/pg/entities/post'
 import { PostLikes } from '../../db/pg/entities/postLikes'
 import { User } from '../../db/pg/entities/user'
@@ -32,7 +33,6 @@ import { DeletePostUseCase } from './posts/use-cases/deletePostUseCase'
 import { SetPostLikeStatusUseCase } from './posts/use-cases/setPostLikeStatusUseCase'
 import { UpdatePostUseCase } from './posts/use-cases/updatePostUseCase'
 import { SaBlogsController } from './saBlogs/saBlogs.controller'
-import { SaBlogsQueryRepository } from './saBlogs/saBlogsQueryRepository'
 import { SaBlogsRepository } from './saBlogs/saBlogsRepository'
 import { SaCreateBlogPostUseCase } from './saBlogs/use-cases/SaCreateBlogPostUseCase'
 import { SaCreateBlogUseCase } from './saBlogs/use-cases/SaCreateBlogUseCase'
@@ -64,10 +64,9 @@ const useCases = [
 ]
 
 @Module({
-	imports: [TypeOrmModule.forFeature([Blog, Post, User, PostLikes])],
+	imports: [TypeOrmModule.forFeature([Blog, Post, User, PostLikes, DeviceToken])],
 	controllers: [SaBlogsController, BlogsController, PostsController, CommentsController],
 	providers: [
-		SaBlogsQueryRepository,
 		BlogsQueryRepository,
 		SaBlogsRepository,
 		BlogsRepository,

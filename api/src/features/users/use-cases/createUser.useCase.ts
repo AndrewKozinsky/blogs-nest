@@ -26,21 +26,15 @@ export class CreateUserUseCase {
 		const newUserDto = await this.commonService.getCreateUserDto(data, true)
 		const createdUserId = await this.usersRepository.createUser(newUserDto)
 
-		// const createdUser = await this.usersQueryRepository.getUser(createdUserId)
-		/*if (!createdUser) {
+		const createdUser = await this.usersQueryRepository.getUser(createdUserId)
+
+		if (!createdUser) {
 			return { code: LayerResultCode.BadRequest }
-		}*/
-
-		/*return {
-			code: LayerResultCode.Success,
-			data: createdUser,
-		}*/
-
-		// ---
+		}
 
 		return {
 			code: LayerResultCode.Success,
-			data: null as any,
+			data: createdUser,
 		}
 	}
 }

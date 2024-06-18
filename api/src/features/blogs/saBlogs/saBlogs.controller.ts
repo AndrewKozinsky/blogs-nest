@@ -17,13 +17,10 @@ import {
 import { Request, Response } from 'express'
 import { CheckAdminAuthGuard } from '../../../infrastructure/guards/checkAdminAuth.guard'
 import RouteNames from '../../../settings/routeNames'
-import { BlogsQueryRepository } from '../blogs/blogsQueryRepository'
-import { DeleteBlogPostUseCase } from '../blogs/use-cases/deleteBlogPostUseCase'
-import { UpdateBlogPostUseCase } from '../blogs/use-cases/updateBlogPostUseCase'
+import { BlogsRepository } from '../blogs/blogsRepository'
 import { PostsQueryRepository } from '../posts/postsQueryRepository'
-import { DeletePostUseCase } from '../posts/use-cases/deletePostUseCase'
+import { BlogsQueryRepository } from '../blogs/blogsQueryRepository'
 import { SaBlogsRepository } from './saBlogsRepository'
-import { SaBlogsQueryRepository } from './saBlogsQueryRepository'
 import {
 	CreateBlogDtoModel,
 	CreateBlogPostDtoModel,
@@ -46,8 +43,8 @@ export class SaBlogsController {
 	constructor(
 		private saCreateBlogUseCase: SaCreateBlogUseCase,
 		private blogsQueryRepository: BlogsQueryRepository,
-		private saBlogsQueryRepository: SaBlogsQueryRepository,
 		private saBlogsRepository: SaBlogsRepository,
+		private blogsRepository: BlogsRepository,
 		private saCreateBlogPostUseCase: SaCreateBlogPostUseCase,
 		private postsQueryRepository: PostsQueryRepository,
 		private saUpdateBlogUseCase: SaUpdateBlogUseCase,
@@ -59,9 +56,10 @@ export class SaBlogsController {
 	// Returns blogs with paging
 	@UseGuards(CheckAdminAuthGuard)
 	@Get()
-	async getBlogs(@Query(new GetBlogsQueriesPipe()) query: GetBlogsQueries, @Res() res: Response) {
+	@HttpCode(HttpStatus.OK)
+	async getBlogs(@Query(new GetBlogsQueriesPipe()) query: GetBlogsQueries) {
 		const blogs = await this.blogsQueryRepository.getBlogs(query)
-		res.status(HttpStatus.OK).send(blogs)
+		return blogs
 	}
 
 	// Create new blog
@@ -70,19 +68,20 @@ export class SaBlogsController {
 	@HttpCode(HttpStatus.CREATED)
 	async createNewBlog(@Body() body: CreateBlogDtoModel) {
 		const createdBlogId = await this.saCreateBlogUseCase.execute(body)
-		return await this.saBlogsQueryRepository.getBlog(createdBlogId)
+		return await this.blogsQueryRepository.getBlog(createdBlogId)
 	}
 
 	// Returns blog by id
 	@Get(':blogId')
-	async getBlog(@Param('blogId') blogId: string, @Res() res: Response) {
-		const blog = await this.saBlogsQueryRepository.getBlog(blogId)
+	@HttpCode(HttpStatus.OK)
+	async getBlog(@Param('blogId') blogId: string) {
+		const blog = await this.blogsQueryRepository.getBlog(blogId)
 
 		if (!blog) {
 			throw new NotFoundException()
 		}
 
-		res.status(HttpStatus.OK).send(blog)
+		return blog
 	}
 
 	// Returns all posts for specified blog
@@ -90,23 +89,22 @@ export class SaBlogsController {
 	async getBlogPosts(
 		@Query(new GetBlogPostsQueriesPipe()) query: GetBlogPostsQueries,
 		@Param('blogId') blogId: string,
-		@Res() res: Response,
 		@Req() req: Request,
 	) {
 		const { user } = req
 
-		const blog = await this.saBlogsRepository.getBlogById(blogId)
+		const blog = await this.blogsRepository.getBlogById(blogId)
 		if (!blog) {
 			throw new NotFoundException()
 		}
 
-		const posts = await this.saBlogsQueryRepository.getBlogPosts(user?.id, blogId, req.query)
+		const posts = await this.blogsQueryRepository.getBlogPosts(user?.id, blogId, req.query)
 
 		if (!posts) {
 			throw new NotFoundException()
 		}
 
-		res.status(HttpStatus.OK).send(posts)
+		return posts
 	}
 
 	// Create new post for specific blog
@@ -120,7 +118,7 @@ export class SaBlogsController {
 	) {
 		const { user } = req
 
-		const blog = await this.saBlogsRepository.getBlogById(blogId)
+		const blog = await this.blogsRepository.getBlogById(blogId)
 		if (!blog) {
 			throw new NotFoundException()
 		}

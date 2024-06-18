@@ -78,11 +78,6 @@ export class BlogsController {
 		}
 
 		const posts = await this.blogsQueryRepository.getBlogPosts(user?.id, blogId, req.query)
-		/*console.log(
-			posts.items.map((item) => {
-				return item.extendedLikesInfo.myStatus
-			}),
-		)*/
 
 		if (!posts) {
 			throw new NotFoundException()
