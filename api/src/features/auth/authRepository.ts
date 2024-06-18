@@ -5,6 +5,7 @@ import { DataSource, Repository } from 'typeorm'
 import { HashAdapter } from '../../base/adapters/hash.adapter'
 import { JwtService } from '../../base/application/jwt.service'
 import { Blog } from '../../db/pg/entities/blog'
+import { DeviceToken } from '../../db/pg/entities/deviceToken'
 import { User } from '../../db/pg/entities/user'
 import { PGGetDeviceTokensQuery, PGGetUserQuery } from '../../db/pg/getPgDataTypes'
 import { config } from '../../settings/config'
@@ -101,17 +102,13 @@ export class AuthRepository {
 	}*/
 
 	async getUserByLoginOrEmail(loginOrEmail: string) {
-		// ПЕРЕПИСАТЬ на TYPEORM!!!
-		const usersRes = await this.dataSource.query(
-			`SELECT * FROM users WHERE login='${loginOrEmail}' OR email='${loginOrEmail}'`,
-			[],
-		)
+		const user = await this.usersTypeORM.findOne({
+			where: [{ login: loginOrEmail }, { email: loginOrEmail }],
+		})
 
-		if (!usersRes.length) {
-			return null
-		}
+		if (!user) return null
 
-		return this.mapDbUserToServiceUser(usersRes[0])
+		return this.mapDbUserToServiceUser(user)
 	}
 
 	/*async getUserByLoginOrEmailNative(loginOrEmail: string) {
@@ -128,29 +125,21 @@ export class AuthRepository {
 	}*/
 
 	async getUserByLoginOrEmailAndPassword(loginDto: { loginOrEmail: string; password: string }) {
-		/*const usersRes = await this.dataSource.query(
-			`SELECT * FROM users WHERE login='${loginDto.loginOrEmail}' OR email='${loginDto.loginOrEmail}'`,
-			[],
-		)*/
+		const user = await this.usersTypeORM.findOne({
+			where: [{ login: loginDto.loginOrEmail }, { email: loginDto.loginOrEmail }],
+		})
 
-		/*if (!usersRes.length) {
+		if (!user) {
 			return null
-		}*/
+		}
 
-		/*const isPasswordMath = await this.hashService.compare(
-			loginDto.password,
-			usersRes[0].password,
-		)*/
+		const isPasswordMath = await this.hashService.compare(loginDto.password, user.password)
 
-		/*if (!isPasswordMath) {
+		if (!isPasswordMath) {
 			return null
-		}*/
+		}
 
-		// return this.mapDbUserToServiceUser(usersRes[0])
-
-		// --
-		// @ts-ignore
-		return null
+		return this.mapDbUserToServiceUser(user)
 	}
 
 	/*async getUserByLoginOrEmailAndPasswordNative(loginDto: { loginOrEmail: string; password: string }) {
@@ -179,22 +168,18 @@ export class AuthRepository {
 		loginOrEmail: string
 		password: string
 	}): Promise<LayerResult<UserServiceModel>> {
-		// const user = await this.getUserByLoginOrEmailAndPassword(loginDto)
+		const user = await this.getUserByLoginOrEmailAndPassword(loginDto)
 
-		/*if (!user || !user.emailConfirmation.isConfirmed) {
+		if (!user || !user.emailConfirmation.isConfirmed) {
 			return {
 				code: LayerResultCode.NotFound,
 			}
-		}*/
+		}
 
-		/*return {
+		return {
 			code: LayerResultCode.Success,
 			data: user,
-		}*/
-
-		// --
-		// @ts-ignore
-		return null
+		}
 	}
 
 	/*async getConfirmedUserByLoginOrEmailAndPasswordNative(loginDto: {
@@ -216,17 +201,15 @@ export class AuthRepository {
 	}*/
 
 	async getUserByConfirmationCode(confirmationCode: string) {
-		// ПЕРЕПИСАТЬ на TYPEORM!!!
-		const usersRes = await this.dataSource.query(
-			`SELECT * FROM users WHERE emailConfirmationCode='${confirmationCode}'`,
-			[],
-		)
+		const user = await this.usersTypeORM.findOne({
+			where: { emailConfirmationCode: confirmationCode },
+		})
 
-		if (!usersRes.length) {
+		if (!user) {
 			return null
 		}
 
-		return this.mapDbUserToServiceUser(usersRes[0])
+		return this.mapDbUserToServiceUser(user)
 	}
 
 	/*async getUserByConfirmationCodeNative(confirmationCode: string) {
@@ -243,7 +226,6 @@ export class AuthRepository {
 	}*/
 
 	async createUser(dto: Omit<PGGetUserQuery, 'id'>) {
-		// ПЕРЕПИСАТЬ на TYPEORM!!!
 		return this.commonService.createUser(dto)
 	}
 
@@ -252,13 +234,21 @@ export class AuthRepository {
 	}*/
 
 	async makeUserEmailConfirmed(userId: string) {
+		const updateUserRes = await this.usersTypeORM.update(userId, {
+			isConfirmationEmailCodeConfirmed: true,
+		})
+
+		return updateUserRes.affected === 1
+	}
+
+	/*async makeUserEmailConfirmedNative(userId: string) {
 		const updateUserRes = await this.dataSource.query(
 			`UPDATE users SET isConfirmationEmailCodeConfirmed = '1' WHERE id = ${userId};`,
 			[],
 		)
 
 		return updateUserRes[1] === 1
-	}
+	}*/
 
 	async setNewEmailConfirmationCode(userId: string) {
 		// ПЕРЕПИСАТЬ на TYPEORM!!!
@@ -269,6 +259,7 @@ export class AuthRepository {
 			[],
 		)
 
+		new Error('1111')
 		return confirmationCode
 	}
 
@@ -284,16 +275,8 @@ export class AuthRepository {
 	}*/
 
 	async deleteUser(userId: string): Promise<boolean> {
-		// return this.commonService.deleteUser(userId)
-
-		// --
-		// @ts-ignore
-		return null
-	}
-
-	/*async deleteUserNative(userId: string): Promise<boolean> {
 		return this.commonService.deleteUser(userId)
-	}*/
+	}
 
 	async insertDeviceRefreshToken(deviceRefreshToken: DBTypes.DeviceToken) {
 		/*await this.dataSource.query(
@@ -312,6 +295,7 @@ export class AuthRepository {
 
 		// --
 		// @ts-ignore
+		new Error('1111')
 		return null
 	}
 
@@ -332,6 +316,12 @@ export class AuthRepository {
 	}*/
 
 	async getDeviceRefreshTokenByDeviceId(deviceId: string): Promise<null | DBTypes.DeviceToken> {
+		const token = await this.dataSource.getRepository(DeviceToken).findOneBy({ deviceId })
+
+		if (!token) return null
+
+		return this.mapDbDeviceRefreshTokenToServiceDeviceRefreshToken(token)
+
 		/*const tokensRes = await this.dataSource.query(
 			`SELECT * FROM devicetokens WHERE deviceId='${deviceId}'`,
 			[],
@@ -417,15 +407,12 @@ export class AuthRepository {
 	}*/
 
 	async getDeviceRefreshTokenByTokenStr(tokenStr: string): Promise<null | DBTypes.DeviceToken> {
-		/*try {
+		try {
 			const refreshTokenPayload = this.jwtService.getRefreshTokenDataFromTokenStr(tokenStr)
 			return this.getDeviceRefreshTokenByDeviceId(refreshTokenPayload!.deviceId)
 		} catch (err: unknown) {
 			return null
-		}*/
-		// --
-		// @ts-ignore
-		return null
+		}
 	}
 
 	/*async getDeviceRefreshTokenByTokenStrNative(tokenStr: string): Promise<null | DBTypes.DeviceToken> {
@@ -468,6 +455,7 @@ export class AuthRepository {
 		}*/
 
 		// --
+		new Error('1111')
 		// @ts-ignore
 		return null
 	}
@@ -507,21 +495,17 @@ export class AuthRepository {
 		return this.commonService.mapDbUserToServiceUser(dbUser)
 	}
 
-	/*mapDbUserToServiceUserNative(dbUser: PGGetUserQuery): UserServiceModel {
-		return this.commonService.mapDbUserToServiceUser(dbUser)
-	}*/
-
 	mapDbDeviceRefreshTokenToServiceDeviceRefreshToken(
-		dbDevice: PGGetDeviceTokensQuery,
+		dbDevice: DeviceToken,
 	): DeviceRefreshTokenServiceModel {
 		return {
 			id: dbDevice.id.toString(),
-			issuedAt: new Date(dbDevice.issuedat),
-			expirationDate: new Date(dbDevice.expirationdate),
-			deviceIP: dbDevice.deviceip,
-			deviceId: dbDevice.deviceid,
-			deviceName: dbDevice.devicename,
-			userId: dbDevice.userid.toString(),
+			issuedAt: new Date(dbDevice.issuedAt),
+			expirationDate: new Date(dbDevice.expirationDate),
+			deviceIP: dbDevice.deviceIP,
+			deviceId: dbDevice.deviceId,
+			deviceName: dbDevice.deviceName,
+			userId: dbDevice.userId.toString(),
 		}
 	}
 }

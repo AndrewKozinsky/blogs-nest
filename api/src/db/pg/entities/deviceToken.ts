@@ -8,9 +8,6 @@ export class DeviceToken {
 	@Column('varchar')
 	issuedAt: string
 
-	@ManyToOne(() => User, (u) => u.id)
-	user: User
-
 	@Column('varchar')
 	expirationDate: string
 
@@ -22,4 +19,10 @@ export class DeviceToken {
 
 	@Column('varchar')
 	deviceName: string
+
+	@ManyToOne(() => User, (u) => u.id)
+	user: User
+
+	@Column('varchar')
+	userId: string
 }

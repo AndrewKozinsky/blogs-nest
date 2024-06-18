@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common'
-import { InjectDataSource } from '@nestjs/typeorm'
-import { DataSource } from 'typeorm'
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
+import { DataSource, Repository } from 'typeorm'
 import { HashAdapter } from '../../base/adapters/hash.adapter'
+import { Blog } from '../../db/pg/entities/blog'
+import { User } from '../../db/pg/entities/user'
 import { PGGetUserQuery } from '../../db/pg/getPgDataTypes'
 import { convertToNumber } from '../../utils/numbers'
 import { CommonService } from '../common/common.service'
-import { User } from '../../db/mongo/schemas/user.schema'
 import { UserServiceModel } from './models/users.service.model'
 
 @Injectable()
@@ -14,22 +15,17 @@ export class UsersRepository {
 		private commonService: CommonService,
 		private hashAdapter: HashAdapter,
 		@InjectDataSource() private dataSource: DataSource,
+		// @InjectRepository(User) private readonly usersTypeORM: Repository<User>,
 	) {}
 
 	async getUserById(userId: string) {
-		// ПЕРЕПИСАТЬ на TYPEORM!!!
-		const userIdNum = convertToNumber(userId)
-		if (!userIdNum) {
-			return false
-		}
+		const user = await this.dataSource.getRepository(User).findOneBy({ id: userId })
 
-		const usersRes = await this.dataSource.query(`SELECT * FROM users WHERE id=${userId}`, [])
-
-		if (!usersRes.length) {
+		if (!user) {
 			return null
 		}
 
-		return this.mapDbUserToServiceUser(usersRes[0])
+		return this.mapDbUserToServiceUser(user)
 	}
 
 	/*async getUserByIdNative(userId: string) {
@@ -89,12 +85,8 @@ export class UsersRepository {
 		return this.commonService.deleteUser(userId)
 	}*/
 
-	mapDbUserToServiceUser(dbUser: PGGetUserQuery): UserServiceModel {
-		// return this.commonService.mapDbUserToServiceUser(dbUser)
-
-		// --
-		// @ts-ignore
-		return null
+	mapDbUserToServiceUser(dbUser: User): UserServiceModel {
+		return this.commonService.mapDbUserToServiceUser(dbUser)
 	}
 
 	/*mapDbUserToServiceUserNative(dbUser: PGGetUserQuery): UserServiceModel {

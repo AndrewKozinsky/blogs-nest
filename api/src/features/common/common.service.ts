@@ -14,7 +14,7 @@ export class CommonService {
 	constructor(
 		private hashAdapter: HashAdapter,
 		@InjectDataSource() private dataSource: DataSource,
-		@InjectRepository(User) private readonly usersTypeORM: Repository<User>,
+		// @InjectRepository(User) private readonly usersTypeORM: Repository<User>,
 	) {}
 
 	// Return object which can be saved in DB to create a new user
@@ -37,7 +37,7 @@ export class CommonService {
 	}
 
 	async createUser(dto: Omit<PGGetUserQuery, 'id'>): Promise<string> {
-		const newUserRes = await this.usersTypeORM.insert({
+		const newUserRes = await this.dataSource.getRepository(User).insert({
 			login: dto.login,
 			email: dto.email,
 			password: dto.password,
@@ -47,9 +47,8 @@ export class CommonService {
 			confirmationCodeExpirationDate: dto.confirmationcodeexpirationdate,
 			isConfirmationEmailCodeConfirmed: dto.isconfirmationemailcodeconfirmed,
 		})
-		console.log(newUserRes)
 
-		return '1'
+		return newUserRes.identifiers[0].id
 	}
 
 	/*async createUserNative(dto: Omit<PGGetUserQuery, 'id'>) {
@@ -74,6 +73,12 @@ export class CommonService {
 	}*/
 
 	async deleteUser(userId: string): Promise<boolean> {
+		const deleteUserRes = await this.dataSource.getRepository(User).delete(userId)
+
+		return deleteUserRes.affected == 1
+	}
+
+	/*async deleteUserNative(userId: string): Promise<boolean> {
 		const userIdNum = convertToNumber(userId)
 		if (!userIdNum) {
 			return false
@@ -87,7 +92,7 @@ export class CommonService {
 		)
 
 		return deleteBlogRes[1] === 1
-	}
+	}*/
 
 	mapDbUserToServiceUser(DbUser: User): UserServiceModel {
 		return {

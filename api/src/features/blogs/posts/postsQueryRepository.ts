@@ -85,20 +85,22 @@ export class PostsQueryRepository {
 					return (like.postId = postId)
 				}).length
 
-				const postDislikesCount = allLikes.filter((dislike) => {
+				const postDislikesCount = allDislikes.filter((dislike) => {
 					return (dislike.postId = postId)
 				}).length
 
 				const currentUserPostLikeStatuses = currentUserAllPostLikeStatuses.filter(
 					(status) => {
-						return (status.postId = postId)
+						return userId && (status.userId = userId)
 					},
 				)
+
 				let currentUserPostLikeStatus: DBTypes.LikeStatuses = DBTypes.LikeStatuses.None
-				if (currentUserPostLikeStatuses.length) {
-					currentUserPostLikeStatus = currentUserPostLikeStatuses[0]
-						.status as DBTypes.LikeStatuses
-				}
+				currentUserPostLikeStatuses.forEach((thisStatus) => {
+					if (thisStatus.postId === postId && thisStatus.userId === userId) {
+						currentUserPostLikeStatus = thisStatus.status as DBTypes.LikeStatuses
+					}
+				})
 
 				return this.mapDbPostToOutputPost(
 					post,
@@ -246,7 +248,7 @@ export class PostsQueryRepository {
 			.createQueryBuilder(PostLikes, 'pl')
 			.where('pl.postId = :postId', { postId })
 			.andWhere('pl.status = :status', { status: DBTypes.LikeStatuses.Like })
-			.addSelect('pl.user')
+			.leftJoinAndSelect('pl.user', 'user')
 			.getMany()
 
 		return postLikes.map((postLike) => {

@@ -26,6 +26,7 @@ export class RegistrationUseCase {
 		const userId = await this.authRepository.createUser(newUserDto)
 
 		const user = await this.usersService.getUser(userId)
+
 		if (!user) {
 			return { code: LayerResultCode.BadRequest }
 		}

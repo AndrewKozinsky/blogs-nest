@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
 import { DataSource, Repository } from 'typeorm'
-import { Post } from '../../../db/mongo/schemas/post.schema'
 import { Blog } from '../../../db/pg/entities/blog'
+import { Post } from '../../../db/pg/entities/post'
 import { PGGetPostQuery } from '../../../db/pg/getPgDataTypes'
 import { convertToNumber } from '../../../utils/numbers'
 import { BlogsRepository } from '../blogs/blogsRepository'
@@ -18,20 +18,17 @@ export class PostsRepository {
 	) {}
 
 	async getPostById(postId: string) {
-		/*const postsRes = await this.dataSource.query(
-			`SELECT *, (SELECT name as blogname from blogs WHERE id = p.blogid) FROM posts p WHERE id=${postId}`,
-			[],
-		)*/
+		const post = await this.postsTypeORM
+			.createQueryBuilder('p')
+			.leftJoinAndSelect('p.blog', 'blog')
+			.where('p.id = :postId', { postId })
+			.getOne()
 
-		/*if (!postsRes.length) {
+		if (!post) {
 			return null
-		}*/
+		}
 
-		// return postsRes ? this.mapDbPostToClientPost(postsRes[0]) : null
-
-		// --
-		// @ts-ignore
-		return null
+		return post ? this.mapDbPostToClientPost(post) : null
 	}
 
 	/*async getPostByIdNative(postId: string) {
@@ -192,15 +189,15 @@ export class PostsRepository {
 		return this.deletePost(postId)
 	}*/
 
-	mapDbPostToClientPost(DbPost: PGGetPostQuery): PostServiceModel {
+	mapDbPostToClientPost(DbPost: Post): PostServiceModel {
 		return {
 			id: DbPost.id.toString(),
 			title: DbPost.title,
-			shortDescription: DbPost.shortdescription,
+			shortDescription: DbPost.shortDescription,
 			content: DbPost.content,
-			blogId: DbPost.blogid.toString(),
-			blogName: DbPost.blogname,
-			createdAt: DbPost.createdat,
+			blogId: DbPost.blogId.toString(),
+			blogName: DbPost.blog.name,
+			createdAt: DbPost.createdAt,
 		}
 	}
 }

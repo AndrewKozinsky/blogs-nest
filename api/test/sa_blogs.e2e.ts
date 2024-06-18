@@ -19,7 +19,7 @@ import {
 	createDtoAddBlogPost,
 } from './utils/utils'
 
-it.only('123', async () => {
+it('123', async () => {
 	expect(2).toBe(2)
 })
 
@@ -35,7 +35,7 @@ describe('ROOT', () => {
 	})
 
 	describe('Getting all blogs', () => {
-		it('should forbid a request from an unauthorized user', async () => {
+		it.only('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
 				.get('/' + RouteNames.SA_BLOGS.value)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)

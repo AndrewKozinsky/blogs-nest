@@ -14,18 +14,18 @@ export class User {
 	@Column('varchar')
 	password: string
 
-	@Column('varchar')
+	@Column('varchar', { nullable: true })
 	passwordRecoveryCode: string
 
 	@Column('varchar')
 	createdAt: string
 
-	@Column('varchar')
+	@Column('varchar', { nullable: true })
 	emailConfirmationCode: string
 
-	@Column('varchar')
+	@Column('varchar', { nullable: true })
 	confirmationCodeExpirationDate: string
 
-	@Column('varchar')
+	@Column('boolean')
 	isConfirmationEmailCodeConfirmed: boolean
 }
