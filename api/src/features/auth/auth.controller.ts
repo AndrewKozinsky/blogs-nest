@@ -178,14 +178,15 @@ export class AuthController {
 	@Post(RouteNames.AUTH.NEW_PASSWORD.value)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async newPassword(@Body() body: AuthNewPasswordDtoModel) {
-		const passwordRecoveryServiceRes = await this.setNewPasswordUseCase.execute(
+		console.log(454444)
+		/*const passwordRecoveryServiceRes = await this.setNewPasswordUseCase.execute(
 			body.recoveryCode,
 			body.newPassword,
-		)
+		)*/
 
-		if (passwordRecoveryServiceRes.code !== LayerResultCode.Success) {
+		/*if (passwordRecoveryServiceRes.code !== LayerResultCode.Success) {
 			throw new BadRequestException()
-		}
+		}*/
 
 		// 204 Even if current email is not registered (for prevent user's email detection)
 	}

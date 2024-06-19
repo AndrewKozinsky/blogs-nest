@@ -8,6 +8,7 @@ import { JwtService } from '../../base/application/jwt.service'
 import { RequestService } from '../../base/application/request.service'
 import { EmailManager } from '../../base/managers/email.manager'
 import { Blog } from '../../db/pg/entities/blog'
+import { DeviceToken } from '../../db/pg/entities/deviceToken'
 import { Post } from '../../db/pg/entities/post'
 import { User } from '../../db/pg/entities/user'
 import { CommonService } from '../common/common.service'
@@ -45,7 +46,7 @@ const useCases = [
 ]
 
 @Module({
-	imports: [TypeOrmModule.forFeature([User])],
+	imports: [TypeOrmModule.forFeature([User, DeviceToken])],
 	controllers: [AuthController],
 	providers: [
 		JwtService,

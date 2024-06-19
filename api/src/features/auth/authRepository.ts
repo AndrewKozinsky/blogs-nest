@@ -4,7 +4,6 @@ import { addMilliseconds } from 'date-fns'
 import { DataSource, Repository } from 'typeorm'
 import { HashAdapter } from '../../base/adapters/hash.adapter'
 import { JwtService } from '../../base/application/jwt.service'
-import { Blog } from '../../db/pg/entities/blog'
 import { DeviceToken } from '../../db/pg/entities/deviceToken'
 import { User } from '../../db/pg/entities/user'
 import { PGGetDeviceTokensQuery, PGGetUserQuery } from '../../db/pg/getPgDataTypes'
@@ -24,33 +23,26 @@ export class AuthRepository {
 		private jwtService: JwtService,
 		@InjectDataSource() private dataSource: DataSource,
 		@InjectRepository(User) private readonly usersTypeORM: Repository<User>,
+		@InjectRepository(DeviceToken)
+		private readonly deviceTokensTypeORM: Repository<DeviceToken>,
 	) {}
 
 	async getUserByRefreshToken(refreshTokenStr: string) {
-		// const refreshTokenData = this.jwtService.getRefreshTokenDataFromTokenStr(refreshTokenStr)
+		const refreshTokenData = this.jwtService.getRefreshTokenDataFromTokenStr(refreshTokenStr)
 
-		/*const devicesRes = await this.dataSource.query(
-			'SELECT * FROM devicetokens WHERE deviceid=$1',
-			[refreshTokenData!.deviceId],
-		)*/
+		const device = await this.deviceTokensTypeORM.findOne({
+			where: { deviceId: refreshTokenData!.deviceId },
+		})
 
-		/*if (!devicesRes.length) {
-			return null
-		}*/
+		if (!device) return null
 
-		/*const usersRes = await this.dataSource.query('SELECT * FROM users WHERE id=$1', [
-			devicesRes[0].userid,
-		])*/
+		const user = await this.usersTypeORM.findOne({
+			where: { id: device.userId },
+		})
 
-		/*if (!usersRes.length) {
-			return null
-		}*/
+		if (!user) return null
 
-		// return this.mapDbUserToServiceUser(usersRes[0])
-
-		// --
-		// @ts-ignore
-		return null
+		return this.mapDbUserToServiceUser(user)
 	}
 
 	/*async getUserByRefreshTokenNative(refreshTokenStr: string) {
@@ -229,10 +221,6 @@ export class AuthRepository {
 		return this.commonService.createUser(dto)
 	}
 
-	/*async createUserNative(dto: Omit<PGGetUserQuery, 'id'>) {
-		return this.commonService.createUser(dto)
-	}*/
-
 	async makeUserEmailConfirmed(userId: string) {
 		const updateUserRes = await this.usersTypeORM.update(userId, {
 			isConfirmationEmailCodeConfirmed: true,
@@ -251,15 +239,10 @@ export class AuthRepository {
 	}*/
 
 	async setNewEmailConfirmationCode(userId: string) {
-		// ПЕРЕПИСАТЬ на TYPEORM!!!
 		const confirmationCode = createUniqString()
 
-		const updateUserRes = await this.dataSource.query(
-			`UPDATE users SET emailConfirmationCode = '${confirmationCode}' WHERE id = ${userId};`,
-			[],
-		)
+		await this.usersTypeORM.update(userId, { emailConfirmationCode: confirmationCode })
 
-		new Error('1111')
 		return confirmationCode
 	}
 
@@ -279,24 +262,14 @@ export class AuthRepository {
 	}
 
 	async insertDeviceRefreshToken(deviceRefreshToken: DBTypes.DeviceToken) {
-		/*await this.dataSource.query(
-			`INSERT INTO devicetokens
-			("issuedat", "userid", "expirationdate", "deviceip", "deviceid", "devicename")
-			VALUES($1, $2, $3, $4, $5, $6) RETURNING id`,
-			[
-				deviceRefreshToken.issuedAt,
-				deviceRefreshToken.userId,
-				deviceRefreshToken.expirationDate,
-				deviceRefreshToken.deviceIP,
-				deviceRefreshToken.deviceId,
-				deviceRefreshToken.deviceName,
-			],
-		)*/
-
-		// --
-		// @ts-ignore
-		new Error('1111')
-		return null
+		await this.deviceTokensTypeORM.insert({
+			issuedAt: deviceRefreshToken.issuedAt.toISOString(),
+			userId: deviceRefreshToken.userId,
+			expirationDate: deviceRefreshToken.expirationDate.toISOString(),
+			deviceIP: deviceRefreshToken.deviceIP,
+			deviceId: deviceRefreshToken.deviceId,
+			deviceName: deviceRefreshToken.deviceName,
+		})
 	}
 
 	/*async insertDeviceRefreshTokenNative(deviceRefreshToken: DBTypes.DeviceToken) {

@@ -28,10 +28,10 @@ const typeORMOptions: TypeOrmModuleOptions = {
 	username: DB_USER_NAME,
 	password: DB_USER_PASSWORD,
 	database: DB_NAME,
-	// entities: [User, Blog, Post, PostLikes, Comment, CommentLikes, RateLimit, DeviceToken],
-	// entities: [__dirname + '/db/pg/entities/*.ts'],
+	entities: [__dirname + '/db/pg/entities/*.ts'],
 	autoLoadEntities: true,
 	synchronize: true,
+	// logging: ['query'],
 }
 
 @Module({

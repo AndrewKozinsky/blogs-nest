@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { HashAdapter } from '../../base/adapters/hash.adapter'
 import { JwtService } from '../../base/application/jwt.service'
 import { RequestService } from '../../base/application/request.service'
+import { DeviceToken } from '../../db/pg/entities/deviceToken'
 import { User } from '../../db/pg/entities/user'
 import { AuthRepository } from '../auth/authRepository'
 import { CommonService } from '../common/common.service'
@@ -18,7 +19,7 @@ const useCases = [
 ]
 
 @Module({
-	imports: [TypeOrmModule.forFeature([User])],
+	imports: [TypeOrmModule.forFeature([User, DeviceToken])],
 	controllers: [SecurityController],
 	providers: [
 		RequestService,

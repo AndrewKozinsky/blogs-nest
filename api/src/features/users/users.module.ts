@@ -3,7 +3,7 @@ import { CommandBus } from '@nestjs/cqrs'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { HashAdapter } from '../../base/adapters/hash.adapter'
 import { JwtService } from '../../base/application/jwt.service'
-import { Blog } from '../../db/pg/entities/blog'
+import { DeviceToken } from '../../db/pg/entities/deviceToken'
 import { User } from '../../db/pg/entities/user'
 import { AuthRepository } from '../auth/authRepository'
 import { CommonService } from '../common/common.service'
@@ -16,7 +16,7 @@ import { UsersRepository } from './usersRepository'
 const useCases = [DeleteUserUseCase, CreateUserUseCase]
 
 @Module({
-	imports: [TypeOrmModule.forFeature([User])],
+	imports: [TypeOrmModule.forFeature([User, DeviceToken])],
 	controllers: [UsersController],
 	providers: [
 		UsersQueryRepository,

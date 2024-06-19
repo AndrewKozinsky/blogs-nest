@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common'
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
 import { DataSource, Repository } from 'typeorm'
 import { HashAdapter } from '../../base/adapters/hash.adapter'
-import { Blog } from '../../db/pg/entities/blog'
 import { User } from '../../db/pg/entities/user'
 import { PGGetUserQuery } from '../../db/pg/getPgDataTypes'
 import { CommonService } from '../common/common.service'
@@ -13,8 +12,8 @@ export class UsersRepository {
 	constructor(
 		private commonService: CommonService,
 		private hashAdapter: HashAdapter,
-		@InjectRepository(User) private readonly uTypeORM: Repository<User>,
 		@InjectDataSource() private dataSource: DataSource,
+		// @InjectRepository(User) private readonly usersTypeORM: Repository<User>,
 	) {}
 
 	async getUserById(userId: string) {
