@@ -24,7 +24,7 @@ import {
 	userPassword,
 } from './utils/utils'
 
-it('123', async () => {
+it.only('123', async () => {
 	expect(2).toBe(2)
 })
 
@@ -40,7 +40,7 @@ describe('ROOT', () => {
 	})
 
 	describe('Getting post comments', () => {
-		it.only('should return an object with property items contains an empty array', async () => {
+		it('should return an object with property items contains an empty array', async () => {
 			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
@@ -62,7 +62,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.OK_200, successAnswer)
 		})
 
-		/*it('should return an object with property items contains array with 2 items after creating 2 comments', async () => {
+		it('should return an object with property items contains array with 2 items after creating 2 comments', async () => {
 			// Create a blog
 			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
@@ -110,9 +110,9 @@ describe('ROOT', () => {
 				0,
 				DBTypes.LikeStatuses.None,
 			)
-		})*/
+		})
 
-		/*it('should return an array of objects matching the queries scheme', async () => {
+		it('should return an array of objects matching the queries scheme', async () => {
 			// Create a blog
 			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
@@ -153,9 +153,9 @@ describe('ROOT', () => {
 			})
 
 			expect(getPostCommentsRes.body.items.length).toBe(2)
-		})*/
+		})
 
-		/*it('create 6 comments then: like comment 1 by user 1, user 2; like comment 2 by user 2, user 3; dislike comment 3 by user 1; like comment 4 by user 1, user 4, user 2, user 3; like comment 5 by user 2, dislike by user 3; like comment 6 by user 1, dislike by user 2.', async () => {
+		it('create 6 comments then: like comment 1 by user 1, user 2; like comment 2 by user 2, user 3; dislike comment 3 by user 1; like comment 4 by user 1, user 4, user 2, user 3; like comment 5 by user 2, dislike by user 3; like comment 6 by user 1, dislike by user 2.', async () => {
 			// Create a blog
 			const createdBlogRes = await addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
@@ -323,10 +323,10 @@ describe('ROOT', () => {
 				1,
 				DBTypes.LikeStatuses.Like,
 			)
-		})*/
+		})
 	})
 
-	/*describe('Creating a comment', () => {
+	describe('Creating a comment', () => {
 		it('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
 				.post('/' + RouteNames.POSTS.POST_ID('999').COMMENTS.full())
@@ -403,9 +403,9 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.OK_200)
 			expect(getPostCommentsRes.body.items.length).toBe(2)
 		})
-	})*/
+	})
 
-	/*describe('Getting all posts', () => {
+	describe('Getting all posts', () => {
 		it('should return an object with property items contains an empty array', async () => {
 			const successAnswer: GetPostsOutModel = {
 				pagesCount: 0,
@@ -565,9 +565,9 @@ describe('ROOT', () => {
 			expect(typeof post.extendedLikesInfo.newestLikes[0].userId).toBe('string')
 			expect(typeof post.extendedLikesInfo.newestLikes[0].login).toBe('string')
 		})
-	})*/
+	})
 
-	/*describe('Creating a post', () => {
+	describe('Creating a post', () => {
 		it('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
 				.post('/' + RouteNames.POSTS.value)
@@ -602,9 +602,9 @@ describe('ROOT', () => {
 			const allPostsRes = await request(app.getHttpServer()).get('/' + RouteNames.POSTS.value)
 			expect(allPostsRes.body.items.length).toBe(2)
 		})
-	})*/
+	})
 
-	/*describe('Getting a post', () => {
+	describe('Getting a post', () => {
 		it('should return 404 if a post does not exists', async () => {
 			const getPostRes = await request(app.getHttpServer()).get(
 				'/' + RouteNames.POSTS.POST_ID('999').full,
@@ -627,9 +627,9 @@ describe('ROOT', () => {
 
 			checkPostObj(getPostRes.body, 0, 0, DBTypes.LikeStatuses.None)
 		})
-	})*/
+	})
 
-	/*describe('Updating a post', () => {
+	describe('Updating a post', () => {
 		it('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
 				.put('/' + RouteNames.POSTS.POST_ID('999').full)
@@ -715,9 +715,9 @@ describe('ROOT', () => {
 			expect(getPostRes.body.shortDescription).toBe(updatePostDto.shortDescription)
 			expect(getPostRes.body.content).toBe(updatePostDto.content)
 		})
-	})*/
+	})
 
-	/*describe('Deleting a post', () => {
+	describe('Deleting a post', () => {
 		it('should forbid a request from an unauthorized user', async () => {
 			return request(app.getHttpServer()).delete('/' + RouteNames.POSTS.value)
 		})
@@ -746,9 +746,9 @@ describe('ROOT', () => {
 				.get('/' + RouteNames.POSTS.POST_ID(createdPostId).full)
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
-	})*/
+	})
 
-	/*describe('Make a post like status', () => {
+	describe('Make a post like status', () => {
 		it('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
 				.put('/' + RouteNames.POSTS.POST_ID('999').LIKE_STATUS.full)
@@ -1023,5 +1023,5 @@ describe('ROOT', () => {
 			expect(postDescItems[3].extendedLikesInfo.myStatus).toBe(DBTypes.LikeStatuses.Like)
 			expect(postDescItems[5].extendedLikesInfo.myStatus).toBe(DBTypes.LikeStatuses.Like)
 		})
-	})*/
+	})
 })

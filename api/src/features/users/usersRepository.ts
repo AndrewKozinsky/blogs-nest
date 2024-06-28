@@ -13,7 +13,6 @@ export class UsersRepository {
 		private commonService: CommonService,
 		private hashAdapter: HashAdapter,
 		@InjectDataSource() private dataSource: DataSource,
-		// @InjectRepository(User) private readonly usersTypeORM: Repository<User>,
 	) {}
 
 	async getUserById(userId: string) {
@@ -42,17 +41,13 @@ export class UsersRepository {
 	}*/
 
 	async getUserByPasswordRecoveryCode(passwordRecoveryCode: string) {
-		// ПЕРЕПИСАТЬ на TYPEORM!!!
-		const usersRes = await this.dataSource.query(
-			`SELECT * FROM users WHERE passwordRecoveryCode='${passwordRecoveryCode}'`,
-			[],
-		)
+		const user = await this.dataSource
+			.getRepository(User)
+			.findOneBy({ passwordRecoveryCode: passwordRecoveryCode })
 
-		if (!usersRes.length) {
-			return null
-		}
+		if (!user) return null
 
-		return this.mapDbUserToServiceUser(usersRes[0])
+		return this.mapDbUserToServiceUser(user)
 	}
 
 	/*async getUserByPasswordRecoveryCodeNative(passwordRecoveryCode: string) {
@@ -88,14 +83,9 @@ export class UsersRepository {
 	}*/
 
 	async setPasswordRecoveryCodeToUser(userId: string, recoveryCode: null | string) {
-		/*const updateUserRes = await this.dataSource.query(
-			'UPDATE users SET passwordRecoveryCode = $1 WHERE id = $2;',
-			[recoveryCode, userId],
-		)*/
-
-		// --
-		// @ts-ignore
-		return null
+		const res = await this.dataSource.getRepository(User).update(userId, {
+			passwordRecoveryCode: recoveryCode,
+		})
 	}
 
 	/*async setPasswordRecoveryCodeToUserNative(userId: string, recoveryCode: null | string) {
@@ -106,16 +96,9 @@ export class UsersRepository {
 	}*/
 
 	async setNewPasswordToUser(userId: string, newPassword: string) {
-		// const passwordHash = await this.hashAdapter.hashString(newPassword)
+		const passwordHash = await this.hashAdapter.hashString(newPassword)
 
-		/*const updateUserRes = await this.dataSource.query(
-			'UPDATE users SET password = $1 WHERE id = $2',
-			[passwordHash, userId],
-		)*/
-
-		// --
-		// @ts-ignore
-		return null
+		await this.dataSource.getRepository(User).update(userId, { password: passwordHash })
 	}
 
 	/*async setNewPasswordToUserNative(userId: string, newPassword: string) {

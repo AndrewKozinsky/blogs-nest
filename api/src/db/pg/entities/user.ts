@@ -5,17 +5,17 @@ export class User {
 	@PrimaryGeneratedColumn()
 	id: string
 
-	@Column('varchar')
+	@Column({ type: 'varchar', collation: 'C' })
 	login: string
 
-	@Column('varchar')
+	@Column({ type: 'varchar', collation: 'C' })
 	email: string
 
 	@Column('varchar')
 	password: string
 
 	@Column('varchar', { nullable: true })
-	passwordRecoveryCode: string
+	passwordRecoveryCode: string | null
 
 	@Column('varchar')
 	createdAt: string

@@ -483,6 +483,7 @@ describe('ROOT', () => {
 				DBTypes.LikeStatuses.Dislike,
 			)
 		})
+
 		it('create comment then: like the comment by user 1, user 2, user 3, user 4. get the comment after each like by user 1', async () => {
 			// Create a blog
 			const createdBlogRes = await addBlogRequest(app)

@@ -162,16 +162,12 @@ export class PostLikesRepository {
 	}*/
 
 	async getUserPostLikeStatus(userId: string, postId: string): Promise<DBTypes.LikeStatuses> {
-		// const postLikeRes = await this.getPostLikeByUser(userId, postId)
-		/*if (!postLikeRes) {
+		const postLikeRes = await this.getPostLikeByUser(userId, postId)
+		if (!postLikeRes) {
 			return DBTypes.LikeStatuses.None
-		}*/
+		}
 
-		// return postLikeRes.status
-
-		// --
-		// @ts-ignore
-		return null
+		return postLikeRes.status
 	}
 
 	/*async getUserPostLikeStatusNative(userId: string, postId: string): Promise<DBTypes.LikeStatuses> {

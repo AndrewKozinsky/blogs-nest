@@ -12,7 +12,6 @@ export class SetReqUserMiddleware implements NestMiddleware {
 
 	async use(req: Request, res: Response, next: NextFunction) {
 		const authorizationHeader = req.headers['authorization']
-
 		if (!authorizationHeader) {
 			next()
 			return

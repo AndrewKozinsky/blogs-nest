@@ -13,13 +13,13 @@ export class PostLikes {
 	@Column('varchar')
 	addedAt: string
 
-	@ManyToOne(() => Post)
+	@ManyToOne(() => Post, { onDelete: 'CASCADE' })
 	post: Post
 
 	@Column('varchar')
 	postId: string
 
-	@ManyToOne(() => User)
+	@ManyToOne(() => User, { onDelete: 'CASCADE' })
 	user: User
 
 	@Column('varchar')

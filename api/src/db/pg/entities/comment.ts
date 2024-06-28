@@ -10,12 +10,18 @@ export class Comment {
 	@Column('text')
 	content: string
 
-	@ManyToOne(() => Post)
+	@Column('varchar')
+	createdAt: string
+
+	@ManyToOne(() => Post, { onDelete: 'CASCADE' })
 	post: Post
 
-	@ManyToOne(() => User)
+	@Column('varchar')
+	postId: string
+
+	@ManyToOne(() => User, { onDelete: 'CASCADE' })
 	user: User
 
 	@Column('varchar')
-	createdAt: string
+	userId: string
 }

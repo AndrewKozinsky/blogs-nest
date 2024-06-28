@@ -18,7 +18,7 @@ export class Post {
 	@Column('varchar')
 	createdAt: string
 
-	@ManyToOne(() => Blog)
+	@ManyToOne(() => Blog, { onDelete: 'CASCADE' })
 	blog: Blog
 
 	@Column('varchar')

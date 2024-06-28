@@ -16,6 +16,7 @@ import { JwtService } from '../../base/application/jwt.service'
 import { RequestService } from '../../base/application/request.service'
 import { CheckAccessTokenGuard } from '../../infrastructure/guards/checkAccessToken.guard'
 import { CheckDeviceRefreshTokenGuard } from '../../infrastructure/guards/checkDeviceRefreshToken.guard'
+import { RequestsLimiterGuard } from '../../infrastructure/guards/requestsLimiter.guard'
 import { config } from '../../settings/config'
 import RouteNames from '../../settings/routeNames'
 import { LayerResult, LayerResultCode } from '../../types/resultCodes'
@@ -52,6 +53,7 @@ export class AuthController {
 	) {}
 
 	// User login
+	@UseGuards(RequestsLimiterGuard)
 	@Post(RouteNames.AUTH.LOGIN.value)
 	@HttpCode(HttpStatus.OK)
 	async login(@Req() req: Request, @Res() res: Response, @Body() body: AuthLoginDtoModel) {
@@ -74,6 +76,7 @@ export class AuthController {
 
 	// Generate the new pair of access and refresh tokens
 	// (in cookie client must send correct refreshToken that will be revoked after refreshing)
+	@UseGuards(RequestsLimiterGuard)
 	@UseGuards(CheckDeviceRefreshTokenGuard)
 	@Post(RouteNames.AUTH.REFRESH_TOKEN.value)
 	async refreshToken(@Req() req: Request, @Res() res: Response) {
@@ -100,6 +103,7 @@ export class AuthController {
 
 	// Registration in the system.
 	// Email with confirmation code will be sent to passed email address.
+	@UseGuards(RequestsLimiterGuard)
 	@Post(RouteNames.AUTH.REGISTRATION.value)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async registration(@Body() body: AuthRegistrationDtoModel) {
@@ -111,6 +115,7 @@ export class AuthController {
 	}
 
 	// Registration email resending.
+	@UseGuards(RequestsLimiterGuard)
 	@Post(RouteNames.AUTH.REGISTRATION_EMAIL_RESENDING.value)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async registrationEmailResending(@Body() body: AuthRegistrationEmailResendingDtoModel) {
@@ -122,6 +127,7 @@ export class AuthController {
 	}
 
 	// Confirm registration
+	@UseGuards(RequestsLimiterGuard)
 	@Post(RouteNames.AUTH.REGISTRATION_CONFIRMATION.value)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async registrationConfirmation(@Body() body: AuthRegistrationConfirmationDtoModel) {
@@ -162,6 +168,7 @@ export class AuthController {
 	}
 
 	// Password recovery via Email confirmation. Email should be sent with RecoveryCode inside
+	@UseGuards(RequestsLimiterGuard)
 	@Post(RouteNames.AUTH.PASSWORD_RECOVERY.value)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async passwordRecovery(@Body() body: AuthPasswordRecoveryDtoModel) {
@@ -175,18 +182,18 @@ export class AuthController {
 	}
 
 	// Confirm Password recovery
+	@UseGuards(RequestsLimiterGuard)
 	@Post(RouteNames.AUTH.NEW_PASSWORD.value)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async newPassword(@Body() body: AuthNewPasswordDtoModel) {
-		console.log(454444)
-		/*const passwordRecoveryServiceRes = await this.setNewPasswordUseCase.execute(
+		const passwordRecoveryServiceRes = await this.setNewPasswordUseCase.execute(
 			body.recoveryCode,
 			body.newPassword,
-		)*/
+		)
 
-		/*if (passwordRecoveryServiceRes.code !== LayerResultCode.Success) {
+		if (passwordRecoveryServiceRes.code !== LayerResultCode.Success) {
 			throw new BadRequestException()
-		}*/
+		}
 
 		// 204 Even if current email is not registered (for prevent user's email detection)
 	}

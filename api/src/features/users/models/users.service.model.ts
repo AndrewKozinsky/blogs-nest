@@ -4,7 +4,7 @@ export type UserServiceModel = {
 		login: string
 		email: string
 		password: string
-		passwordRecoveryCode?: string
+		passwordRecoveryCode: string | null
 		createdAt: string
 	}
 	emailConfirmation: {

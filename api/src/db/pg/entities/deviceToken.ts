@@ -21,7 +21,7 @@ export class DeviceToken {
 	@Column('varchar')
 	deviceName: string
 
-	@ManyToOne(() => User, (u) => u.id)
+	@ManyToOne(() => User, (u) => u.id, { onDelete: 'CASCADE' })
 	user: User
 
 	@Column('varchar')

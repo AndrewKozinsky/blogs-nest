@@ -1,12 +1,8 @@
 import { Injectable } from '@nestjs/common'
-import { InjectModel } from '@nestjs/mongoose'
 import { InjectDataSource } from '@nestjs/typeorm'
-import { Model } from 'mongoose'
 import { DataSource } from 'typeorm'
-import { Blog } from '../../../db/mongo/schemas/blog.schema'
 import { PGGetBlogQuery } from '../../../db/pg/getPgDataTypes'
-import { convertToNumber } from '../../../utils/numbers'
-import { CreateBlogDtoModel, UpdateBlogDtoModel } from './model/blogs.input.model'
+import { CreateBlogDtoModel } from './model/blogs.input.model'
 import { BlogServiceModel } from './model/blogs.service.model'
 
 @Injectable()
@@ -27,7 +23,8 @@ export class SaBlogsRepository {
 		return this.mapDbBlogToServiceBlog(blogsRes[0])
 	}
 
-	async createBlog(dto: CreateBlogDtoModel) {
+	// DELETE !!!
+	/*async createBlog(dto: CreateBlogDtoModel) {
 		// Current data like '2024-05-19T14:36:40.112Z'
 		const createdAt = new Date().toISOString()
 
@@ -40,23 +37,6 @@ export class SaBlogsRepository {
 		)
 
 		return newBlogsIdRes[0].id
-	}
-
-	// DELETE
-	/*async deleteBlog(blogId: string): Promise<boolean> {
-		const blogIdNum = convertToNumber(blogId)
-		if (!blogIdNum) {
-			return false
-		}
-
-		// The query will return an array where the second element is a number of deleted documents
-		// [ [], 1 ]
-		const deleteBlogRes = await this.dataSource.query(
-			`DELETE FROM blogs WHERE id='${blogIdNum}'`,
-			[],
-		)
-
-		return deleteBlogRes[1] === 1
 	}*/
 
 	mapDbBlogToServiceBlog(DbBlog: PGGetBlogQuery): BlogServiceModel {

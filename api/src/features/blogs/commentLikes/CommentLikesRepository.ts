@@ -1,13 +1,8 @@
 import { InjectDataSource } from '@nestjs/typeorm'
-import { Model } from 'mongoose'
-import { ObjectId } from 'mongodb'
 import { Injectable } from '@nestjs/common'
 import { DataSource } from 'typeorm'
 import { DBTypes } from '../../../db/mongo/dbTypes'
-import { InjectModel } from '@nestjs/mongoose'
-import { CommentLike } from '../../../db/mongo/schemas/commentLike.schema'
-import { PGGetCommentLikeQuery } from '../../../db/pg/getPgDataTypes'
-import { convertToNumber } from '../../../utils/numbers'
+import { CommentLikes } from '../../../db/pg/entities/commentLikes'
 import { CommentLikeServiceModel } from './models/commentLikes.service.model'
 
 @Injectable()
@@ -15,26 +10,15 @@ export class CommentLikesRepository {
 	constructor(@InjectDataSource() private dataSource: DataSource) {}
 
 	async getCommentLikeByUser(userId: string, commentId: string) {
-		// const userIdNum = convertToNumber(userId)
-		// const commentIdNum = convertToNumber(commentId)
-		/*if (!userIdNum || !commentIdNum) {
+		const commentLike = await this.dataSource
+			.getRepository(CommentLikes)
+			.findOne({ where: { userId, commentId } })
+
+		if (!commentLike) {
 			return null
-		}*/
+		}
 
-		/*const commentLikesRes = await this.dataSource.query(
-			`SELECT * FROM commentlikes WHERE userid=${userId} AND commentid=${commentId}`,
-			[],
-		)*/
-
-		/*if (!commentLikesRes.length) {
-			return null
-		}*/
-
-		// return this.mapDbCommentLikeToClientCommentLike(commentLikesRes[0])
-
-		// --
-		// @ts-ignore
-		return null
+		return this.mapDbCommentLikeToClientCommentLike(commentLike)
 	}
 
 	/*async getCommentLikeByUserNative(userId: string, commentId: string) {
@@ -57,17 +41,11 @@ export class CommentLikesRepository {
 	}*/
 
 	async createCommentLike(userId: string, commentId: string, likeStatus: DBTypes.LikeStatuses) {
-		// Insert new blog and to get an array like this: [ { id: 10 } ]
-		/*const newCommentLikeIdRes = await this.dataSource.query(
-			`INSERT INTO commentlikes
-			("userid", "commentid", "status")
-			VALUES($1, $2, $3) RETURNING id`,
-			[userId, commentId, likeStatus],
-		)*/
-
-		// --
-		// @ts-ignore
-		return null
+		const newCommentLikeRes = await this.dataSource.getRepository(CommentLikes).insert({
+			userId,
+			commentId,
+			status: likeStatus,
+		})
 	}
 
 	/*async createCommentLikeNative(userId: string, commentId: string, likeStatus: DBTypes.LikeStatuses) {
@@ -85,22 +63,16 @@ export class CommentLikesRepository {
 		commentId: string,
 		likeStatus: DBTypes.LikeStatuses,
 	): Promise<boolean> {
-		// const userIdNum = convertToNumber(userId)
-		// const commentIdNum = convertToNumber(commentId)
-		/*if (!userIdNum || !commentIdNum) {
-			return false
-		}*/
+		const updateCommentLikeStatusRes = await this.dataSource
+			.getRepository(CommentLikes)
+			.createQueryBuilder()
+			.update({
+				status: likeStatus,
+			})
+			.where('commentId = :commentId AND userId = :userId', { commentId, userId })
+			.execute()
 
-		/*const updateCommentLikeStatusRes = await this.dataSource.query(
-			'UPDATE commentlikes SET status = $1 WHERE userid = $2 AND commentid = $3',
-			[likeStatus, userId, commentId],
-		)*/
-
-		// return updateCommentLikeStatusRes[1] === 1
-
-		// --
-		// @ts-ignore
-		return null
+		return updateCommentLikeStatusRes.affected == 1
 	}
 
 	/*async updateCommentLikeNative(
@@ -122,46 +94,7 @@ export class CommentLikesRepository {
 		return updateCommentLikeStatusRes[1] === 1
 	}*/
 
-	/*async getCommentLikesStats(
-		commentId: string,
-	): Promise<{ likesCount: number; dislikesCount: number }> {
-		if (!ObjectId.isValid(commentId)) {
-			return { likesCount: 0, dislikesCount: 0 }
-		}
-
-		const getCommentLikesRes = await this.CommentLikeModel.find({ commentId }).lean()
-
-		let likesCount = 0
-		let dislikesCount = 0
-
-		getCommentLikesRes.forEach((likeObj) => {
-			if (likeObj.status === DBTypes.LikeStatuses.Like) {
-				likesCount++
-			} else if (likeObj.status === DBTypes.LikeStatuses.Dislike) {
-				dislikesCount++
-			}
-		})
-
-		return { likesCount, dislikesCount }
-	}*/
-
 	async getUserCommentLikeStatus(
-		userId: string,
-		commentId: string,
-	): Promise<DBTypes.LikeStatuses> {
-		// const commentLikeRes = await this.getCommentLikeByUser(userId, commentId)
-		/*if (!commentLikeRes) {
-			return DBTypes.LikeStatuses.None
-		}*/
-
-		// return commentLikeRes.status
-
-		// --
-		// @ts-ignore
-		return null
-	}
-
-	/*async getUserCommentLikeStatusNative(
 		userId: string,
 		commentId: string,
 	): Promise<DBTypes.LikeStatuses> {
@@ -171,14 +104,12 @@ export class CommentLikesRepository {
 		}
 
 		return commentLikeRes.status
-	}*/
+	}
 
-	mapDbCommentLikeToClientCommentLike(
-		DbCommentLike: PGGetCommentLikeQuery,
-	): CommentLikeServiceModel {
+	mapDbCommentLikeToClientCommentLike(DbCommentLike: CommentLikes): CommentLikeServiceModel {
 		return {
-			commentId: DbCommentLike.commentid.toString(),
-			userId: DbCommentLike.userid,
+			commentId: DbCommentLike.commentId.toString(),
+			userId: DbCommentLike.userId,
 			status: DbCommentLike.status as DBTypes.LikeStatuses,
 		}
 	}

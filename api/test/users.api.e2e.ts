@@ -7,7 +7,7 @@ import { createTestApp } from './utils/common'
 import { clearAllDB } from './utils/db'
 import { addUserByAdminRequest, adminAuthorizationValue, checkUserObj } from './utils/utils'
 
-it('123', () => {
+it.only('123', () => {
 	expect(2).toBe(2)
 })
 
@@ -111,16 +111,16 @@ describe('ROOT', () => {
 		})
 
 		it('should return filtered an array of objects', async () => {
-			await addUserByAdminRequest(app, { login: 'in-one-1', email: 'email-1@email.com' }) //
-			await addUserByAdminRequest(app, { login: 'in-two-1', email: 'email-2@email.com' }) //
-			await addUserByAdminRequest(app, { login: 'in-one-1', email: 'email-3@email.com' }) //
-			await addUserByAdminRequest(app, { login: 'in-two-1', email: 'email-4@email.com' }) //
-			await addUserByAdminRequest(app, { login: 'in-one-1', email: 'email-5@email.jp' }) //
+			await addUserByAdminRequest(app, { login: 'in-one-1', email: 'email-1@email.com' }) // +
+			await addUserByAdminRequest(app, { login: 'in-two-1', email: 'email-2@email.com' }) // +
+			await addUserByAdminRequest(app, { login: 'in-one-1', email: 'email-3@email.com' }) // +
+			await addUserByAdminRequest(app, { login: 'in-two-1', email: 'email-4@email.com' }) // +
+			await addUserByAdminRequest(app, { login: 'in-one-1', email: 'email-5@email.jp' }) // +
 			await addUserByAdminRequest(app, { login: 'in-three-1', email: 'email-6@email.us' })
-			await addUserByAdminRequest(app, { login: 'in-one-1', email: 'email-7@email.ru' }) //
-			await addUserByAdminRequest(app, { login: 'in-one-2', email: 'email-8@email.com' }) //
-			await addUserByAdminRequest(app, { login: 'in-one-3', email: 'email-9@email.com' }) //
-			await addUserByAdminRequest(app, { login: 'in-one-4', email: 'email-10@email.com' }) //
+			await addUserByAdminRequest(app, { login: 'in-one-1', email: 'email-7@email.ru' }) // +
+			await addUserByAdminRequest(app, { login: 'in-one-2', email: 'email-8@email.com' }) // +
+			await addUserByAdminRequest(app, { login: 'in-one-3', email: 'email-9@email.com' }) // +
+			await addUserByAdminRequest(app, { login: 'in-one-4', email: 'email-10@email.com' }) // +
 
 			const getUsersRes = await request(app.getHttpServer())
 				.get(
@@ -204,7 +204,9 @@ describe('ROOT', () => {
 
 	describe('Deleting an user', () => {
 		it('should forbid a request from an unauthorized user', async () => {
-			return request(app.getHttpServer()).put('/' + RouteNames.USERS.value)
+			return request(app.getHttpServer())
+				.delete('/' + RouteNames.USERS.USER_ID('999').full)
+				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
 		it('should not delete a non existing user', async () => {
@@ -214,7 +216,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
 
-		it.only('should delete an user', async () => {
+		it('should delete an user', async () => {
 			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const createdUserId = createdUserRes.body.id

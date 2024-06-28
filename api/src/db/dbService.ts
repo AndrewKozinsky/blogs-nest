@@ -1,4 +1,4 @@
-import { InjectDataSource } from '@nestjs/typeorm'
+import { InjectDataSource, TypeOrmModuleOptions } from '@nestjs/typeorm'
 import dotenv from 'dotenv'
 import { Injectable } from '@nestjs/common'
 import { DataSource } from 'typeorm'
@@ -12,6 +12,7 @@ export class DbService {
 	constructor(@InjectDataSource() private dataSource: DataSource) {}
 
 	async drop() {
+		// Recipe 1
 		/*try {
 			const tablesNames = [
 				'ratelimites',
@@ -41,6 +42,7 @@ export class DbService {
 			return false
 		}*/
 
+		// Recipe 2
 		try {
 			const query = `CREATE OR REPLACE FUNCTION truncate_tables(username IN VARCHAR) RETURNS void AS $$
 			DECLARE

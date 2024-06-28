@@ -4,7 +4,7 @@ import { applyAppSettings } from './settings/applyAppSettings'
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule)
-	applyAppSettings(app)
+	await applyAppSettings(app)
 	await app.listen(3000)
 }
 

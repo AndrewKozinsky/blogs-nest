@@ -7,12 +7,18 @@ export class CommentLikes {
 	@PrimaryGeneratedColumn()
 	id: string
 
-	@ManyToOne(() => Comment)
-	comment: Comment
+	@Column('varchar')
+	status: string
 
-	@ManyToOne(() => User)
+	@ManyToOne(() => User, { onDelete: 'CASCADE' })
 	user: User
 
 	@Column('varchar')
-	status: string
+	userId: string
+
+	@ManyToOne(() => Comment, { onDelete: 'CASCADE' })
+	comment: Comment
+
+	@Column('varchar')
+	commentId: string
 }

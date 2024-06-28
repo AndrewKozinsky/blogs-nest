@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
+import { Comment } from '../../../db/pg/entities/comment'
 import { PGGetCommentQuery } from '../../../db/pg/getPgDataTypes'
 import { convertToNumber } from '../../../utils/numbers'
 import { CreatePostCommentDtoModel } from '../posts/model/posts.input.model'
@@ -13,23 +14,15 @@ export class CommentsRepository {
 	constructor(@InjectDataSource() private dataSource: DataSource) {}
 
 	async getComment(commentId: string) {
-		// ПЕРЕПИСАТЬ на TYPEORM!!!
+		const comment = await this.dataSource
+			.getRepository(Comment)
+			.findOne({ where: { id: commentId }, relations: { user: true } })
 
-		const commentIdNum = convertToNumber(commentId)
-		if (!commentIdNum) {
-			return false
-		}
-
-		const commentsRes = await this.dataSource.query(
-			`SELECT *, (SELECT login as userlogin FROM users WHERE id = c.userid) FROM comments c WHERE id=${commentId}`,
-			[],
-		)
-
-		if (!commentsRes.length) {
+		if (!comment) {
 			return null
 		}
 
-		return this.mapDbCommentToClientComment(commentsRes[0])
+		return this.mapDbCommentToClientComment(comment)
 	}
 
 	/*async getCommentNative(commentId: string) {
@@ -55,19 +48,17 @@ export class CommentsRepository {
 		postId: string,
 		commentDto: CreatePostCommentDtoModel,
 	) {
-		// ПЕРЕПИСАТЬ на TYPEORM!!!
 		// Current data like '2024-05-19T14:36:40.112Z'
 		const createdAt = new Date().toISOString()
 
-		// Insert new blog and to get an array like this: [ { id: 10 } ]
-		const newPostCommentsIdRes = await this.dataSource.query(
-			`INSERT INTO comments
-			("postid", "userid", "content", "createdat")
-			VALUES($1, $2, $3, $4) RETURNING id`,
-			[postId, user.id, commentDto.content, createdAt],
-		)
+		const newPostComment = await this.dataSource.getRepository(Comment).insert({
+			postId,
+			userId: user.id,
+			content: commentDto.content,
+			createdAt,
+		})
 
-		return newPostCommentsIdRes[0].id
+		return newPostComment.identifiers[0].id
 	}
 
 	/*async createPostCommentNative(
@@ -93,21 +84,11 @@ export class CommentsRepository {
 		commentId: string,
 		updateCommentDto: UpdateCommentDtoModel,
 	): Promise<boolean> {
-		// const commentIdNum = convertToNumber(commentId)
-		/*if (!commentIdNum) {
-			return false
-		}*/
+		const updateCommentRes = await this.dataSource.getRepository(Comment).update(commentId, {
+			content: updateCommentDto.content,
+		})
 
-		/*const updateCommentRes = await this.dataSource.query(
-			'UPDATE comments SET content = $1 WHERE id = $2;',
-			[updateCommentDto.content, commentId],
-		)*/
-
-		// return updateCommentRes[1] === 1
-
-		// --
-		// @ts-ignore
-		return null
+		return updateCommentRes.affected === 1
 	}
 
 	/*async updateCommentNative(
@@ -128,23 +109,9 @@ export class CommentsRepository {
 	}*/
 
 	async deleteComment(commentId: string): Promise<boolean> {
-		// const commentIdNum = convertToNumber(commentId)
-		/*if (!commentIdNum) {
-			return false
-		}*/
+		const updateCommentRes = await this.dataSource.getRepository(Comment).delete(commentId)
 
-		// The query will return an array where the second element is a number of deleted documents
-		// [ [], 1 ]
-		/*const deleteCommentRes = await this.dataSource.query(
-			`DELETE FROM comments WHERE id='${commentId}'`,
-			[],
-		)*/
-
-		// return deleteCommentRes[1] === 1
-
-		// --
-		// @ts-ignore
-		return null
+		return updateCommentRes.affected === 1
 	}
 
 	/*async deleteCommentNative(commentId: string): Promise<boolean> {
@@ -163,15 +130,15 @@ export class CommentsRepository {
 		return deleteCommentRes[1] === 1
 	}*/
 
-	mapDbCommentToClientComment(DbComment: PGGetCommentQuery): CommentServiceModel {
+	mapDbCommentToClientComment(DbComment: Comment): CommentServiceModel {
 		return {
 			id: DbComment.id.toString(),
 			content: DbComment.content,
 			commentatorInfo: {
-				userId: DbComment.userid.toString(),
-				userLogin: DbComment.userlogin,
+				userId: DbComment.user.id.toString(),
+				userLogin: DbComment.user.login,
 			},
-			createdAt: DbComment.createdat,
+			createdAt: DbComment.createdAt,
 		}
 	}
 }

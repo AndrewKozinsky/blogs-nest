@@ -86,6 +86,7 @@ export class SaBlogsController {
 
 	// Returns all posts for specified blog
 	@Get(':blogId/posts')
+	@HttpCode(HttpStatus.OK)
 	async getBlogPosts(
 		@Query(new GetBlogPostsQueriesPipe()) query: GetBlogPostsQueries,
 		@Param('blogId') blogId: string,

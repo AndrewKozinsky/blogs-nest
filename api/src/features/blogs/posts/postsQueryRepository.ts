@@ -36,79 +36,63 @@ export class PostsQueryRepository {
 		const pageNumber = query.pageNumber ? +query.pageNumber : 1
 		const pageSize = query.pageSize ? +query.pageSize : 10
 
-		const totalPostsQuery = this.postsTypeORM.createQueryBuilder('post')
-		if (blogId) {
-			totalPostsQuery.where({ blogId })
-		}
-		const totalPostsCount = await totalPostsQuery.getCount()
-
+		// Get all posts count
+		let getAllPostsQueryStr = 'SELECT COUNT(*) FROM post'
+		if (blogId) getAllPostsQueryStr += ` WHERE "blogId" = ${blogId}`
+		const getAllPostsRes = await this.dataSource.query(getAllPostsQueryStr, []) // [ { count: '18' } ]
+		const totalPostsCount = getAllPostsRes[0].count
 		const pagesCount = Math.ceil(totalPostsCount / pageSize)
 
-		const findPostsOptions: FindManyOptions<Post> = {
-			relations: {
-				blog: true,
-			},
-			order: {
-				[sortBy]: sortDirection,
-			},
-			skip: (pageNumber - 1) * pageSize,
-			take: pageSize,
+		let getPostsQueryStr = `SELECT p.id, p.title, p."shortDescription", p.content, p."createdAt", p."blogId",
+			(SELECT COUNT(*) as "likesCount" FROM post_likes WHERE "postId" = p.id AND status = '${DBTypes.LikeStatuses.Like}'),
+			(SELECT COUNT(*) as "dislikesCount" FROM post_likes WHERE "postId" = p.id AND status = '${DBTypes.LikeStatuses.Dislike}'),
+			b.name as "blogName",
+			(SELECT status as "currentUserPostLikeStatus" FROM post_likes pl WHERE pl."userId" = ${userId || 0} AND pl."postId" = p.id)
+			FROM post p
+			LEFT JOIN blog b ON p."blogId" = b.id
+			LEFT JOIN post_likes pl ON p.id = pl."postId"`
+		if (blogId) getPostsQueryStr += ` WHERE p."blogId" = ${blogId}`
+		getPostsQueryStr += ` GROUP BY p.id, p.title, p."shortDescription", p.content, p."createdAt", p."blogId", b.name
+		ORDER BY "${sortBy}" ${sortDirection}
+		LIMIT ${pageSize}
+		OFFSET ${(pageNumber - 1) * pageSize}`
+
+		type RawPostType = {
+			id: number
+			title: string
+			shortDescription: string
+			content: string
+			createdAt: string
+			blogId: number
+			likesCount: string
+			dislikesCount: string
+			blogName: string
+			currentUserPostLikeStatus: null | DBTypes.LikeStatuses
 		}
-		if (blogId) {
-			findPostsOptions.where = { blogId }
-		}
 
-		const posts = await this.postsTypeORM.find(findPostsOptions)
+		const getPostsRes: RawPostType[] = await this.dataSource.query(getPostsQueryStr)
 
-		const allLikes = await this.dataSource
-			.createQueryBuilder(PostLikes, 'pl')
-			.andWhere('pl.status = :status', { status: DBTypes.LikeStatuses.Like })
-			.getMany()
-
-		const allDislikes = await this.dataSource
-			.createQueryBuilder(PostLikes, 'pl')
-			.andWhere('pl.status = :status', { status: DBTypes.LikeStatuses.Dislike })
-			.getMany()
-
-		const currentUserAllPostLikeStatuses = await this.dataSource
-			.createQueryBuilder(PostLikes, 'pl')
-			.andWhere('pl.userId = :userId', { userId })
-			.getMany()
-
-		const items = await Promise.all(
-			posts.map(async (post) => {
+		const items: PostOutModel[] = await Promise.all(
+			getPostsRes.map(async (post) => {
 				const postId = post.id
 
-				const newestPostLikes = await this.getNewestPostLikes(postId)
+				const newestPostLikes = await this.getNewestPostLikes(postId.toString())
 
-				const postLikesCount = allLikes.filter((like) => {
-					return (like.postId = postId)
-				}).length
-
-				const postDislikesCount = allDislikes.filter((dislike) => {
-					return (dislike.postId = postId)
-				}).length
-
-				const currentUserPostLikeStatuses = currentUserAllPostLikeStatuses.filter(
-					(status) => {
-						return userId && (status.userId = userId)
+				return {
+					id: post.id.toString(),
+					title: post.title,
+					shortDescription: post.shortDescription,
+					content: post.content,
+					blogId: post.blogId.toString(),
+					blogName: post.blogName,
+					createdAt: post.createdAt,
+					extendedLikesInfo: {
+						likesCount: +post.likesCount,
+						dislikesCount: +post.dislikesCount,
+						myStatus: post.currentUserPostLikeStatus ?? DBTypes.LikeStatuses.None,
+						newestLikes: newestPostLikes,
 					},
-				)
-
-				let currentUserPostLikeStatus: DBTypes.LikeStatuses = DBTypes.LikeStatuses.None
-				currentUserPostLikeStatuses.forEach((thisStatus) => {
-					if (thisStatus.postId === postId && thisStatus.userId === userId) {
-						currentUserPostLikeStatus = thisStatus.status as DBTypes.LikeStatuses
-					}
-				})
-
-				return this.mapDbPostToOutputPost(
-					post,
-					postLikesCount,
-					postDislikesCount,
-					currentUserPostLikeStatus,
-					newestPostLikes,
-				)
+				}
 			}),
 		)
 
@@ -249,6 +233,8 @@ export class PostsQueryRepository {
 			.where('pl.postId = :postId', { postId })
 			.andWhere('pl.status = :status', { status: DBTypes.LikeStatuses.Like })
 			.leftJoinAndSelect('pl.user', 'user')
+			.orderBy('pl.addedAt', 'DESC')
+			.take(3)
 			.getMany()
 
 		return postLikes.map((postLike) => {

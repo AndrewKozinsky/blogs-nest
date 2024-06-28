@@ -1,11 +1,23 @@
 import { BadRequestException, INestApplication, ValidationPipe } from '@nestjs/common'
-import { useContainer } from 'class-validator'
 import cookieParser from 'cookie-parser'
+import { useContainer } from 'class-validator'
+import { NextFunction, Request, Response } from 'express'
 import { AppModule } from '../app.module'
+import { JwtService } from '../base/application/jwt.service'
+import { UsersRepository } from '../features/users/usersRepository'
 import { HttpExceptionFilter } from '../infrastructure/exception-filters/exception.filter'
+import { SetReqUserMiddleware } from '../infrastructure/middlewares/setReqUser.middleware'
 
-export function applyAppSettings(app: INestApplication) {
+export async function applyAppSettings(app: INestApplication) {
 	app.use(cookieParser())
+
+	app.use(async (req: Request, res: Response, next: NextFunction) => {
+		const jwtService = await app.resolve(JwtService)
+		const usersRepository = await app.resolve(UsersRepository)
+
+		const userMiddleware = new SetReqUserMiddleware(jwtService, usersRepository)
+		await userMiddleware.use(req, res, next)
+	})
 
 	// Thus ensuring all endpoints are protected from receiving incorrect data.
 	app.useGlobalPipes(

@@ -18,27 +18,28 @@ export class UsersQueryRepository {
 		const login = query.searchLoginTerm ?? ''
 		const email = query.searchEmailTerm ?? ''
 
-		const sortBy = query.sortBy ?? 'createdAt'
-		const sortDirection = query.sortDirection === 'asc' ? 'ASC' : 'DESC'
+		const sortBy = query.sortBy ?? '"createdAt"'
+		const sortDirection = query.sortDirection?.toLowerCase() === 'asc' ? 'ASC' : 'DESC'
 
 		const pageNumber = query.pageNumber ? +query.pageNumber : 1
 		const pageSize = query.pageSize ? +query.pageSize : 10
 
 		const totalUsersCount = await this.usersTypeORM
 			.createQueryBuilder()
-			.where([{ login: ILike(`%${login}%`) }, { email: ILike(`%${email}%`) }])
+			.where({ login: ILike(`%${login}%`) })
+			.orWhere({ email: ILike(`%${email}%`) })
 			.getCount()
 
 		const pagesCount = Math.ceil(totalUsersCount / pageSize)
 
-		const users = await this.usersTypeORM.find({
-			where: [{ login: ILike(`%${login}%`) }, { email: ILike(`%${email}%`) }],
-			order: {
-				[sortBy]: sortDirection,
-			},
-			skip: (pageNumber - 1) * pageSize,
-			take: pageSize,
-		})
+		const users = await this.usersTypeORM
+			.createQueryBuilder()
+			.where({ login: ILike(`%${login}%`) })
+			.orWhere({ email: ILike(`%${email}%`) })
+			.orderBy(sortBy, sortDirection)
+			.skip((pageNumber - 1) * pageSize)
+			.take(pageSize)
+			.getMany()
 
 		return {
 			pagesCount,
@@ -118,3 +119,30 @@ export class UsersQueryRepository {
 		}
 	}
 }
+
+/*const expected = {
+	pagesCount: 1,
+	page: 1,
+	pageSize: 15,
+	totalCount: 9,
+	items: [
+		{
+			id: '916',
+			email: 'email2p@gg.om',
+			login: 'loSer',
+			createdAt: '2024-06-27T13:43:20.170Z',
+		},
+		{ id: '914',
+			email: 'emai@gg.com',
+			login: 'log01',
+			createdAt: '2024-06-27T13:43:19.849Z' },
+		{
+			id: '915',
+			email: 'email2p@g.com',
+			login: 'log02',
+			createdAt: '2024-06-27T13:43:20.007Z',
+		},
+	],
+}*/
+
+// searchLoginTerm=seR&searchEmailTerm=.com&sortDirection=asc&sortBy=login

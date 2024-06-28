@@ -51,16 +51,13 @@ export class PostsController {
 
 	// Returns all posts
 	@Get()
-	async getPosts(
-		@Query(new GetPostsQueriesPipe()) query: GetPostsQueries,
-		@Req() req: Request,
-		@Res() res: Response,
-	) {
+	@HttpCode(HttpStatus.OK)
+	async getPosts(@Query(new GetPostsQueriesPipe()) query: GetPostsQueries, @Req() req: Request) {
 		const { user } = req
 
 		const posts = await this.postsQueryRepository.getPosts(user?.id, query)
 
-		res.status(HttpStatus.OK).send(posts)
+		return posts
 	}
 
 	// Create new post

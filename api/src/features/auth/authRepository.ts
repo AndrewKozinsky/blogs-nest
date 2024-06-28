@@ -22,21 +22,21 @@ export class AuthRepository {
 		private commonService: CommonService,
 		private jwtService: JwtService,
 		@InjectDataSource() private dataSource: DataSource,
-		@InjectRepository(User) private readonly usersTypeORM: Repository<User>,
-		@InjectRepository(DeviceToken)
-		private readonly deviceTokensTypeORM: Repository<DeviceToken>,
+		// @InjectRepository(User) private readonly usersTypeORM: Repository<User>,
+		// @InjectRepository(DeviceToken)
+		// private readonly deviceTokensTypeORM: Repository<DeviceToken>,
 	) {}
 
 	async getUserByRefreshToken(refreshTokenStr: string) {
 		const refreshTokenData = this.jwtService.getRefreshTokenDataFromTokenStr(refreshTokenStr)
 
-		const device = await this.deviceTokensTypeORM.findOne({
+		const device = await this.dataSource.getRepository(DeviceToken).findOne({
 			where: { deviceId: refreshTokenData!.deviceId },
 		})
 
 		if (!device) return null
 
-		const user = await this.usersTypeORM.findOne({
+		const user = await this.dataSource.getRepository(User).findOne({
 			where: { id: device.userId },
 		})
 
@@ -69,7 +69,7 @@ export class AuthRepository {
 	}*/
 
 	async getUserByEmail(loginOrEmail: string) {
-		const user = await this.usersTypeORM.findOne({
+		const user = await this.dataSource.getRepository(User).findOne({
 			where: { email: loginOrEmail },
 		})
 
@@ -94,7 +94,7 @@ export class AuthRepository {
 	}*/
 
 	async getUserByLoginOrEmail(loginOrEmail: string) {
-		const user = await this.usersTypeORM.findOne({
+		const user = await this.dataSource.getRepository(User).findOne({
 			where: [{ login: loginOrEmail }, { email: loginOrEmail }],
 		})
 
@@ -117,7 +117,7 @@ export class AuthRepository {
 	}*/
 
 	async getUserByLoginOrEmailAndPassword(loginDto: { loginOrEmail: string; password: string }) {
-		const user = await this.usersTypeORM.findOne({
+		const user = await this.dataSource.getRepository(User).findOne({
 			where: [{ login: loginDto.loginOrEmail }, { email: loginDto.loginOrEmail }],
 		})
 
@@ -193,7 +193,7 @@ export class AuthRepository {
 	}*/
 
 	async getUserByConfirmationCode(confirmationCode: string) {
-		const user = await this.usersTypeORM.findOne({
+		const user = await this.dataSource.getRepository(User).findOne({
 			where: { emailConfirmationCode: confirmationCode },
 		})
 
@@ -222,7 +222,7 @@ export class AuthRepository {
 	}
 
 	async makeUserEmailConfirmed(userId: string) {
-		const updateUserRes = await this.usersTypeORM.update(userId, {
+		const updateUserRes = await this.dataSource.getRepository(User).update(userId, {
 			isConfirmationEmailCodeConfirmed: true,
 		})
 
@@ -241,7 +241,9 @@ export class AuthRepository {
 	async setNewEmailConfirmationCode(userId: string) {
 		const confirmationCode = createUniqString()
 
-		await this.usersTypeORM.update(userId, { emailConfirmationCode: confirmationCode })
+		await this.dataSource
+			.getRepository(User)
+			.update(userId, { emailConfirmationCode: confirmationCode })
 
 		return confirmationCode
 	}
@@ -262,7 +264,7 @@ export class AuthRepository {
 	}
 
 	async insertDeviceRefreshToken(deviceRefreshToken: DBTypes.DeviceToken) {
-		await this.deviceTokensTypeORM.insert({
+		await this.dataSource.getRepository(DeviceToken).insert({
 			issuedAt: deviceRefreshToken.issuedAt.toISOString(),
 			userId: deviceRefreshToken.userId,
 			expirationDate: deviceRefreshToken.expirationDate.toISOString(),
@@ -310,18 +312,11 @@ export class AuthRepository {
 	}*/
 
 	async deleteDeviceRefreshTokenByDeviceId(deviceId: string): Promise<boolean> {
-		// The query will return an array where the second element is a number of deleted documents
-		// [ [], 1 ]
-		/*const deletedDeviceTokensRes = await this.dataSource.query(
-			'DELETE FROM devicetokens WHERE deviceid = $1',
-			[deviceId],
-		)*/
+		const deleteDeviceTokenRes = await this.dataSource
+			.getRepository(DeviceToken)
+			.delete({ deviceId })
 
-		// return deletedDeviceTokensRes[1] === 1
-
-		// --
-		// @ts-ignore
-		return null
+		return deleteDeviceTokenRes.affected === 1
 	}
 
 	/*async deleteDeviceRefreshTokenByDeviceIdNative(deviceId: string): Promise<boolean> {
@@ -336,19 +331,20 @@ export class AuthRepository {
 	}*/
 
 	async updateDeviceRefreshTokenDate(deviceId: string): Promise<boolean> {
-		// const issuedAt = new Date().toISOString()
-		/*const expirationDate = new Date(
-			addMilliseconds(new Date(), config.refreshToken.lifeDurationInMs),
-		)*/
-		/*const updateDevicesRes = await this.dataSource.query(
-			'UPDATE devicetokens SET issuedat = $1, expirationdate = $2 WHERE deviceid = $3',
-			[issuedAt, expirationDate, deviceId],
-		)*/
-		// return updateDevicesRes[1] === 1
+		const issuedAt = new Date().toISOString()
 
-		// --
-		// @ts-ignore
-		return null
+		const expirationDate = new Date(
+			addMilliseconds(new Date(), config.refreshToken.lifeDurationInMs),
+		)
+
+		const updateDevicesRes = await this.dataSource
+			.createQueryBuilder()
+			.update(DeviceToken)
+			.set({ issuedAt, expirationDate })
+			.where('deviceId = :deviceId', { deviceId })
+			.execute()
+
+		return updateDevicesRes.affected === 1
 	}
 
 	/*async updateDeviceRefreshTokenDateNative(deviceId: string): Promise<boolean> {
@@ -384,39 +380,30 @@ export class AuthRepository {
 	}*/
 
 	async getUserDevicesByDeviceId(deviceId: string): Promise<LayerResult<DBTypes.DeviceToken[]>> {
-		/*const usersByDeviceTokenRes = await this.dataSource.query(
-			'SELECT userid FROM devicetokens WHERE deviceid = $1',
-			[deviceId],
-		)*/
+		const userByDeviceToken = await this.dataSource
+			.getRepository(DeviceToken)
+			.findOneBy({ deviceId })
 
-		/*if (!usersByDeviceTokenRes.length) {
+		if (!userByDeviceToken) {
 			return {
 				code: LayerResultCode.NotFound,
 			}
-		}*/
+		}
 
-		// const userId = usersByDeviceTokenRes[0].userid
+		const { userId } = userByDeviceToken
 
-		/*const userDevicesRes = await this.dataSource.query(
-			'SELECT * FROM devicetokens WHERE userid = $1',
-			[userId],
-		)*/
+		const userDevices = await this.dataSource.getRepository(DeviceToken).findBy({ userId })
 
-		/*if (!userDevicesRes.length) {
+		if (!userDevices.length) {
 			return {
 				code: LayerResultCode.NotFound,
 			}
-		}*/
+		}
 
-		/*return {
+		return {
 			code: LayerResultCode.Success,
-			data: userDevicesRes.map(this.mapDbDeviceRefreshTokenToServiceDeviceRefreshToken),
-		}*/
-
-		// --
-		new Error('1111')
-		// @ts-ignore
-		return null
+			data: userDevices.map(this.mapDbDeviceRefreshTokenToServiceDeviceRefreshToken),
+		}
 	}
 
 	/*async getUserDevicesByDeviceIdNative(deviceId: string): Promise<LayerResult<DBTypes.DeviceToken[]>> {

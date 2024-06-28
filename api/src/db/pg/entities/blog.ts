@@ -5,7 +5,7 @@ export class Blog {
 	@PrimaryGeneratedColumn()
 	id: string
 
-	@Column('varchar')
+	@Column({ type: 'varchar', collation: 'C' })
 	name: string
 
 	@Column('varchar')

@@ -13,13 +13,12 @@ import {
 	userPassword,
 } from './utils/utils'
 // import * as jwt from 'jsonwebtoken'
-
 import { describe } from 'node:test'
 import RouteNames from '../src/settings/routeNames'
 import { createTestApp } from './utils/common'
 import { clearAllDB } from './utils/db'
 
-it.only('123', () => {
+it('123', () => {
 	expect(2).toBe(2)
 })
 
@@ -45,7 +44,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
-		it('should return an array of devices data if a refreshToken inside cookie is valid', async () => {
+		it.only('should return an array of devices data if a refreshToken inside cookie is valid', async () => {
 			const login = 'login'
 			const password = 'password'
 			const email = 'email@email.ru'
@@ -152,7 +151,7 @@ describe('ROOT', () => {
 				deviceRefreshTokenUser_2_Str,
 			).cookieValue
 
-			return request(app.getHttpServer())
+			request(app.getHttpServer())
 				.delete('/' + RouteNames.SECURITY.DEVICES.DEVICE_ID(deviceId).full)
 				.set('Cookie', config.refreshToken.name + '=' + deviceRefreshTokenUser_2_Value)
 				.expect(HTTP_STATUSES.FORBIDDEN_403)

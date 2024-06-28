@@ -1,26 +1,21 @@
 import { Injectable } from '@nestjs/common'
-import { InjectModel } from '@nestjs/mongoose'
 import { InjectDataSource } from '@nestjs/typeorm'
-import { Model } from 'mongoose'
 import { DataSource } from 'typeorm'
-import { DeviceToken } from '../../db/mongo/schemas/deviceToken.schema'
-import { AuthRepository } from '../auth/authRepository'
+import { DeviceToken } from '../../db/pg/entities/deviceToken'
 
 @Injectable()
 export class SecurityRepository {
 	constructor(@InjectDataSource() private dataSource: DataSource) {}
 
 	async terminateAllDeviceRefreshTokensApartThis(currentDeviceId: string) {
-		/*const deletedDeviceTokensRes = await this.dataSource.query(
-			'DELETE FROM devicetokens WHERE deviceid != $1',
-			[currentDeviceId],
-		)*/
+		const deletedDeviceTokensRes = await this.dataSource
+			.getRepository(DeviceToken)
+			.createQueryBuilder()
+			.delete()
+			.where('deviceId != :deviceId', { deviceId: currentDeviceId })
+			.execute()
 
-		// return deletedDeviceTokensRes[1] === 1
-
-		// --
-		// @ts-ignore
-		return null
+		return deletedDeviceTokensRes.affected === 1
 	}
 
 	/*async terminateAllDeviceRefreshTokensApartThisNative(currentDeviceId: string) {
@@ -33,16 +28,11 @@ export class SecurityRepository {
 	}*/
 
 	async deleteRefreshTokenByDeviceId(deviceId: string): Promise<boolean> {
-		/*const deletedDeviceTokensRes = await this.dataSource.query(
-			'DELETE FROM devicetokens WHERE deviceid = $1',
-			[deviceId],
-		)*/
+		const deletedDeviceTokensRes = await this.dataSource
+			.getRepository(DeviceToken)
+			.delete({ deviceId })
 
-		// return deletedDeviceTokensRes[1] === 1
-
-		// --
-		// @ts-ignore
-		return null
+		return deletedDeviceTokensRes.affected === 1
 	}
 
 	/*async deleteRefreshTokenByDeviceIdNative(deviceId: string): Promise<boolean> {
