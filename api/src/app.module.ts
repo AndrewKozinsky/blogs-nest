@@ -28,7 +28,7 @@ const typeORMOptions: TypeOrmModuleOptions = {
 	database: DB_NAME,
 	entities: [Blog, Comment, CommentLikes, DeviceToken, Post, PostLikes, User, RateLimit],
 	autoLoadEntities: true,
-	synchronize: true,
+	synchronize: false,
 	// logging: ['query'],
 }
 

@@ -42,49 +42,48 @@ export class CommentsQueryRepository {
 		userId: undefined | string,
 		commentId: string,
 	): Promise<null | GetCommentOutModel> {
-		const commentRepo = this.dataSource.getRepository(Comment)
-		const commentLikesRepo = this.dataSource.getRepository(CommentLikes)
-
-		const getCommentQuery = commentRepo
-			.createQueryBuilder('c')
-			.leftJoinAndSelect('c.post', 'post')
-			.leftJoinAndSelect('c.user', 'user')
-			.where('c.id = :commentId', { commentId })
-
-		const getCommentLikesQuery = commentLikesRepo
-			.createQueryBuilder('cl')
-			.where('cl.comment = :commentId', { commentId })
-			.andWhere('cl.status = :status', { status: DBTypes.LikeStatuses.Like })
-
-		const getCommentDislikesQuery = commentLikesRepo
-			.createQueryBuilder('cl')
-			.where('cl.comment = :commentId', { commentId })
-			.andWhere('cl.status = :status', { status: DBTypes.LikeStatuses.Dislike })
-
-		const getUserCommentLikeQuery = commentLikesRepo
-			.createQueryBuilder('cl')
-			.where('cl.userId = :userId', { userId })
-
-		const [comment, likesCount, dislikesCount, userLikeStatus] = await Promise.all([
-			getCommentQuery.getOne(),
-			getCommentLikesQuery.getCount(),
-			getCommentDislikesQuery.getCount(),
-			getUserCommentLikeQuery.getOne(),
-		])
-
-		if (!comment) return null
-
-		let currentUserLikeStatus = DBTypes.LikeStatuses.None
-		if (userLikeStatus) {
-			currentUserLikeStatus = userLikeStatus.status as DBTypes.LikeStatuses
+		type DbComment = {
+			id: number
+			content: string
+			createdAt: string
+			postId: number
+			userId: number
+			likesCount: string
+			dislikesCount: string
+			userLogin: string
+			currentUserCommentLikeStatus: DBTypes.LikeStatuses
 		}
 
-		return this.mapDbCommentToOutputComment(
-			comment,
-			likesCount,
-			dislikesCount,
-			currentUserLikeStatus,
+		const commentsRes: DbComment[] = await this.dataSource.query(
+			`SELECT *,
+(SELECT COUNT(*) as "likesCount" FROM comment_likes cl WHERE cl.status = '${DBTypes.LikeStatuses.Like}' AND cl."commentId" = ${commentId}),
+(SELECT COUNT(*) as "dislikesCount" FROM comment_likes cl WHERE  cl.status = '${DBTypes.LikeStatuses.Dislike}' AND cl."commentId" = ${commentId}),
+(SELECT login as "userLogin" FROM public."user" u WHERE u.id = c."userId"),
+(SELECT status as "currentUserCommentLikeStatus" FROM comment_likes cl WHERE cl."userId" = ${userId || 0} AND cl."commentId" = c.id)
+FROM comment c WHERE id=${commentId}`,
+			[],
 		)
+
+		if (!commentsRes.length) {
+			return null
+		}
+
+		const comment = commentsRes[0]
+
+		return {
+			id: comment.id.toString(),
+			content: comment.content,
+			commentatorInfo: {
+				userId: comment.userId.toString(),
+				userLogin: comment.userLogin,
+			},
+			createdAt: comment.createdAt,
+			likesInfo: {
+				likesCount: +comment.likesCount,
+				dislikesCount: +comment.dislikesCount,
+				myStatus: comment.currentUserCommentLikeStatus ?? DBTypes.LikeStatuses.None,
+			},
+		}
 	}
 
 	/*async getCommentNative(
