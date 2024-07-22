@@ -11,6 +11,7 @@ import { RateLimit } from './db/pg/entities/rateLimit'
 import { User } from './db/pg/entities/user'
 import { AuthModule } from './features/auth/auth.module'
 import { BlogsModule } from './features/blogs/blogs.module'
+import { SaQuizQuestionsModule } from './features/saQuizQuestions/saQuizQuestions.module'
 import { SecurityModule } from './features/security/security.module'
 import { TestsModule } from './features/test/tests.module'
 import { UsersModule } from './features/users/users.module'
@@ -28,7 +29,7 @@ const typeORMOptions: TypeOrmModuleOptions = {
 	database: DB_NAME,
 	entities: [Blog, Comment, CommentLikes, DeviceToken, Post, PostLikes, User, RateLimit],
 	autoLoadEntities: true,
-	synchronize: false,
+	synchronize: true,
 	// logging: ['query'],
 }
 
@@ -43,6 +44,7 @@ const typeORMOptions: TypeOrmModuleOptions = {
 		UsersModule,
 		SecurityModule,
 		TestsModule,
+		SaQuizQuestionsModule,
 	],
 	controllers: [],
 	providers: [],

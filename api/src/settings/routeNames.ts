@@ -131,6 +131,19 @@ export const RouteNames = {
 			full: 'testing/all-data',
 		},
 	},
+	SA_QUIZ_QUESTIONS: {
+		value: 'sa/quiz/questions',
+		QUESTION_ID(questionId: string) {
+			return {
+				value: questionId,
+				full: `sa/quiz/questions/${questionId}`,
+				PUBLISH: {
+					value: 'publish',
+					full: `sa/quiz/questions/${questionId}/publish`,
+				},
+			}
+		},
+	},
 }
 
 export default RouteNames

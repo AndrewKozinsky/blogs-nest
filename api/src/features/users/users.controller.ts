@@ -69,30 +69,3 @@ export class UsersController {
 		}
 	}
 }
-
-/*const received = {
-	pagesCount: 1,
-	page: 1,
-	pageSize: 15,
-	totalCount: 9,
-	items: [
-		{
-			id: '914',
-			email: 'emai@gg.com',
-			login: 'log01',
-			createdAt: '2024-06-27T13:43:19.849Z'
-		},
-		{
-			id: '915',
-			email: 'email2p@g.com',
-			login: 'log02',
-			createdAt: '2024-06-27T13:43:20.007Z',
-		},
-		{
-			id: '916',
-			email: 'email2p@gg.om',
-			login: 'loSer',
-			createdAt: '2024-06-27T13:43:20.170Z',
-		},
-	],
-}*/

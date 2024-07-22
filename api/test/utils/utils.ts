@@ -1,5 +1,6 @@
 // import dotenv from 'dotenv'
 import { agent as request } from 'supertest'
+import { CreateQuizQuestionDtoModel } from '../../src/features/saQuizQuestions/models/quizQuestions.input.model'
 import { HTTP_STATUSES } from '../../src/settings/config'
 import RouteNames from '../../src/settings/routeNames'
 import { DBTypes } from '../../src/db/mongo/dbTypes'
@@ -247,4 +248,28 @@ export async function setPostLikeStatus(
 		.set('Content-Type', 'application/json')
 		.set('Accept', 'application/json')
 		.expect(HTTP_STATUSES.NO_CONTENT_204)
+}
+
+export function createDtoQuizQuestion(
+	newQuizQuestionObj: Partial<CreateQuizQuestionDtoModel> = {},
+): CreateQuizQuestionDtoModel {
+	return Object.assign(
+		{
+			body: 'My difficult question.',
+			correctAnswers: ['answer1', 'answer2'],
+		},
+		{ ...newQuizQuestionObj },
+	)
+}
+
+export async function addQuizQuestionRequest(
+	app: any,
+	quizQuestionDto: Partial<CreateQuizQuestionDtoModel> = {},
+) {
+	return request(app.getHttpServer())
+		.post('/' + RouteNames.SA_QUIZ_QUESTIONS.value)
+		.send(createDtoQuizQuestion(quizQuestionDto))
+		.set('Content-Type', 'application/json')
+		.set('Accept', 'application/json')
+		.set('authorization', adminAuthorizationValue)
 }
