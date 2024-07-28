@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common'
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
+import { InjectDataSource } from '@nestjs/typeorm'
 import { addMilliseconds } from 'date-fns'
-import { DataSource, Repository } from 'typeorm'
+import { DataSource } from 'typeorm'
 import { HashAdapter } from '../../base/adapters/hash.adapter'
 import { JwtService } from '../../base/application/jwt.service'
 import { DeviceToken } from '../../db/pg/entities/deviceToken'
 import { User } from '../../db/pg/entities/user'
-import { PGGetDeviceTokensQuery, PGGetUserQuery } from '../../db/pg/getPgDataTypes'
+import { PGGetUserQuery } from '../../db/pg/getPgDataTypes'
 import { config } from '../../settings/config'
 import { DBTypes } from '../../db/mongo/dbTypes'
 import { LayerResult, LayerResultCode } from '../../types/resultCodes'
@@ -22,9 +22,6 @@ export class AuthRepository {
 		private commonService: CommonService,
 		private jwtService: JwtService,
 		@InjectDataSource() private dataSource: DataSource,
-		// @InjectRepository(User) private readonly usersTypeORM: Repository<User>,
-		// @InjectRepository(DeviceToken)
-		// private readonly deviceTokensTypeORM: Repository<DeviceToken>,
 	) {}
 
 	async getUserByRefreshToken(refreshTokenStr: string) {

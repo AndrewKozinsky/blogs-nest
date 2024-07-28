@@ -144,6 +144,13 @@ export const RouteNames = {
 			}
 		},
 	},
+	PAIR_GAME_QUIZ_PAIRS: {
+		value: 'pair-game-quiz/pairs',
+		CONNECTION: {
+			value: 'connection',
+			full: 'pair-game-quiz/pairs/connection',
+		},
+	},
 }
 
 export default RouteNames

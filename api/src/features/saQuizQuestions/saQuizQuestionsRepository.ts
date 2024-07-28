@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
 import { QuizQuestion } from '../../db/pg/entities/quizQuestion'
@@ -8,6 +8,8 @@ import {
 	CreateQuizQuestionDtoModel,
 	UpdateQuizQuestionDtoModel,
 } from './models/quizQuestions.input.model'
+import { QuizQuestionOutModel } from './models/quizQuestions.output.model'
+import { QuizQuestionServiceModel } from './models/quizQuestions.service.model'
 
 @Injectable()
 export class SaQuizQuestionsRepository {
@@ -27,6 +29,22 @@ export class SaQuizQuestionsRepository {
 		return {
 			code: LayerResultCode.Success,
 			data: quizQuestion,
+		}
+	}
+
+	async getRandomQuestions(
+		questionsNumber: number,
+	): Promise<LayerResult<QuizQuestionServiceModel[]>> {
+		const quizQuestions = await this.dataSource
+			.createQueryBuilder(QuizQuestion, 'qq')
+			.select()
+			.orderBy('RANDOM()')
+			.take(questionsNumber)
+			.getMany()
+
+		return {
+			code: LayerResultCode.Success,
+			data: quizQuestions.map(this.mapDbQuizQuestionToQuizQuestion),
 		}
 	}
 
@@ -104,6 +122,17 @@ export class SaQuizQuestionsRepository {
 		return {
 			code: LayerResultCode.Success,
 			data: true,
+		}
+	}
+
+	mapDbQuizQuestionToQuizQuestion(DbQuizQuestion: QuizQuestion): QuizQuestionOutModel {
+		return {
+			id: DbQuizQuestion.id.toString(),
+			body: DbQuizQuestion.body,
+			correctAnswers: DbQuizQuestion.correctAnswers,
+			published: DbQuizQuestion.published,
+			createdAt: DbQuizQuestion.createdAt.toISOString(),
+			updatedAt: DbQuizQuestion.updatedAt.toISOString(),
 		}
 	}
 }

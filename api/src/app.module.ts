@@ -11,6 +11,7 @@ import { RateLimit } from './db/pg/entities/rateLimit'
 import { User } from './db/pg/entities/user'
 import { AuthModule } from './features/auth/auth.module'
 import { BlogsModule } from './features/blogs/blogs.module'
+import { PairGameQuizPairsModule } from './features/pairGameQuizPairs/saQuizQuestions.module'
 import { SaQuizQuestionsModule } from './features/saQuizQuestions/saQuizQuestions.module'
 import { SecurityModule } from './features/security/security.module'
 import { TestsModule } from './features/test/tests.module'
@@ -45,6 +46,7 @@ const typeORMOptions: TypeOrmModuleOptions = {
 		SecurityModule,
 		TestsModule,
 		SaQuizQuestionsModule,
+		PairGameQuizPairsModule,
 	],
 	controllers: [],
 	providers: [],

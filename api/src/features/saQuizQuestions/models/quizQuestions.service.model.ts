@@ -1,15 +1,8 @@
-export type UserServiceModel = {
+export type QuizQuestionServiceModel = {
 	id: string
-	account: {
-		login: string
-		email: string
-		password: string
-		passwordRecoveryCode: string | null
-		createdAt: string
-	}
-	emailConfirmation: {
-		confirmationCode: string
-		expirationDate: Date
-		isConfirmed: boolean
-	}
+	body: string
+	correctAnswers: string[]
+	published: boolean
+	createdAt: string // "2024-07-21T08:59:26.931Z"
+	updatedAt: string // "2024-07-21T08:59:26.931Z"
 }
