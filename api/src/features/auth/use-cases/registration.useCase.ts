@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { EmailManager } from '../../../base/managers/email.manager'
-import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
+import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../../types/resultCodes'
 import { CommonService } from '../../common/common.service'
 import { UsersService } from '../../users/users.service'
 import { AuthRepository } from '../authRepository'
@@ -18,7 +18,7 @@ export class RegistrationUseCase {
 	async execute(dto: AuthRegistrationDtoModel): Promise<LayerResult<null>> {
 		const userByEmail = await this.authRepository.getUserByLoginOrEmail(dto.email)
 		if (userByEmail) {
-			return { code: LayerResultCode.BadRequest }
+			return { code: LayerErrorCode.BadRequest }
 		}
 
 		const newUserDto = await this.commonService.getCreateUserDto(dto, false)
@@ -28,7 +28,7 @@ export class RegistrationUseCase {
 		const user = await this.usersService.getUser(userId)
 
 		if (!user) {
-			return { code: LayerResultCode.BadRequest }
+			return { code: LayerErrorCode.BadRequest }
 		}
 
 		try {
@@ -38,14 +38,15 @@ export class RegistrationUseCase {
 			)
 
 			return {
-				code: LayerResultCode.Success,
+				code: LayerSuccessCode.Success,
+				data: null,
 			}
 		} catch (err: unknown) {
 			console.log(err)
 			await this.authRepository.deleteUser(userId)
 
 			return {
-				code: LayerResultCode.BadRequest,
+				code: LayerErrorCode.BadRequest,
 			}
 		}
 	}

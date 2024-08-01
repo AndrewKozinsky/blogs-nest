@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { EmailManager } from '../../../base/managers/email.manager'
-import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
+import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../../types/resultCodes'
 import { createUniqString } from '../../../utils/stringUtils'
 import { UsersRepository } from '../../users/usersRepository'
 import { AuthRepository } from '../authRepository'
@@ -18,7 +18,7 @@ export class RecoveryPasswordUseCase {
 
 		// Send success status even if current email is not registered (for prevent user's email detection)
 		if (!user) {
-			return { code: LayerResultCode.Success }
+			return { code: LayerSuccessCode.Success, data: null }
 		}
 
 		const recoveryCode = createUniqString()
@@ -29,14 +29,15 @@ export class RecoveryPasswordUseCase {
 			await this.emailManager.sendPasswordRecoveryMessage(email, recoveryCode)
 
 			return {
-				code: LayerResultCode.Success,
+				code: LayerSuccessCode.Success,
+				data: null,
 			}
 		} catch (err: unknown) {
 			console.log(err)
 			await this.authRepository.deleteUser(user.id)
 
 			return {
-				code: LayerResultCode.BadRequest,
+				code: LayerErrorCode.BadRequest,
 			}
 		}
 	}

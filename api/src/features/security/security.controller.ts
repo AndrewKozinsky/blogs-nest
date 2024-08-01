@@ -15,7 +15,7 @@ import { Request, Response } from 'express'
 import { RequestService } from '../../base/application/request.service'
 import { CheckDeviceRefreshTokenGuard } from '../../infrastructure/guards/checkDeviceRefreshToken.guard'
 import RouteNames from '../../settings/routeNames'
-import { LayerResultCode } from '../../types/resultCodes'
+import { LayerErrorCode } from '../../types/resultCodes'
 import { SecurityQueryRepository } from './securityQueryRepository'
 import { TerminateAllDeviceRefreshTokensApartThisUseCase } from './use-cases/terminateAllDeviceRefreshTokensApartThisUseCase'
 import { TerminateSpecifiedDeviceRefreshTokenUseCase } from './use-cases/terminateSpecifiedDeviceRefreshTokenUseCase'
@@ -68,11 +68,11 @@ export class SecurityController {
 			deviceId,
 		)
 
-		if (terminateDeviceRes.code === LayerResultCode.NotFound) {
+		if (terminateDeviceRes.code === LayerErrorCode.NotFound) {
 			throw new NotFoundException()
 		}
 
-		if (terminateDeviceRes.code === LayerResultCode.Forbidden) {
+		if (terminateDeviceRes.code === LayerErrorCode.Forbidden) {
 			throw new ForbiddenException()
 		}
 	}

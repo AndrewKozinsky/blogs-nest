@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
-import { QuizGame } from '../../db/pg/entities/quizGame'
-import { LayerResult, LayerResultCode } from '../../types/resultCodes'
+import { GameStatus, QuizGame } from '../../db/pg/entities/quizGame'
+import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../types/resultCodes'
 import { QuizGameOutModel } from './models/quizGame.output.model'
 
 @Injectable()
@@ -12,27 +12,59 @@ export class QuizGameQueryRepository {
 	async getPendingGame(): Promise<LayerResult<QuizGameOutModel>> {
 		const pendingGame = await this.dataSource
 			.getRepository(QuizGame)
-			.findOneBy({ status: 'pending' })
+			.findOneBy({ status: GameStatus.Pending })
 
 		if (!pendingGame) {
 			return {
-				code: LayerResultCode.NotFound,
+				code: LayerErrorCode.NotFound,
 			}
 		}
 
 		return {
-			code: LayerResultCode.Success,
-			data: this.mapDbQuizQuestionToQuizQuestion(pendingGame),
+			code: LayerSuccessCode.Success,
+			data: this.mapDbQuizGameToQuizGame(pendingGame),
 		}
 	}
 
-	mapDbQuizQuestionToQuizQuestion(DbQuizGame: QuizGame): QuizGameOutModel {
+	/*async getGame(gameId: string): Promise<LayerResult<QuizGameOutModel>> {
+		const getGameRes = await this.dataSource.getRepository(QuizGame).findOneBy({ id: gameId })
+
+		if (!getGameRes) {
+			return {
+				code: LayerErrorCode.NotFound,
+			}
+		}
+
+		return {
+			code: LayerSuccessCode.Success,
+			data: this.mapDbQuizQuestionToQuizQuestion(getGameRes),
+		}
+	}*/
+
+	mapDbQuizGameToQuizGame(DbQuizGame: QuizGame): QuizGameOutModel {
+		let secondPlayer = null
+		if (DbQuizGame.secondPlayer) {
+			secondPlayer = {
+				id: DbQuizGame.secondPlayerId,
+				login: DbQuizGame.secondPlayer.user.login,
+			}
+		}
+
 		return {
 			id: DbQuizGame.id.toString(),
 			status: DbQuizGame.status,
-			player_1Id: DbQuizGame.player_1Id,
-			player_2Id: DbQuizGame.player_2Id,
-			questions: DbQuizGame.questions,
+			firstPlayer: {
+				id: DbQuizGame.firstPlayerId.toString(),
+				login: DbQuizGame.firstPlayer.user.login,
+			},
+			secondPlayer: secondPlayer,
+			questions: DbQuizGame.questions.map((question) => {
+				return {
+					id: question.questionId,
+					body: question.question,
+				}
+			}),
+			pairCreatedDate: DbQuizGame.createdAt.toISOString(),
 		}
 	}
 }

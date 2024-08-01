@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
+import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../../types/resultCodes'
 import { CreateQuizQuestionDtoModel } from '../models/quizQuestions.input.model'
 import { QuizQuestionOutModel } from '../models/quizQuestions.output.model'
 import { SaQuizQuestionsQueryRepository } from '../saQuizQuestionsQueryRepository'
@@ -15,12 +15,9 @@ export class CreateQuizQuestionUseCase {
 	async execute(dto: CreateQuizQuestionDtoModel): Promise<LayerResult<QuizQuestionOutModel>> {
 		const createdQuizQuestionRes = await this.saQuizQuestionsRepository.createQuizQuestion(dto)
 
-		if (
-			createdQuizQuestionRes.code !== LayerResultCode.Success ||
-			!createdQuizQuestionRes.data
-		) {
+		if (createdQuizQuestionRes.code !== LayerSuccessCode.Success) {
 			return {
-				code: LayerResultCode.Forbidden,
+				code: LayerErrorCode.Forbidden,
 			}
 		}
 

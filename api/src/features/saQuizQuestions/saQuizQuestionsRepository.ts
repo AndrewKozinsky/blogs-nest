@@ -2,8 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
 import { QuizQuestion } from '../../db/pg/entities/quizQuestion'
-import { User } from '../../db/pg/entities/user'
-import { LayerResult, LayerResultCode } from '../../types/resultCodes'
+import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../types/resultCodes'
 import {
 	CreateQuizQuestionDtoModel,
 	UpdateQuizQuestionDtoModel,
@@ -22,12 +21,12 @@ export class SaQuizQuestionsRepository {
 
 		if (!quizQuestion) {
 			return {
-				code: LayerResultCode.NotFound,
+				code: LayerErrorCode.NotFound,
 			}
 		}
 
 		return {
-			code: LayerResultCode.Success,
+			code: LayerSuccessCode.Success,
 			data: quizQuestion,
 		}
 	}
@@ -43,7 +42,7 @@ export class SaQuizQuestionsRepository {
 			.getMany()
 
 		return {
-			code: LayerResultCode.Success,
+			code: LayerSuccessCode.Success,
 			data: quizQuestions.map(this.mapDbQuizQuestionToQuizQuestion),
 		}
 	}
@@ -56,7 +55,7 @@ export class SaQuizQuestionsRepository {
 		})
 
 		return {
-			code: LayerResultCode.Success,
+			code: LayerSuccessCode.Success,
 			data: queryRes.identifiers[0].id.toString(),
 		}
 	}
@@ -68,12 +67,12 @@ export class SaQuizQuestionsRepository {
 
 		if (queryRes.affected !== 1) {
 			return {
-				code: LayerResultCode.NotFound,
+				code: LayerErrorCode.NotFound,
 			}
 		}
 
 		return {
-			code: LayerResultCode.Success,
+			code: LayerSuccessCode.Success,
 			data: true,
 		}
 	}
@@ -88,12 +87,12 @@ export class SaQuizQuestionsRepository {
 
 		if (queryRes.affected !== 1) {
 			return {
-				code: LayerResultCode.NotFound,
+				code: LayerErrorCode.NotFound,
 			}
 		}
 
 		return {
-			code: LayerResultCode.Success,
+			code: LayerSuccessCode.Success,
 			data: true,
 		}
 	}
@@ -101,9 +100,9 @@ export class SaQuizQuestionsRepository {
 	async publishQuizQuestion(quizQuestionId: string): Promise<LayerResult<boolean>> {
 		const getQuestionQueryRes = await this.getQuizQuestionById(quizQuestionId)
 
-		if (getQuestionQueryRes.code !== LayerResultCode.Success) {
+		if (getQuestionQueryRes.code !== LayerSuccessCode.Success) {
 			return {
-				code: LayerResultCode.NotFound,
+				code: LayerErrorCode.NotFound,
 			}
 		}
 
@@ -115,12 +114,12 @@ export class SaQuizQuestionsRepository {
 
 		if (queryRes.affected !== 1) {
 			return {
-				code: LayerResultCode.BadRequest,
+				code: LayerErrorCode.BadRequest,
 			}
 		}
 
 		return {
-			code: LayerResultCode.Success,
+			code: LayerSuccessCode.Success,
 			data: true,
 		}
 	}

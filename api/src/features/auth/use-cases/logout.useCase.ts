@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { JwtService } from '../../../base/application/jwt.service'
-import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
+import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../../types/resultCodes'
 import { AuthRepository } from '../authRepository'
 
 @Injectable()
@@ -15,11 +15,11 @@ export class LogoutUseCase {
 			await this.authRepository.getDeviceRefreshTokenByTokenStr(refreshTokenStr)
 
 		if (!refreshTokenInDb || !this.jwtService.isRefreshTokenStrValid(refreshTokenStr)) {
-			return { code: LayerResultCode.Unauthorized }
+			return { code: LayerErrorCode.Unauthorized }
 		}
 
 		await this.authRepository.deleteDeviceRefreshTokenByDeviceId(refreshTokenInDb.deviceId)
 
-		return { code: LayerResultCode.Success }
+		return { code: LayerSuccessCode.Success, data: null }
 	}
 }

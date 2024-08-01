@@ -16,7 +16,7 @@ import {
 } from '@nestjs/common'
 import { CheckAdminAuthGuard } from '../../infrastructure/guards/checkAdminAuth.guard'
 import RouteNames from '../../settings/routeNames'
-import { LayerResultCode } from '../../types/resultCodes'
+import { LayerErrorCode, LayerSuccessCode } from '../../types/resultCodes'
 import {
 	CreateQuizQuestionDtoModel,
 	GetQuizQuestionsQueries,
@@ -48,11 +48,11 @@ export class SaQuizQuestionsController {
 	async getQuizQuestion(@Param('questionId') questionId: string) {
 		const getQuizQuestionStatus = await this.getQuizQuestionUseCase.execute(questionId)
 
-		if (getQuizQuestionStatus.code === LayerResultCode.NotFound) {
+		if (getQuizQuestionStatus.code === LayerErrorCode.NotFound) {
 			throw new NotFoundException()
 		}
 
-		if (getQuizQuestionStatus.code !== LayerResultCode.Success) {
+		if (getQuizQuestionStatus.code !== LayerSuccessCode.Success) {
 			throw new BadRequestException()
 		}
 
@@ -68,7 +68,7 @@ export class SaQuizQuestionsController {
 	) {
 		const getQuizQuestionsStatus = await this.getQuizQuestionsUseCase.execute(query)
 
-		if (getQuizQuestionsStatus.code !== LayerResultCode.Success) {
+		if (getQuizQuestionsStatus.code !== LayerSuccessCode.Success) {
 			throw new BadRequestException()
 		}
 
@@ -82,7 +82,7 @@ export class SaQuizQuestionsController {
 	async createQuizQuestion(@Body() body: CreateQuizQuestionDtoModel) {
 		const createdQuizQuestionStatus = await this.createQuizQuestionUseCase.execute(body)
 
-		if (createdQuizQuestionStatus.code !== LayerResultCode.Success) {
+		if (createdQuizQuestionStatus.code !== LayerSuccessCode.Success) {
 			throw new BadRequestException()
 		}
 
@@ -96,11 +96,11 @@ export class SaQuizQuestionsController {
 	async deleteQuizQuestion(@Param('questionId') questionId: string) {
 		const deleteQuizQuestionStatus = await this.deleteQuizQuestionUseCase.execute(questionId)
 
-		if (deleteQuizQuestionStatus.code === LayerResultCode.NotFound) {
+		if (deleteQuizQuestionStatus.code === LayerErrorCode.NotFound) {
 			throw new NotFoundException()
 		}
 
-		if (deleteQuizQuestionStatus.code !== LayerResultCode.Success) {
+		if (deleteQuizQuestionStatus.code !== LayerSuccessCode.Success) {
 			throw new BadRequestException()
 		}
 	}
@@ -118,11 +118,11 @@ export class SaQuizQuestionsController {
 			body,
 		)
 
-		if (updateQuizQuestionStatus.code === LayerResultCode.NotFound) {
+		if (updateQuizQuestionStatus.code === LayerErrorCode.NotFound) {
 			throw new NotFoundException()
 		}
 
-		if (updateQuizQuestionStatus.code !== LayerResultCode.Success) {
+		if (updateQuizQuestionStatus.code !== LayerSuccessCode.Success) {
 			throw new BadRequestException()
 		}
 	}
@@ -135,11 +135,11 @@ export class SaQuizQuestionsController {
 		const publishQuizQuestionStatus =
 			await this.publishQuizQuestionUseCaseUseCase.execute(questionId)
 
-		if (publishQuizQuestionStatus.code === LayerResultCode.NotFound) {
+		if (publishQuizQuestionStatus.code === LayerErrorCode.NotFound) {
 			throw new NotFoundException()
 		}
 
-		if (publishQuizQuestionStatus.code !== LayerResultCode.Success) {
+		if (publishQuizQuestionStatus.code !== LayerSuccessCode.Success) {
 			throw new BadRequestException()
 		}
 	}

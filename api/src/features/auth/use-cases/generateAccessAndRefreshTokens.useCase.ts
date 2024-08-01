@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { JwtService } from '../../../base/application/jwt.service'
 import { DBTypes } from '../../../db/mongo/dbTypes'
-import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
+import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../../types/resultCodes'
 import { UsersRepository } from '../../users/usersRepository'
 import { AuthRepository } from '../authRepository'
 
@@ -18,7 +18,7 @@ export class GenerateAccessAndRefreshTokensUseCase {
 	): Promise<LayerResult<{ newAccessToken: string; newRefreshToken: string }>> {
 		if (!deviceRefreshToken) {
 			return {
-				code: LayerResultCode.Unauthorized,
+				code: LayerErrorCode.Unauthorized,
 			}
 		}
 
@@ -26,7 +26,7 @@ export class GenerateAccessAndRefreshTokensUseCase {
 		const user = await this.usersRepository.getUserById(deviceRefreshToken.userId)
 		if (!user) {
 			return {
-				code: LayerResultCode.Unauthorized,
+				code: LayerErrorCode.Unauthorized,
 			}
 		}
 
@@ -35,7 +35,7 @@ export class GenerateAccessAndRefreshTokensUseCase {
 		const newRefreshToken = this.jwtService.createRefreshTokenStr(deviceRefreshToken.deviceId)
 
 		return {
-			code: LayerResultCode.Success,
+			code: LayerSuccessCode.Success,
 			data: {
 				newAccessToken: this.jwtService.createAccessTokenStr(deviceRefreshToken.userId),
 				newRefreshToken,

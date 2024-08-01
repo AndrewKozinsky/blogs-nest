@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
+import { LayerResult } from '../../../types/resultCodes'
 import {
 	CreateQuizQuestionDtoModel,
 	UpdateQuizQuestionDtoModel,

@@ -1,24 +1,77 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
-import { Column, DataSource, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm'
-import { QuizGame } from '../../db/pg/entities/quizGame'
-import { QuizGameQuestion } from '../../db/pg/entities/quizGameQuestion'
+import { DataSource } from 'typeorm'
+import { GameStatus, QuizGame } from '../../db/pg/entities/quizGame'
 import { QuizPlayer } from '../../db/pg/entities/quizPlayer'
-import { LayerResult, LayerResultCode } from '../../types/resultCodes'
+import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../types/resultCodes'
 import { QuizGameOutModel } from './models/quizGame.output.model'
+import { QuizGameServiceModel } from './models/quizGame.service.model'
 
 @Injectable()
 export class QuizGameRepository {
 	constructor(@InjectDataSource() private dataSource: DataSource) {}
 
-	async createGame(player_1Id: string): Promise<LayerResult<string>> {
-		const createdGameRes = await this.dataSource
-			.getRepository(QuizGame)
-			.insert({ status: 'pending', player_1Id })
+	async getPendingGame(): Promise<LayerResult<QuizGameOutModel>> {
+		const getPendingGame = await this.dataSource.getRepository(QuizGame).findOne({
+			where: { status: GameStatus.Pending },
+			relations: {
+				firstPlayer: {
+					user: true,
+				},
+				secondPlayer: {
+					user: true,
+				},
+				questions: true,
+			},
+		})
+
+		if (!getPendingGame) {
+			return {
+				code: LayerErrorCode.NotFound,
+			}
+		}
 
 		return {
-			code: LayerResultCode.Success,
-			data: createdGameRes.identifiers[0].toString(),
+			code: LayerSuccessCode.Success,
+			data: this.mapDbQuizGameToQuizGame(getPendingGame),
+		}
+	}
+
+	async getGame(gameId: string): Promise<LayerResult<QuizGameServiceModel>> {
+		const getGameRes = await this.dataSource.getRepository(QuizGame).findOne({
+			where: { id: gameId },
+			relations: {
+				firstPlayer: {
+					user: true,
+				},
+				secondPlayer: {
+					user: true,
+				},
+				questions: true,
+			},
+		})
+
+		if (!getGameRes) {
+			return {
+				code: LayerErrorCode.NotFound,
+			}
+		}
+
+		return {
+			code: LayerSuccessCode.Success,
+			data: this.mapDbQuizGameToQuizGame(getGameRes),
+		}
+	}
+
+	async createGame(firstPlayerId: string): Promise<LayerResult<string>> {
+		const createdGameRes = await this.dataSource.getRepository(QuizGame).insert({
+			status: GameStatus.Pending,
+			firstPlayerId,
+		})
+
+		return {
+			code: LayerSuccessCode.Success,
+			data: createdGameRes.identifiers[0].id.toString(),
 		}
 	}
 
@@ -27,23 +80,40 @@ export class QuizGameRepository {
 
 		if (updateGameRes.affected !== 1) {
 			return {
-				code: LayerResultCode.BadRequest,
+				code: LayerErrorCode.BadRequest,
 			}
 		}
 
 		return {
-			code: LayerResultCode.Success,
+			code: LayerSuccessCode.Success,
 			data: null,
 		}
 	}
 
-	mapDbQuizQuestionToQuizQuestion(DbQuizGame: QuizGame): QuizGameOutModel {
+	mapDbQuizGameToQuizGame(DbQuizGame: QuizGame): QuizGameServiceModel {
+		let secondPlayer = null
+		if (DbQuizGame.secondPlayer) {
+			secondPlayer = {
+				id: DbQuizGame.secondPlayerId,
+				login: DbQuizGame.secondPlayer.user.login,
+			}
+		}
+
 		return {
 			id: DbQuizGame.id.toString(),
 			status: DbQuizGame.status,
-			player_1Id: DbQuizGame.player_1Id,
-			player_2Id: DbQuizGame.player_2Id,
-			questions: DbQuizGame.questions,
-		}
+			firstPlayer: {
+				id: DbQuizGame.firstPlayerId.toString(),
+				login: DbQuizGame.firstPlayer.user.login,
+			},
+			secondPlayer,
+			questions: DbQuizGame.questions.map((question) => {
+				return {
+					id: question.questionId.toString(),
+					body: question.question,
+				}
+			}),
+			pairCreatedDate: DbQuizGame.createdAt.toISOString(),
+		} as any
 	}
 }

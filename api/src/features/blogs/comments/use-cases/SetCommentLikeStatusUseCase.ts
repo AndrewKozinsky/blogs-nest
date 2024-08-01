@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { DBTypes } from '../../../../db/mongo/dbTypes'
-import { LayerResult, LayerResultCode } from '../../../../types/resultCodes'
+import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../../../types/resultCodes'
 import { CommentLikesRepository } from '../../commentLikes/CommentLikesRepository'
 import { UserServiceModel } from '../../../users/models/users.service.model'
 import { CommentsRepository } from '../commentsRepository'
@@ -20,7 +20,7 @@ export class SetCommentLikeStatusUseCase {
 		const comment = await this.commentsRepository.getComment(commentId)
 		if (!comment) {
 			return {
-				code: LayerResultCode.NotFound,
+				code: LayerErrorCode.NotFound,
 			}
 		}
 
@@ -37,7 +37,8 @@ export class SetCommentLikeStatusUseCase {
 		}
 
 		return {
-			code: LayerResultCode.Success,
+			code: LayerSuccessCode.Success,
+			data: null,
 		}
 	}
 }

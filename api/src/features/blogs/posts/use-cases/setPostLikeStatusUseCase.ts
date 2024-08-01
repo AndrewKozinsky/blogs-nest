@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { DBTypes } from '../../../../db/mongo/dbTypes'
-import { LayerResult, LayerResultCode } from '../../../../types/resultCodes'
+import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../../../types/resultCodes'
 import { PostLikesRepository } from '../../postLikes/postLikesRepository'
 import { UserServiceModel } from '../../../users/models/users.service.model'
 import { PostsRepository } from '../postsRepository'
@@ -20,7 +20,7 @@ export class SetPostLikeStatusUseCase {
 		const post = await this.postsRepository.getPostById(postId)
 		if (!post) {
 			return {
-				code: LayerResultCode.NotFound,
+				code: LayerErrorCode.NotFound,
 			}
 		}
 
@@ -34,7 +34,8 @@ export class SetPostLikeStatusUseCase {
 		}
 
 		return {
-			code: LayerResultCode.Success,
+			code: LayerSuccessCode.Success,
+			data: null,
 		}
 	}
 }

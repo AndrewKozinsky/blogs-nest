@@ -1,3 +1,4 @@
+/*
 export type LayerResult<T> = {
 	code: LayerResultCode
 	errorMessage?: string
@@ -11,8 +12,8 @@ export enum LayerResultCode {
 	BadRequest = 3,
 	Forbidden = 4,
 }
+*/
 
-/*
 export type LayerResult<T> = SuccessLayerResult<T> | FailLayerResult
 
 type SuccessLayerResult<T> = {
@@ -34,4 +35,4 @@ export enum LayerErrorCode {
 	Unauthorized = 2,
 	BadRequest = 3,
 	Forbidden = 4,
-}*/
+}

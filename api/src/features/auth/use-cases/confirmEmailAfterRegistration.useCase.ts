@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
+import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../../types/resultCodes'
 import { AuthRepository } from '../authRepository'
 
 @Injectable()
@@ -10,7 +10,7 @@ export class ConfirmEmailAfterRegistrationUseCase {
 		const user = await this.authRepository.getUserByConfirmationCode(confirmationCode)
 		if (!user || user.emailConfirmation.isConfirmed) {
 			return {
-				code: LayerResultCode.BadRequest,
+				code: LayerErrorCode.BadRequest,
 			}
 		}
 
@@ -19,14 +19,15 @@ export class ConfirmEmailAfterRegistrationUseCase {
 			user.emailConfirmation.expirationDate < new Date()
 		) {
 			return {
-				code: LayerResultCode.BadRequest,
+				code: LayerErrorCode.BadRequest,
 			}
 		}
 
 		await this.authRepository.makeUserEmailConfirmed(user.id)
 
 		return {
-			code: LayerResultCode.Success,
+			code: LayerSuccessCode.Success,
+			data: null,
 		}
 	}
 }

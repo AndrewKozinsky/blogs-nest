@@ -9,15 +9,20 @@ import {
 import { QuizPlayer } from './quizPlayer'
 import { QuizQuestion } from './quizQuestion'
 
+export enum GameAnswerStatus {
+	Correct = 'Correct',
+	Incorrect = 'Incorrect',
+}
+
 @Entity()
 export class QuizAnswer {
 	@PrimaryGeneratedColumn()
 	id: string
 
 	@Column({ type: 'varchar' })
-	status: 'Correct' | 'Incorrect'
+	status: GameAnswerStatus
 
-	@OneToOne(() => QuizPlayer, { onDelete: 'CASCADE' })
+	@ManyToOne(() => QuizPlayer, { onDelete: 'CASCADE' })
 	player: QuizPlayer
 
 	@ManyToOne(() => QuizQuestion)

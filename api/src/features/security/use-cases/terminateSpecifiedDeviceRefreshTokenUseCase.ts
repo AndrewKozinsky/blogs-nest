@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { JwtService } from '../../../base/application/jwt.service'
-import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
+import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../../types/resultCodes'
 import { AuthRepository } from '../../auth/authRepository'
 import { SecurityRepository } from '../securityRepository'
 
@@ -22,7 +22,7 @@ export class TerminateSpecifiedDeviceRefreshTokenUseCase {
 
 		if (!deviceRefreshToken) {
 			return {
-				code: LayerResultCode.NotFound,
+				code: LayerErrorCode.NotFound,
 			}
 		}
 
@@ -33,15 +33,15 @@ export class TerminateSpecifiedDeviceRefreshTokenUseCase {
 
 		if (!currentUserDeviceId) {
 			return {
-				code: LayerResultCode.Unauthorized,
+				code: LayerErrorCode.Unauthorized,
 			}
 		}
 
 		const userDevices = await this.authRepository.getUserDevicesByDeviceId(currentUserDeviceId)
 
-		if (userDevices.code !== LayerResultCode.Success || !userDevices.data) {
+		if (userDevices.code !== LayerSuccessCode.Success) {
 			return {
-				code: LayerResultCode.Forbidden,
+				code: LayerErrorCode.Forbidden,
 			}
 		}
 
@@ -51,15 +51,15 @@ export class TerminateSpecifiedDeviceRefreshTokenUseCase {
 
 		if (!deletionDeviceInUserDevices) {
 			return {
-				code: LayerResultCode.Forbidden,
+				code: LayerErrorCode.Forbidden,
 			}
 		}
 
 		const isDeviceDeleted =
 			await this.securityRepository.deleteRefreshTokenByDeviceId(deletionDeviceId)
 
-		return {
-			code: isDeviceDeleted ? LayerResultCode.Success : LayerResultCode.Forbidden,
-		}
+		return isDeviceDeleted
+			? { code: LayerSuccessCode.Success, data: null }
+			: { code: LayerErrorCode.Forbidden }
 	}
 }

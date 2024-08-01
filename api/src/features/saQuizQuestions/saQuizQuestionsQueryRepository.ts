@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource, ILike } from 'typeorm'
 import { QuizQuestion } from '../../db/pg/entities/quizQuestion'
-import { LayerResult, LayerResultCode } from '../../types/resultCodes'
+import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../types/resultCodes'
 import { GetQuizQuestionsQueries } from './models/quizQuestions.input.model'
 import { GetQuizQuestionsOutModel, QuizQuestionOutModel } from './models/quizQuestions.output.model'
 
@@ -17,12 +17,12 @@ export class SaQuizQuestionsQueryRepository {
 
 		if (!quizQuestion) {
 			return {
-				code: LayerResultCode.NotFound,
+				code: LayerErrorCode.NotFound,
 			}
 		}
 
 		return {
-			code: LayerResultCode.Success,
+			code: LayerSuccessCode.Success,
 			data: this.mapDbQuizQuestionToQuizQuestion(quizQuestion),
 		}
 	}
@@ -59,7 +59,7 @@ export class SaQuizQuestionsQueryRepository {
 			.getMany()
 
 		return {
-			code: LayerResultCode.Success,
+			code: LayerSuccessCode.Success,
 			data: {
 				pagesCount,
 				page: pageNumber,

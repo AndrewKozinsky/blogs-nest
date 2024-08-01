@@ -16,7 +16,7 @@ import {
 import { Response } from 'express'
 import { CheckAdminAuthGuard } from '../../infrastructure/guards/checkAdminAuth.guard'
 import RouteNames from '../../settings/routeNames'
-import { LayerResultCode } from '../../types/resultCodes'
+import { LayerSuccessCode } from '../../types/resultCodes'
 import {
 	CreateUserDtoModel,
 	GetUsersQueries,
@@ -50,7 +50,7 @@ export class UsersController {
 	async createUser(@Body() body: CreateUserDtoModel) {
 		const createdUserStatus = await this.createUserUseCase.execute(body)
 
-		if (createdUserStatus.code !== LayerResultCode.Success) {
+		if (createdUserStatus.code !== LayerSuccessCode.Success) {
 			throw new BadRequestException([{ field: 'email', message: 'User already registered' }])
 		}
 

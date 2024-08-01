@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { Request } from 'express'
 import { BrowserService } from '../../../base/application/browser.service'
 import { JwtService } from '../../../base/application/jwt.service'
-import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
+import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../../types/resultCodes'
 import { UserServiceModel } from '../../users/models/users.service.model'
 import { AuthRepository } from '../authRepository'
 import { AuthLoginDtoModel } from '../model/authLogin.input.model'
@@ -21,9 +21,9 @@ export class LoginUseCase {
 	): Promise<LayerResult<{ refreshTokenStr: string; user: UserServiceModel }>> {
 		const getUserRes = await this.authRepository.getConfirmedUserByLoginOrEmailAndPassword(body)
 
-		if (getUserRes.code !== LayerResultCode.Success || !getUserRes.data) {
+		if (getUserRes.code !== LayerSuccessCode.Success || !getUserRes.data) {
 			return {
-				code: LayerResultCode.Unauthorized,
+				code: LayerErrorCode.Unauthorized,
 			}
 		}
 
@@ -43,7 +43,7 @@ export class LoginUseCase {
 		)
 
 		return {
-			code: LayerResultCode.Success,
+			code: LayerSuccessCode.Success,
 			data: {
 				refreshTokenStr,
 				user: getUserRes.data,

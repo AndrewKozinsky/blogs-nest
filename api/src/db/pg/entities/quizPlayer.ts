@@ -7,7 +7,7 @@ export class QuizPlayer {
 	@PrimaryGeneratedColumn()
 	id: string
 
-	@ManyToOne(() => User, { onDelete: 'CASCADE' })
+	@ManyToOne(() => User, (u) => u.id, { onDelete: 'CASCADE' })
 	user: User
 	@Column('varchar')
 	userId: string

@@ -1,6 +1,21 @@
-import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm'
+import {
+	Column,
+	CreateDateColumn,
+	Entity,
+	JoinColumn,
+	OneToMany,
+	OneToOne,
+	PrimaryGeneratedColumn,
+} from 'typeorm'
 import { QuizGameQuestion } from './quizGameQuestion'
 import { QuizPlayer } from './quizPlayer'
+import { User } from './user'
+
+export enum GameStatus {
+	Pending = 'PendingSecondPlayer',
+	Active = 'Active',
+	Finished = 'Finished',
+}
 
 @Entity()
 export class QuizGame {
@@ -8,18 +23,23 @@ export class QuizGame {
 	id: string
 
 	@Column({ type: 'varchar' })
-	status: 'pending' | 'active' | 'finished'
+	status: GameStatus
 
+	@JoinColumn()
 	@OneToOne(() => QuizPlayer, { onDelete: 'CASCADE' })
-	player_1: QuizPlayer
+	firstPlayer: QuizPlayer
 	@Column({ type: 'varchar' })
-	player_1Id: string
+	firstPlayerId: string
 
+	@JoinColumn()
 	@OneToOne(() => QuizPlayer, { onDelete: 'CASCADE', nullable: true })
-	player_2: null | QuizPlayer
-	@Column({ type: 'varchar' })
-	player_2Id: string
+	secondPlayer: null | QuizPlayer
+	@Column({ type: 'varchar', nullable: true })
+	secondPlayerId: string
 
-	@OneToMany(() => QuizGameQuestion, (gameQuestion) => gameQuestion.game)
-	questions: string[]
+	@OneToMany(() => QuizGameQuestion, (gameQuestion) => gameQuestion.question)
+	questions: QuizGameQuestion[]
+
+	@CreateDateColumn()
+	createdAt: Date
 }

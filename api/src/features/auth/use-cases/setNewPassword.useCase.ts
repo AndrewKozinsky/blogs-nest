@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
+import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../../types/resultCodes'
 import { UsersRepository } from '../../users/usersRepository'
 
 @Injectable()
@@ -10,7 +10,7 @@ export class SetNewPasswordUseCase {
 		const user = await this.usersRepository.getUserByPasswordRecoveryCode(passRecoveryCode)
 
 		if (!user) {
-			return { code: LayerResultCode.BadRequest }
+			return { code: LayerErrorCode.BadRequest }
 		}
 
 		await this.usersRepository.setPasswordRecoveryCodeToUser(user.id, null)
@@ -18,7 +18,8 @@ export class SetNewPasswordUseCase {
 		await this.usersRepository.setNewPasswordToUser(user.id, newPassword)
 
 		return {
-			code: LayerResultCode.Success,
+			code: LayerSuccessCode.Success,
+			data: null,
 		}
 	}
 }

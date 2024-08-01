@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { EmailManager } from '../../../base/managers/email.manager'
-import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
+import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../../types/resultCodes'
 import { AuthRepository } from '../authRepository'
 import { AuthRegistrationEmailResendingDtoModel } from '../model/authRegistrationEmailResending.input.model'
 
@@ -18,7 +18,7 @@ export class RegistrationEmailResendingUseCase {
 
 		if (!user || user.emailConfirmation.isConfirmed) {
 			return {
-				code: LayerResultCode.BadRequest,
+				code: LayerErrorCode.BadRequest,
 			}
 		}
 
@@ -31,12 +31,13 @@ export class RegistrationEmailResendingUseCase {
 			console.log(err)
 
 			return {
-				code: LayerResultCode.BadRequest,
+				code: LayerErrorCode.BadRequest,
 			}
 		}
 
 		return {
-			code: LayerResultCode.Success,
+			code: LayerSuccessCode.Success,
+			data: null,
 		}
 	}
 }

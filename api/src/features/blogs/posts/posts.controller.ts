@@ -17,7 +17,7 @@ import {
 import { CheckAccessTokenGuard } from '../../../infrastructure/guards/checkAccessToken.guard'
 import { CheckAdminAuthGuard } from '../../../infrastructure/guards/checkAdminAuth.guard'
 import RouteNames from '../../../settings/routeNames'
-import { LayerResultCode } from '../../../types/resultCodes'
+import { LayerErrorCode } from '../../../types/resultCodes'
 import { CommentLikeOperationsDtoModel } from '../commentLikes/models/commentLikeOperations.input.model'
 import { CommentsQueryRepository } from '../comments/commentsQueryRepository'
 import {
@@ -177,7 +177,7 @@ export class PostsController {
 			body.likeStatus,
 		)
 
-		if (setLikeStatus.code === LayerResultCode.NotFound) {
+		if (setLikeStatus.code === LayerErrorCode.NotFound) {
 			throw new NotFoundException()
 		}
 	}

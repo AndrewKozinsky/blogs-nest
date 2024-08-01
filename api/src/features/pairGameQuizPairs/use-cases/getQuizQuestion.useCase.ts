@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common'
-import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
-import { SaQuizQuestionsQueryRepository } from '../../saQuizQuestions/saQuizQuestionsQueryRepository'
+import { GameStatus } from '../../../db/pg/entities/quizGame'
+import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../../types/resultCodes'
+import { QuizPlayerServiceModel } from '../models/quizGame.service.model'
 import { SaQuizQuestionsRepository } from '../../saQuizQuestions/saQuizQuestionsRepository'
-import { QuizGameQueryRepository } from '../quizGameQueryRepository'
+import { ConnectionResult } from '../models/quizGame.output.model'
+import { QuizGameServiceModel } from '../models/quizGame.service.model'
 import { QuizGameQuestionRepository } from '../quizGameQuestionRepository'
 import { QuizGameRepository } from '../quizGameRepository'
 import { QuizPlayerRepository } from '../quizPlayerRepository'
@@ -11,135 +13,162 @@ import { QuizPlayerRepository } from '../quizPlayerRepository'
 export class ConnectToGameUseCase {
 	constructor(
 		private quizPlayerRepository: QuizPlayerRepository,
-		private quizGameQueryRepository: QuizGameQueryRepository,
 		private quizGameRepository: QuizGameRepository,
 		private quizGameQuestionRepository: QuizGameQuestionRepository,
 		private saQuizQuestionsRepository: SaQuizQuestionsRepository,
 	) {}
 
-	async execute(userId: string): Promise<LayerResult<any>> {
-		// Создать нового игрока
-		const createPlayerRes = await this.quizPlayerRepository.createPlayer(userId)
-		if (createPlayerRes.code !== LayerResultCode.Success || !createPlayerRes.data) {
+	async execute(userId: string): Promise<LayerResult<ConnectionResult.Main>> {
+		// Вернуть 403 если пользователь уже является игроком (зашёл повторно)
+		if (await this.isUserIsPlayerAlready(userId)) {
 			return {
-				code: LayerResultCode.BadRequest,
+				code: LayerErrorCode.Forbidden,
 			}
 		}
-		const newPlayerId = createPlayerRes.data
+
+		// Создать нового игрока
+		const newPlayerRes = await this.createPlayerAndReturn(userId)
+		if (newPlayerRes.code !== LayerSuccessCode.Success) {
+			return newPlayerRes
+		}
+		const newPlayer = newPlayerRes.data
 
 		// Получить игру с одним игроком
-		const getPendingGameRes = await this.quizGameQueryRepository.getPendingGame()
-		let gameId = ''
+		const getPendingGameRes = await this.quizGameRepository.getPendingGame()
 
 		// Если есть игра с одним игроком
-		if (getPendingGameRes.code === LayerResultCode.Success && getPendingGameRes.data) {
-			gameId = getPendingGameRes.data.id
+		if (getPendingGameRes.code === LayerSuccessCode.Success) {
+			const game = getPendingGameRes.data
 
 			// Добавить игрока в существующую игру и поменять статус игры на active
-			const addSecondPlayerRes = await this.quizGameRepository.updateGame(gameId, {
-				player_2Id: newPlayerId,
-				status: 'active',
+			const addSecondPlayerRes = await this.quizGameRepository.updateGame(game.id, {
+				secondPlayerId: newPlayer.id,
+				status: GameStatus.Active,
 			})
-			if (addSecondPlayerRes.code !== LayerResultCode.Success) {
-				return {
-					code: LayerResultCode.BadRequest,
-				}
+			if (addSecondPlayerRes.code !== LayerSuccessCode.Success) {
+				return addSecondPlayerRes
+			}
+
+			return {
+				code: LayerSuccessCode.Success,
+				data: {
+					// Id of pair
+					id: game.id,
+					firstPlayerProgress: {
+						answers: [],
+						player: {
+							id: game.firstPlayer.id,
+							login: game.firstPlayer.login,
+						},
+						score: 0,
+					},
+					secondPlayerProgress: {
+						answers: [],
+						player: {
+							id: newPlayer.id,
+							login: newPlayer.login,
+						},
+						score: 0,
+					},
+					// Questions for both players (can be null if second player haven't connected yet)
+					questions: game.questions,
+					status: GameStatus.Active,
+					// Date when first player initialized the pair
+					pairCreatedDate: game.pairCreatedDate, // '2024-07-28T07:45:51.040Z'
+					// Game starts immediately after second player connection to this pair
+					startGameDate: game.pairCreatedDate, // '2024-07-28T07:45:51.040Z'
+					// Game finishes immediately after both players have answered all the questions
+					finishGameDate: null,
+				},
 			}
 		}
 		// Если ожидающей игры нет
 		else {
 			// Создать игру с одним игроком
-			const newGameRes = await this.createEmptyGame(newPlayerId)
-			if (newGameRes.code !== LayerResultCode.Success || !newGameRes.data) {
-				return {
-					code: LayerResultCode.BadRequest,
-				}
+			const newGameRes = await this.createGameAndReturn(newPlayer.id)
+			if (newGameRes.code !== LayerSuccessCode.Success) {
+				return newGameRes
 			}
 
-			gameId = newGameRes.data
+			const game = newGameRes.data
+
+			return {
+				code: LayerSuccessCode.Success,
+				data: {
+					// Id of pair
+					id: game.id,
+					firstPlayerProgress: {
+						answers: [],
+						player: {
+							id: newPlayer.id,
+							login: newPlayer.login,
+						},
+						score: 0,
+					},
+					secondPlayerProgress: null,
+					// Questions for both players (can be null if second player haven't connected yet)
+					questions: game.questions,
+					status: GameStatus.Pending,
+					pairCreatedDate: game.pairCreatedDate, // '2024-07-28T07:45:51.040Z'
+					startGameDate: null,
+					finishGameDate: null,
+				},
+			}
+		}
+	}
+
+	async isUserIsPlayerAlready(userId: string): Promise<boolean> {
+		const getPlayerByUserIdRes = await this.quizPlayerRepository.getPlayerByUserId(userId)
+
+		if (getPlayerByUserIdRes.code !== LayerSuccessCode.Success) {
+			return false
 		}
 
-		// -----
-		return {
-			code: LayerResultCode.Success,
-			data: {
-				id: 'string', // Id of pair
-				firstPlayerProgress: {
-					answers: [
-						{
-							questionId: 'string',
-							answerStatus: 'Correct', // Correct, Incorrect
-							addedAt: '2024-07-28T07:45:51.040Z',
-						},
-					],
-					player: {
-						id: 'string',
-						login: 'string',
-					},
-					score: 0,
-				},
-				secondPlayerProgress: {
-					answers: [
-						{
-							questionId: 'string',
-							answerStatus: 'Correct', // Correct, Incorrect
-							addedAt: '2024-07-28T07:45:51.040Z',
-						},
-					],
-					player: {
-						id: 'string',
-						login: 'string',
-					},
-					score: 0,
-				},
-				// Questions for both players (can be null if second player haven't connected yet)
-				questions: [
-					{
-						id: 'string',
-						body: 'string',
-					},
-				],
-				status: 'PendingSecondPlayer', // PendingSecondPlayer, Active, Finished
-				// Date when first player initialized the pair
-				pairCreatedDate: '2024-07-28T07:45:51.040Z',
-				// Game starts immediately after second player connection to this pair
-				startGameDate: '2024-07-28T07:45:51.040Z',
-				// Game finishes immediately after both players have answered all the questions
-				finishGameDate: '2024-07-28T07:45:51.040Z',
-			},
+		return !!getPlayerByUserIdRes.data
+	}
+
+	async createPlayerAndReturn(userId: string): Promise<LayerResult<QuizPlayerServiceModel>> {
+		// Создать нового игрока
+		const createPlayerRes = await this.quizPlayerRepository.createPlayer(userId)
+		if (createPlayerRes.code !== LayerSuccessCode.Success) {
+			return createPlayerRes
 		}
+
+		const newPlayerId = createPlayerRes.data
+
+		// Вернуть созданного игрока
+		return await this.quizPlayerRepository.getPlayerById(newPlayerId)
 	}
 
 	/**
 	 * Создаёт новую игру
 	 * @param firstPlayerId
 	 */
-	async createEmptyGame(firstPlayerId: string) {
+	async createGameAndReturn(firstPlayerId: string): Promise<LayerResult<QuizGameServiceModel>> {
 		const createNewGameRes = await this.quizGameRepository.createGame(firstPlayerId)
-		if (createNewGameRes.code !== LayerResultCode.Success || !createNewGameRes.data) {
-			return {
-				code: LayerResultCode.BadRequest,
-			}
+		if (createNewGameRes.code !== LayerSuccessCode.Success) {
+			return createNewGameRes
 		}
 
 		// Создать 5 вопросов к игре
 		const gameId = createNewGameRes.data
 		await this.createGameRandomQuestions(gameId)
 
-		return createNewGameRes
+		const newGameId = createNewGameRes.data
+
+		// Вернуть созданную игру
+		return await this.quizGameRepository.getGame(newGameId)
 	}
 
 	/**
-	 * Cоздаёт 5 случайных вопросов игры.
+	 * Создаёт 5 случайных вопросов игры.
 	 * @param gameId
 	 */
 	async createGameRandomQuestions(gameId: string) {
 		// Получить 5 случайных вопросов
 		const getRandomQuestionsRes = await this.saQuizQuestionsRepository.getRandomQuestions(5)
-		if (getRandomQuestionsRes.code !== LayerResultCode.Success || !getRandomQuestionsRes.data) {
-			return {
-				code: LayerResultCode.BadRequest,
-			}
+		if (getRandomQuestionsRes.code !== LayerSuccessCode.Success) {
+			return getRandomQuestionsRes
 		}
 
 		const gameQuestionQueries = []

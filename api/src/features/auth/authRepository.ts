@@ -9,7 +9,7 @@ import { User } from '../../db/pg/entities/user'
 import { PGGetUserQuery } from '../../db/pg/getPgDataTypes'
 import { config } from '../../settings/config'
 import { DBTypes } from '../../db/mongo/dbTypes'
-import { LayerResult, LayerResultCode } from '../../types/resultCodes'
+import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../types/resultCodes'
 import { createUniqString } from '../../utils/stringUtils'
 import { CommonService } from '../common/common.service'
 import { UserServiceModel } from '../users/models/users.service.model'
@@ -161,12 +161,12 @@ export class AuthRepository {
 
 		if (!user || !user.emailConfirmation.isConfirmed) {
 			return {
-				code: LayerResultCode.NotFound,
+				code: LayerErrorCode.NotFound,
 			}
 		}
 
 		return {
-			code: LayerResultCode.Success,
+			code: LayerSuccessCode.Success,
 			data: user,
 		}
 	}
@@ -179,12 +179,12 @@ export class AuthRepository {
 
 		if (!user || !user.emailConfirmation.isConfirmed) {
 			return {
-				code: LayerResultCode.NotFound,
+				code: LayerErrorCode.NotFound,
 			}
 		}
 
 		return {
-			code: LayerResultCode.Success,
+			code: LayerSuccessCode.Success,
 			data: user,
 		}
 	}*/
@@ -383,7 +383,7 @@ export class AuthRepository {
 
 		if (!userByDeviceToken) {
 			return {
-				code: LayerResultCode.NotFound,
+				code: LayerErrorCode.NotFound,
 			}
 		}
 
@@ -393,12 +393,12 @@ export class AuthRepository {
 
 		if (!userDevices.length) {
 			return {
-				code: LayerResultCode.NotFound,
+				code: LayerErrorCode.NotFound,
 			}
 		}
 
 		return {
-			code: LayerResultCode.Success,
+			code: LayerSuccessCode.Success,
 			data: userDevices.map(this.mapDbDeviceRefreshTokenToServiceDeviceRefreshToken),
 		}
 	}
@@ -411,7 +411,7 @@ export class AuthRepository {
 
 		if (!usersByDeviceTokenRes.length) {
 			return {
-				code: LayerResultCode.NotFound,
+				code: LayerErrorCode.NotFound,
 			}
 		}
 
@@ -424,12 +424,12 @@ export class AuthRepository {
 
 		if (!userDevicesRes.length) {
 			return {
-				code: LayerResultCode.NotFound,
+				code: LayerErrorCode.NotFound,
 			}
 		}
 
 		return {
-			code: LayerResultCode.Success,
+			code: LayerSuccessCode.Success,
 			data: userDevicesRes.map(this.mapDbDeviceRefreshTokenToServiceDeviceRefreshToken),
 		}
 	}*/

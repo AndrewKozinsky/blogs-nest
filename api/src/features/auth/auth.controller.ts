@@ -19,7 +19,7 @@ import { CheckDeviceRefreshTokenGuard } from '../../infrastructure/guards/checkD
 import { RequestsLimiterGuard } from '../../infrastructure/guards/requestsLimiter.guard'
 import { config } from '../../settings/config'
 import RouteNames from '../../settings/routeNames'
-import { LayerResult, LayerResultCode } from '../../types/resultCodes'
+import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../types/resultCodes'
 import { AuthLoginDtoModel } from './model/authLogin.input.model'
 import { AuthRegistrationDtoModel } from './model/authRegistration.input.model'
 import { AuthRegistrationConfirmationDtoModel } from './model/authRegistrationConfirmation.input.model'
@@ -59,7 +59,10 @@ export class AuthController {
 	async login(@Req() req: Request, @Res() res: Response, @Body() body: AuthLoginDtoModel) {
 		const loginServiceRes = await this.loginUseCase.execute(req, body)
 
-		if (loginServiceRes.code === LayerResultCode.Unauthorized || !loginServiceRes.data) {
+		if (
+			loginServiceRes.code === LayerErrorCode.Unauthorized ||
+			loginServiceRes.code !== LayerSuccessCode.Success
+		) {
 			throw new UnauthorizedException()
 		}
 
@@ -84,7 +87,10 @@ export class AuthController {
 			req.deviceRefreshToken,
 		)
 
-		if (generateTokensRes.code === LayerResultCode.Unauthorized) {
+		if (
+			generateTokensRes.code === LayerErrorCode.Unauthorized ||
+			generateTokensRes.code !== LayerSuccessCode.Success
+		) {
 			throw new UnauthorizedException()
 		}
 
@@ -109,7 +115,7 @@ export class AuthController {
 	async registration(@Body() body: AuthRegistrationDtoModel) {
 		const regStatus = await this.registrationUseCase.execute(body)
 
-		if (regStatus.code === LayerResultCode.BadRequest) {
+		if (regStatus.code === LayerErrorCode.BadRequest) {
 			throw new BadRequestException()
 		}
 	}
@@ -121,7 +127,7 @@ export class AuthController {
 	async registrationEmailResending(@Body() body: AuthRegistrationEmailResendingDtoModel) {
 		const resendingStatus = await this.registrationEmailResendingUseCase.execute(body)
 
-		if (resendingStatus.code === LayerResultCode.BadRequest) {
+		if (resendingStatus.code === LayerErrorCode.BadRequest) {
 			throw new BadRequestException()
 		}
 	}
@@ -134,7 +140,7 @@ export class AuthController {
 		const confirmationStatus: LayerResult<null> =
 			await this.confirmEmailAfterRegistrationUseCase.execute(body.code)
 
-		if (confirmationStatus.code === LayerResultCode.BadRequest) {
+		if (confirmationStatus.code === LayerErrorCode.BadRequest) {
 			throw new BadRequestException()
 		}
 	}
@@ -159,7 +165,7 @@ export class AuthController {
 
 		const logoutServiceRes = await this.logoutUseCase.execute(refreshTokenFromCookie)
 
-		if (logoutServiceRes.code === LayerResultCode.Unauthorized) {
+		if (logoutServiceRes.code === LayerErrorCode.Unauthorized) {
 			throw new UnauthorizedException()
 		}
 
@@ -174,7 +180,7 @@ export class AuthController {
 	async passwordRecovery(@Body() body: AuthPasswordRecoveryDtoModel) {
 		const passwordRecoveryServiceRes = await this.recoveryPasswordUseCase.execute(body.email)
 
-		if (passwordRecoveryServiceRes.code !== LayerResultCode.Success) {
+		if (passwordRecoveryServiceRes.code !== LayerSuccessCode.Success) {
 			throw new BadRequestException()
 		}
 
@@ -191,7 +197,7 @@ export class AuthController {
 			body.newPassword,
 		)
 
-		if (passwordRecoveryServiceRes.code !== LayerResultCode.Success) {
+		if (passwordRecoveryServiceRes.code !== LayerSuccessCode.Success) {
 			throw new BadRequestException()
 		}
 

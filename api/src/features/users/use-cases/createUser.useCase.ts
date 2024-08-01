@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { LayerResult, LayerResultCode } from '../../../types/resultCodes'
+import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../../types/resultCodes'
 import { AuthRepository } from '../../auth/authRepository'
 import { CommonService } from '../../common/common.service'
 import { CreateUserDtoModel } from '../models/users.input.model'
@@ -20,7 +20,7 @@ export class CreateUserUseCase {
 		const userByEmail = await this.authRepository.getUserByEmail(data.email)
 
 		if (userByEmail) {
-			return { code: LayerResultCode.BadRequest }
+			return { code: LayerErrorCode.BadRequest }
 		}
 
 		const newUserDto = await this.commonService.getCreateUserDto(data, true)
@@ -29,11 +29,11 @@ export class CreateUserUseCase {
 		const createdUser = await this.usersQueryRepository.getUser(createdUserId)
 
 		if (!createdUser) {
-			return { code: LayerResultCode.BadRequest }
+			return { code: LayerErrorCode.BadRequest }
 		}
 
 		return {
-			code: LayerResultCode.Success,
+			code: LayerSuccessCode.Success,
 			data: createdUser,
 		}
 	}
