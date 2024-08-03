@@ -1,3 +1,4 @@
+import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
 import { describe } from 'node:test'
 import { HTTP_STATUSES } from '../src/settings/config'
@@ -25,7 +26,7 @@ it.only('123', async () => {
 })
 
 describe('ROOT', () => {
-	let app: any
+	let app: INestApplication
 
 	beforeAll(async () => {
 		app = await createTestApp()

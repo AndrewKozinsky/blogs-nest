@@ -144,11 +144,19 @@ export const RouteNames = {
 			}
 		},
 	},
-	PAIR_GAME_QUIZ_PAIRS: {
+	PAIR_GAME: {
 		value: 'pair-game-quiz/pairs',
 		CONNECTION: {
 			value: 'connection',
 			full: 'pair-game-quiz/pairs/connection',
+		},
+		MY_CURRENT: {
+			value: 'my-current',
+			full: 'pair-game-quiz/pairs/my-current',
+			ANSWERS: {
+				value: 'answers',
+				full: 'pair-game-quiz/pairs/my-current/answers',
+			},
 		},
 	},
 }

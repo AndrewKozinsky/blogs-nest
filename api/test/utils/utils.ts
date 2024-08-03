@@ -1,6 +1,7 @@
 // import dotenv from 'dotenv'
+import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
-import { CreateQuizQuestionDtoModel } from '../../src/features/saQuizQuestions/models/quizQuestions.input.model'
+import { CreateQuizQuestionDtoModel } from '../../src/features/saQuestions/models/quizQuestions.input.model'
 import { HTTP_STATUSES } from '../../src/settings/config'
 import RouteNames from '../../src/settings/routeNames'
 import { DBTypes } from '../../src/db/mongo/dbTypes'
@@ -22,7 +23,10 @@ export const userLogin = 'my-login'
 export const userEmail = 'mail@email.com'
 export const userPassword = 'password'
 
-export async function addBlogRequest(app: any, blogDto: Partial<CreateBlogDtoModel> = {}) {
+export async function addBlogRequest(
+	app: INestApplication,
+	blogDto: Partial<CreateBlogDtoModel> = {},
+) {
 	return request(app.getHttpServer())
 		.post('/' + RouteNames.BLOGS.value)
 		.send(createDtoAddBlog(blogDto))
@@ -32,7 +36,7 @@ export async function addBlogRequest(app: any, blogDto: Partial<CreateBlogDtoMod
 }
 
 export async function addBlogPostRequest(
-	app: any,
+	app: INestApplication,
 	blogId: string,
 	postDto: Partial<CreateBlogPostDtoModel> = {},
 ) {
@@ -59,7 +63,7 @@ export function createDtoAddBlog(newBlogObj: Partial<CreateBlogDtoModel> = {}): 
 }
 
 export async function addPostRequest(
-	app: any,
+	app: INestApplication,
 	blogId: string,
 	postDto: Partial<CreatePostDtoModel> = {},
 ) {
@@ -131,7 +135,10 @@ export function checkPostObj(
 	}
 }
 
-export async function addUserByAdminRequest(app: any, userDto: Partial<CreateUserDtoModel> = {}) {
+export async function addUserByAdminRequest(
+	app: INestApplication,
+	userDto: Partial<CreateUserDtoModel> = {},
+) {
 	// Register user
 	return await request(app.getHttpServer())
 		.post('/' + RouteNames.USERS.value)
@@ -176,14 +183,14 @@ export function checkUserDeviceObj(userDeviceObj: any) {
 	)
 }
 
-export function loginRequest(app: any, loginOrEmail: string, password: string) {
+export function loginRequest(app: INestApplication, loginOrEmail: string, password: string) {
 	return request(app.getHttpServer())
 		.post('/' + RouteNames.AUTH.LOGIN.full)
 		.send({ loginOrEmail, password })
 }
 
 export async function addPostCommentRequest(
-	app: any,
+	app: INestApplication,
 	userAuthorizationToken: string,
 	postId: string,
 	commentDto: Partial<CreatePostCommentDtoModel> = {},
@@ -236,7 +243,7 @@ export function checkCommentObj(
 }
 
 export async function setPostLikeStatus(
-	app: any,
+	app: INestApplication,
 	postId: string,
 	userToken: string,
 	likeStatus: DBTypes.LikeStatuses,
@@ -263,7 +270,7 @@ export function createDtoQuizQuestion(
 }
 
 export async function addQuizQuestionRequest(
-	app: any,
+	app: INestApplication,
 	quizQuestionDto: Partial<CreateQuizQuestionDtoModel> = {},
 ) {
 	return request(app.getHttpServer())

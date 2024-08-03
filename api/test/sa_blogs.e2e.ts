@@ -1,3 +1,4 @@
+import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
 import { describe } from 'node:test'
 import { CreatePostDtoModel } from '../src/features/blogs/posts/model/posts.input.model'
@@ -24,7 +25,7 @@ it.only('123', async () => {
 })
 
 describe('ROOT', () => {
-	let app: any
+	let app: INestApplication
 
 	beforeAll(async () => {
 		app = await createTestApp()
