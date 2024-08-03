@@ -2,24 +2,25 @@ import { Injectable } from '@nestjs/common'
 import { GameStatus } from '../../../db/pg/entities/game/game'
 import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../../types/resultCodes'
 import { gameConfig } from '../config'
-import { GamePlayerServiceModel } from '../models/gameServiceModel'
+import { GameQueryRepository } from '../game.queryRepository'
 import { SaQuestionsRepository } from '../../saQuestions/saQuestionsRepository'
-import { ConnectionResult } from '../models/game.output.model'
-import { GameServiceModel } from '../models/gameServiceModel'
+import { GameOutModel } from '../models/game.output.model'
 import { GameQuestionRepository } from '../gameQuestion.repository'
 import { GameRepository } from '../game.repository'
 import { GamePlayerRepository } from '../gamePlayer.repository'
+import { GamePlayerServiceModel } from '../models/game.service.model'
 
 @Injectable()
 export class ConnectToGameUseCase {
 	constructor(
 		private gamePlayerRepository: GamePlayerRepository,
 		private gameRepository: GameRepository,
+		private gameQueryRepository: GameQueryRepository,
 		private gameQuestionRepository: GameQuestionRepository,
 		private saQuestionsRepository: SaQuestionsRepository,
 	) {}
 
-	async execute(userId: string): Promise<LayerResult<ConnectionResult.Main>> {
+	async execute(userId: string): Promise<LayerResult<GameOutModel.Main>> {
 		// Вернуть 403 если пользователь уже является игроком (зашёл повторно)
 		if (await this.isUserIsPlayerAlready(userId)) {
 			return {
@@ -37,60 +38,50 @@ export class ConnectToGameUseCase {
 		// Есть ли игра с ожидающим игроком?
 		const getPendingGameRes = await this.gameRepository.getPendingGame()
 
+		let gameId = ''
+
 		// Если свободной игры нет
 		if (getPendingGameRes.code !== LayerSuccessCode.Success) {
-			return this.createGameWithSinglePlayer(newPlayer)
+			const createGameRes = await this.createGameWithSinglePlayer(newPlayer)
+			if (createGameRes.code !== LayerSuccessCode.Success) {
+				return createGameRes
+			}
+
+			gameId = createGameRes.data
 		}
 		// Если есть игра с ожидающим игроком
 		else {
-			const game = getPendingGameRes.data
-			return this.setSecondPlayerToGame(game.id, newPlayer)
+			gameId = getPendingGameRes.data.id
+			await this.setSecondPlayerToGame(gameId, newPlayer)
 		}
+
+		return this.gameQueryRepository.getGameById(gameId)
 	}
 
-	async createGameWithSinglePlayer(
-		player: GamePlayerServiceModel,
-	): Promise<LayerResult<ConnectionResult.Main>> {
+	async createGameWithSinglePlayer(player: GamePlayerServiceModel): Promise<LayerResult<string>> {
 		// Создать игру с одним игроком
-		const newGameRes = await this.createGameAndReturn(player.id)
-		if (newGameRes.code !== LayerSuccessCode.Success) {
-			return newGameRes
+		const createNewGameRes = await this.gameRepository.createGame(player.id)
+		if (createNewGameRes.code !== LayerSuccessCode.Success) {
+			return createNewGameRes
 		}
 
-		const game = newGameRes.data
+		const newGameId = createNewGameRes.data
 
 		return {
 			code: LayerSuccessCode.Success,
-			data: {
-				// Id of pair
-				id: game.id,
-				firstPlayerProgress: {
-					answers: [],
-					player: {
-						id: player.id,
-						login: player.user.login,
-					},
-					score: 0,
-				},
-				secondPlayerProgress: null,
-				// Questions for both players (can be null if second player haven't connected yet)
-				questions: game.gameQuestions,
-				status: GameStatus.Pending,
-				pairCreatedDate: game.pairCreatedDate, // '2024-07-28T07:45:51.040Z'
-				startGameDate: null,
-				finishGameDate: null,
-			},
+			data: newGameId,
 		}
 	}
 
 	async setSecondPlayerToGame(
 		gameId: string,
 		player: GamePlayerServiceModel,
-	): Promise<LayerResult<ConnectionResult.Main>> {
+	): Promise<LayerResult<null>> {
 		// Добавить игрока в существующую игру и поменять статус игры на active
 		const addSecondPlayerRes = await this.gameRepository.updateGame(gameId, {
 			secondPlayerId: player.id,
 			status: GameStatus.Active,
+			startGameDate: new Date(),
 		})
 		if (addSecondPlayerRes.code !== LayerSuccessCode.Success) {
 			return addSecondPlayerRes
@@ -99,45 +90,9 @@ export class ConnectToGameUseCase {
 		// Создать 5 вопросов к игре
 		await this.createGameRandomQuestions(gameId)
 
-		// Запросить обновлённую игру
-		const getUpdatedGameRes = await this.gameRepository.getGameById(gameId)
-		if (getUpdatedGameRes.code !== LayerSuccessCode.Success) {
-			return getUpdatedGameRes
-		}
-		const game = getUpdatedGameRes.data
-		// console.log(game.questions)
-
 		return {
 			code: LayerSuccessCode.Success,
-			data: {
-				// Id of pair
-				id: game.id,
-				firstPlayerProgress: {
-					answers: [],
-					player: {
-						id: game.firstPlayer.id,
-						login: game.firstPlayer.login,
-					},
-					score: 0,
-				},
-				secondPlayerProgress: {
-					answers: [],
-					player: {
-						id: player.id,
-						login: player.user.login,
-					},
-					score: 0,
-				},
-				// Questions for both players (can be null if second player haven't connected yet)
-				questions: game.gameQuestions,
-				status: GameStatus.Active,
-				// Date when first player initialized the pair
-				pairCreatedDate: game.pairCreatedDate, // '2024-07-28T07:45:51.040Z'
-				// Game starts immediately after second player connection to this pair
-				startGameDate: game.pairCreatedDate, // '2024-07-28T07:45:51.040Z'
-				// Game finishes immediately after both players have answered all the questions
-				finishGameDate: null,
-			},
+			data: null,
 		}
 	}
 
@@ -162,22 +117,6 @@ export class ConnectToGameUseCase {
 
 		// Вернуть созданного игрока
 		return await this.gamePlayerRepository.getPlayerById(newPlayerId)
-	}
-
-	/**
-	 * Создаёт новую игру
-	 * @param firstPlayerId
-	 */
-	async createGameAndReturn(firstPlayerId: string): Promise<LayerResult<GameServiceModel>> {
-		const createNewGameRes = await this.gameRepository.createGame(firstPlayerId)
-		if (createNewGameRes.code !== LayerSuccessCode.Success) {
-			return createNewGameRes
-		}
-
-		const newGameId = createNewGameRes.data
-
-		// Вернуть созданную игру
-		return await this.gameRepository.getGameById(newGameId)
 	}
 
 	/**

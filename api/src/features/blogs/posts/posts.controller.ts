@@ -133,7 +133,7 @@ export class PostsController {
 		return postComments.data
 	}
 
-	// Create new comment
+	// Create a new comment
 	@UseGuards(CheckAccessTokenGuard)
 	@Post(':postId/comments')
 	@HttpCode(HttpStatus.CREATED)

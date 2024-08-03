@@ -12,9 +12,10 @@ export class GamePlayer {
 	@Column('varchar')
 	userId: string
 
+	// Зачем хранить это значение если его можно вычислить по ответам?
 	@Column({ type: 'int' })
 	score: number
 
-	@OneToMany(() => GameAnswer, (quizAnswer) => quizAnswer.player)
+	@OneToMany(() => GameAnswer, (gameAnswer) => gameAnswer.player)
 	answers: GameAnswer[]
 }

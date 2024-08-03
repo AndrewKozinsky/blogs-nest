@@ -1,23 +1,19 @@
 import { Injectable } from '@nestjs/common'
 import { GameAnswerStatus } from '../../../db/pg/entities/game/gameAnswer'
 import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../../types/resultCodes'
-import { SaQuestionsRepository } from '../../saQuestions/saQuestionsRepository'
 import { gameConfig } from '../config'
 import { AnswerGameQuestionDtoModel } from '../models/game.input.model'
 import { GameAnswerOutModel } from '../models/game.output.model'
 import { GameAnswerQueryRepository } from '../gameAnswer.queryRepository'
 import { GameAnswerRepository } from '../gameAnswer.repository'
 import { GameQuestionRepository } from '../gameQuestion.repository'
-import { GameRepository } from '../game.repository'
 import { GamePlayerRepository } from '../gamePlayer.repository'
 
 @Injectable()
 export class AnswerGameQuestionUseCase {
 	constructor(
 		private gamePlayerRepository: GamePlayerRepository,
-		private gameGameRepository: GameRepository,
 		private gameQuestionRepository: GameQuestionRepository,
-		private saQuestionsRepository: SaQuestionsRepository,
 		private gameAnswerRepository: GameAnswerRepository,
 		private gameAnswerQueryRepository: GameAnswerQueryRepository,
 	) {}
@@ -54,6 +50,9 @@ export class AnswerGameQuestionUseCase {
 		const isUserAnswerCorrect = gameQuestion.correctAnswers.includes(reqBodyDto.answer)
 			? GameAnswerStatus.Correct
 			: GameAnswerStatus.Incorrect
+
+		// Если игрок ответил правильно, то увеличить поле score у игрока
+		await this.gamePlayerRepository.increaseScore(player.id)
 
 		return this.createAnswerAndReturn(player.id, gameQuestion.id, isUserAnswerCorrect)
 	}

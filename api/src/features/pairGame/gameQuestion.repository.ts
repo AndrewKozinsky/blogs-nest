@@ -42,7 +42,7 @@ export class GameQuestionRepository {
 		}
 		const game = getGameRes.data
 
-		const unansweredQuestion = game.gameQuestions[player.answers.length]
+		const unansweredQuestion = game.questions[player.answers.length]
 		if (!unansweredQuestion) {
 			return {
 				code: LayerErrorCode.BadRequest,

@@ -31,7 +31,7 @@ describe('ROOT', () => {
 		await clearAllDB(app)
 	})
 
-	describe('Getting all quiz questions', () => {
+	describe('Connection to a game', () => {
 		it('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
 				.get('/' + RouteNames.PAIR_GAME.CONNECTION.full)

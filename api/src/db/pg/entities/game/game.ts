@@ -42,4 +42,10 @@ export class Game {
 
 	@CreateDateColumn()
 	createdAt: Date
+
+	@Column({ type: 'date', nullable: true })
+	startGameDate: Date
+
+	@Column({ type: 'date', nullable: true })
+	finishGameDate: Date
 }

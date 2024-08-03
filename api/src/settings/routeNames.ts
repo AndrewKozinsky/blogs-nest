@@ -146,6 +146,12 @@ export const RouteNames = {
 	},
 	PAIR_GAME: {
 		value: 'pair-game-quiz/pairs',
+		GAME_ID(gameId: string) {
+			return {
+				value: gameId,
+				full: `pair-game-quiz/pairs/${gameId}`,
+			}
+		},
 		CONNECTION: {
 			value: 'connection',
 			full: 'pair-game-quiz/pairs/connection',

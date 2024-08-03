@@ -5,6 +5,9 @@ import { Game } from '../../db/pg/entities/game/game'
 import { GameQuestion } from '../../db/pg/entities/game/gameQuestion'
 import { GamePlayer } from '../../db/pg/entities/game/gamePlayer'
 import { SaQuestionsRepository } from '../saQuestions/saQuestionsRepository'
+import { GameQueryRepository } from './game.queryRepository'
+import { GameAnswerQueryRepository } from './gameAnswer.queryRepository'
+import { GameAnswerRepository } from './gameAnswer.repository'
 import { PairGameController } from './pairGame.controller'
 import { GameQuestionRepository } from './gameQuestion.repository'
 import { GameRepository } from './game.repository'
@@ -12,8 +15,15 @@ import { GamePlayerRepository } from './gamePlayer.repository'
 import { AnswerGameQuestionUseCase } from './use-cases/answerGameQuestion.useCase'
 import { ConnectToGameUseCase } from './use-cases/connectToGame.useCase'
 import { Question } from '../../db/pg/entities/game/question'
+import { GetCurrentUserGameUseCase } from './use-cases/getCurrentUserGame.useCase'
+import { GetGameUseCase } from './use-cases/getGame.useCase'
 
-const useCases = [ConnectToGameUseCase, AnswerGameQuestionUseCase]
+const useCases = [
+	ConnectToGameUseCase,
+	AnswerGameQuestionUseCase,
+	GetGameUseCase,
+	GetCurrentUserGameUseCase,
+]
 
 @Module({
 	imports: [TypeOrmModule.forFeature([Question, GamePlayer, Game, GameQuestion, GameAnswer])],
@@ -23,6 +33,9 @@ const useCases = [ConnectToGameUseCase, AnswerGameQuestionUseCase]
 		GameRepository,
 		GameQuestionRepository,
 		SaQuestionsRepository,
+		GameQueryRepository,
+		GameAnswerRepository,
+		GameAnswerQueryRepository,
 		...useCases,
 	],
 })

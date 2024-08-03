@@ -6,6 +6,7 @@ import {
 	Get,
 	HttpCode,
 	HttpStatus,
+	Param,
 	Post,
 	Req,
 	UnauthorizedException,
@@ -18,12 +19,16 @@ import { LayerErrorCode, LayerSuccessCode } from '../../types/resultCodes'
 import { AnswerGameQuestionDtoModel } from './models/game.input.model'
 import { AnswerGameQuestionUseCase } from './use-cases/answerGameQuestion.useCase'
 import { ConnectToGameUseCase } from './use-cases/connectToGame.useCase'
+import { GetCurrentUserGameUseCase } from './use-cases/getCurrentUserGame.useCase'
+import { GetGameUseCase } from './use-cases/getGame.useCase'
 
 @Controller(RouteNames.PAIR_GAME.value)
 export class PairGameController {
 	constructor(
 		private connectToGameUseCase: ConnectToGameUseCase,
 		private answerGameQuestionUseCase: AnswerGameQuestionUseCase,
+		private getGameUseCase: GetGameUseCase,
+		private getCurrentUserGameUseCase: GetCurrentUserGameUseCase,
 	) {}
 
 	// Connect current user to existing random pending pair or create new pair which will be waiting second player
@@ -69,5 +74,49 @@ export class PairGameController {
 		}
 
 		return answerGameQuestionStatus.data
+	}
+
+	// Send an answer for the next not answered question in an active pair
+	@UseGuards(CheckAccessTokenGuard)
+	@Get(':gameId')
+	@HttpCode(HttpStatus.OK)
+	async getGame(@Req() req: Request, @Param('gameId') gameId: string) {
+		if (!req.user) return
+
+		const getGameStatus = await this.getGameUseCase.execute(req.user.id, gameId)
+
+		if (getGameStatus.code === LayerErrorCode.NotFound) {
+			throw new UnauthorizedException()
+		}
+
+		if (getGameStatus.code === LayerErrorCode.Forbidden) {
+			throw new ForbiddenException()
+		}
+
+		if (getGameStatus.code !== LayerSuccessCode.Success) {
+			throw new BadRequestException()
+		}
+
+		return getGameStatus.data
+	}
+
+	// Send an answer for the next not answered question in an active pair
+	@UseGuards(CheckAccessTokenGuard)
+	@Get(RouteNames.PAIR_GAME.MY_CURRENT.value)
+	@HttpCode(HttpStatus.OK)
+	async getCurrentUserGame(@Req() req: Request) {
+		if (!req.user) return
+
+		const getCurrentUserGameStatus = await this.getCurrentUserGameUseCase.execute(req.user.id)
+
+		if (getCurrentUserGameStatus.code === LayerErrorCode.NotFound) {
+			throw new UnauthorizedException()
+		}
+
+		if (getCurrentUserGameStatus.code !== LayerSuccessCode.Success) {
+			throw new BadRequestException()
+		}
+
+		return getCurrentUserGameStatus.data
 	}
 }

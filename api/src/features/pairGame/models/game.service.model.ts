@@ -1,15 +1,17 @@
 import { GameAnswerStatus } from '../../../db/pg/entities/game/gameAnswer'
 import { GameStatus } from '../../../db/pg/entities/game/game'
+import { GamePlayer } from '../../../db/pg/entities/game/gamePlayer'
+import { Question } from '../../../db/pg/entities/game/question'
 
-export namespace GameOutModel {
+export namespace GameServiceModel {
 	export type Main = {
 		// Id of pair
 		id: string
 		status: GameStatus
-		firstPlayerProgress: Player
-		secondPlayerProgress: null | Player
+		firstPlayer: Player
+		secondPlayer: null | Player
 		// Questions for both players (can be null if second player haven't connected yet)
-		questions: null | Question[]
+		questions: Question[]
 
 		// Date when first player initialized the pair
 		pairCreatedDate: string // '2024-07-28T07:45:51.040Z'
@@ -20,14 +22,17 @@ export namespace GameOutModel {
 	}
 
 	export type Player = {
+		id: string
+		login: string
 		answers: Answer[]
-		player: User
+		user: User
 		score: number
 	}
 
 	export type Question = {
 		id: string
 		body: string
+		correctAnswers: string[]
 	}
 
 	type Answer = {
@@ -42,13 +47,22 @@ export namespace GameOutModel {
 	}
 }
 
-export type GameAnswerOutModel = {
-	gameQuestionId: string
-	answerStatus: GameAnswerStatus
-	addedAt: string
-}
-
-export type GamePlayerOutModel = {
+export type GamePlayerServiceModel = {
 	id: string
-	login: string
+	user: {
+		login: string
+	}
+	score: number
+	answers: {
+		id: string
+		status: GameAnswerStatus
+		player: {
+			id: string
+		}
+		question: {
+			id: string
+			body: string
+		}
+		createdAt: string
+	}[]
 }
