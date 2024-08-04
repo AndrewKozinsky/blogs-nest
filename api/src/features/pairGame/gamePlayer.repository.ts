@@ -53,6 +53,7 @@ export class GamePlayerRepository {
 	}
 
 	async getPlayerByUserId(userId: string): Promise<LayerResult<GamePlayerServiceModel>> {
+		const dd = await this.getPlayerWhere({ userId })
 		return this.getPlayerWhere({ userId })
 	}
 
@@ -64,7 +65,8 @@ export class GamePlayerRepository {
 			relations: {
 				user: true,
 				answers: {
-					gameQuestion: true,
+					question: true,
+					player: true,
 				},
 			},
 		})
@@ -93,11 +95,11 @@ export class GamePlayerRepository {
 					id: answer.id,
 					status: answer.status,
 					player: {
-						id: answer.player.id,
+						id: answer.playerId,
 					},
 					question: {
-						id: answer.gameQuestion.id,
-						body: answer.gameQuestion.body,
+						id: answer.question.id,
+						body: answer.question.body,
 					},
 					createdAt: answer.createdAt.toISOString(),
 				}

@@ -92,7 +92,7 @@ export class GameQueryRepository {
 					return {
 						id: answer.id.toString(),
 						answerStatus: answer.status,
-						questionId: answer.gameQuestionId,
+						questionId: answer.questionId,
 						addedAt: answer.createdAt.toISOString(),
 					}
 				}),
@@ -105,11 +105,12 @@ export class GameQueryRepository {
 		}
 
 		function prepareQuestions(gameQuestions: GameQuestion[]): GameOutModel.Question[] {
-			return gameQuestions.map((question) => {
+			return gameQuestions.map((gameQuestion) => {
 				return {
-					id: question.questionId.toString(),
-					body: question.question.body,
-					correctAnswers: question.question.correctAnswers,
+					id: gameQuestion.questionId.toString(),
+					body: gameQuestion.question.body,
+					index: gameQuestion.index,
+					correctAnswers: gameQuestion.question.correctAnswers,
 				}
 			})
 		}

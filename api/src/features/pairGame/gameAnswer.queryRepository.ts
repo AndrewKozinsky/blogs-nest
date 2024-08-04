@@ -28,7 +28,7 @@ export class GameAnswerQueryRepository {
 
 	mapDbGameAnswerToOutGameAnswer(dbGameAnswer: GameAnswer): GameAnswerOutModel {
 		return {
-			gameQuestionId: dbGameAnswer.gameQuestionId,
+			questionId: dbGameAnswer.questionId,
 			answerStatus: dbGameAnswer.status,
 			addedAt: dbGameAnswer.createdAt.toISOString(),
 		}

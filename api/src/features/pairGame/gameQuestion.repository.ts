@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
+import { GamePlayer } from '../../db/pg/entities/game/gamePlayer'
 import { GameQuestion } from '../../db/pg/entities/game/gameQuestion'
 import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../types/resultCodes'
 import { GameRepository } from './game.repository'
 import { GamePlayerRepository } from './gamePlayer.repository'
+import { GamePlayerServiceModel, GameQuestionServiceModel } from './models/game.service.model'
 
 @Injectable()
 export class GameQuestionRepository {
@@ -29,7 +31,7 @@ export class GameQuestionRepository {
 		}
 	}
 
-	async getPlayerCurrentQuestion(playerId: string) {
+	async getPlayerCurrentGameQuestion(playerId: string) {
 		const getPlayerRes = await this.gamePlayerRepository.getPlayerById(playerId)
 		if (getPlayerRes.code !== LayerSuccessCode.Success) {
 			return getPlayerRes
@@ -42,16 +44,40 @@ export class GameQuestionRepository {
 		}
 		const game = getGameRes.data
 
-		const unansweredQuestion = game.questions[player.answers.length]
-		if (!unansweredQuestion) {
+		const unansweredGameQuestion = game.gameQuestions[player.answers.length]
+		if (!unansweredGameQuestion) {
 			return {
 				code: LayerErrorCode.BadRequest,
 			}
 		}
 
+		const getGameQuestionRes = await this.dataSource.getRepository(GameQuestion).findOne({
+			where: { id: unansweredGameQuestion.id },
+			relations: {
+				question: true,
+			},
+		})
+		if (!getGameQuestionRes) {
+			return {
+				code: LayerErrorCode.NotFound,
+			}
+		}
+
 		return {
 			code: LayerSuccessCode.Success,
-			data: unansweredQuestion,
+			data: this.mapDbGameQuestionToServiceGameQuestion(getGameQuestionRes),
+		}
+	}
+
+	mapDbGameQuestionToServiceGameQuestion(dbGameQuestion: GameQuestion): GameQuestionServiceModel {
+		return {
+			id: dbGameQuestion.id,
+			gameId: dbGameQuestion.gameId,
+			index: dbGameQuestion.index,
+			question: {
+				questionId: dbGameQuestion.question.id,
+				correctAnswers: dbGameQuestion.question.correctAnswers,
+			},
 		}
 	}
 }

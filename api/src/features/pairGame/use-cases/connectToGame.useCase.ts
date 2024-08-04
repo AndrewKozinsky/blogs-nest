@@ -135,10 +135,9 @@ export class ConnectToGameUseCase {
 		const gameQuestionQueries = []
 		for (let i = 0; i < getRandomQuestionsRes.data.length; i++) {
 			const question = getRandomQuestionsRes.data[i]
-			const questionId = question.id
 
 			gameQuestionQueries.push(
-				this.gameQuestionRepository.createGameQuestion(gameId, questionId, i),
+				this.gameQuestionRepository.createGameQuestion(gameId, question.id, i),
 			)
 		}
 

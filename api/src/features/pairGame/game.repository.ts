@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource, FindOptionsWhere } from 'typeorm'
-import { GameStatus, Game } from '../../db/pg/entities/game/game'
+import { Game, GameStatus } from '../../db/pg/entities/game/game'
 import { GamePlayer } from '../../db/pg/entities/game/gamePlayer'
 import { GameQuestion } from '../../db/pg/entities/game/gameQuestion'
 import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../types/resultCodes'
+import { gameConfig } from './config'
 import { GameServiceModel } from './models/game.service.model'
 
 @Injectable()
@@ -83,6 +84,29 @@ export class GameRepository {
 		}
 	}
 
+	async finishGameIfNeed(gameId: string): Promise<LayerResult<null>> {
+		const getGameRes = await this.getGameById(gameId)
+		if (getGameRes.code !== LayerSuccessCode.Success) {
+			return getGameRes
+		}
+
+		const firstPlayerFinished =
+			getGameRes.data.firstPlayer.answers.length === gameConfig.questionsNumber
+		const secondPlayerFinished =
+			getGameRes.data.firstPlayer.answers.length === gameConfig.questionsNumber
+
+		if (firstPlayerFinished && secondPlayerFinished) {
+			await this.dataSource
+				.getRepository(Game)
+				.update(gameId, { finishGameDate: new Date(), status: GameStatus.Finished })
+		}
+
+		return {
+			code: LayerSuccessCode.Success,
+			data: null,
+		}
+	}
+
 	mapDbGameToServiceGame(dbGame: Game): GameServiceModel.Main {
 		let secondPlayer = null
 		if (dbGame.secondPlayer) {
@@ -94,7 +118,7 @@ export class GameRepository {
 			status: dbGame.status,
 			firstPlayer: preparePlayerData(dbGame.firstPlayer),
 			secondPlayer,
-			questions: prepareQuestions(dbGame.gameQuestions),
+			gameQuestions: prepareQuestions(dbGame.gameQuestions),
 			pairCreatedDate: dbGame.createdAt.toISOString(),
 			startGameDate: convertDate(dbGame.startGameDate),
 			finishGameDate: convertDate(dbGame.finishGameDate),
@@ -108,21 +132,24 @@ export class GameRepository {
 					return {
 						id: answer.id.toString(),
 						answerStatus: answer.status,
-						questionId: answer.gameQuestionId,
+						questionId: answer.questionId,
 						addedAt: answer.createdAt.toISOString(),
 					}
 				}),
 				user: dbPlayer.user,
 				score: dbPlayer.score,
-			} as any
+			}
 		}
 
-		function prepareQuestions(gameQuestions: GameQuestion[]): GameServiceModel.Question[] {
-			return gameQuestions.map((question) => {
+		function prepareQuestions(gameQuestions: GameQuestion[]): GameServiceModel.GameQuestion[] {
+			return gameQuestions.map((gameQuestion) => {
 				return {
-					id: question.questionId.toString(),
-					body: question.question.body,
-					correctAnswers: question.question.correctAnswers,
+					id: gameQuestion.id.toString(),
+					question: {
+						questionId: gameQuestion.questionId,
+						body: gameQuestion.question.body,
+						correctAnswers: gameQuestion.question.correctAnswers,
+					},
 				}
 			})
 		}

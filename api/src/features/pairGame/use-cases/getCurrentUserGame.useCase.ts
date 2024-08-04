@@ -12,15 +12,7 @@ import { GameServiceModel } from '../models/game.service.model'
 
 @Injectable()
 export class GetCurrentUserGameUseCase {
-	constructor(
-		private gamePlayerRepository: GamePlayerRepository,
-		private gameGameRepository: GameRepository,
-		private gameQuestionRepository: GameQuestionRepository,
-		private saQuestionsRepository: SaQuestionsRepository,
-		private gameAnswerRepository: GameAnswerRepository,
-		private gameRepository: GameRepository,
-		private gameQueryRepository: GameQueryRepository,
-	) {}
+	constructor(private gameQueryRepository: GameQueryRepository) {}
 
 	async execute(userId: string): Promise<LayerResult<GameOutModel.Main>> {
 		const gerCurrentUserGameRes = await this.gameQueryRepository.getGameByUserId(userId)

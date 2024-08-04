@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { GameAnswerStatus } from '../../../db/pg/entities/game/gameAnswer'
 import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../../types/resultCodes'
 import { gameConfig } from '../config'
+import { GameRepository } from '../game.repository'
 import { AnswerGameQuestionDtoModel } from '../models/game.input.model'
 import { GameAnswerOutModel } from '../models/game.output.model'
 import { GameAnswerQueryRepository } from '../gameAnswer.queryRepository'
@@ -16,6 +17,7 @@ export class AnswerGameQuestionUseCase {
 		private gameQuestionRepository: GameQuestionRepository,
 		private gameAnswerRepository: GameAnswerRepository,
 		private gameAnswerQueryRepository: GameAnswerQueryRepository,
+		private gameRepository: GameRepository,
 	) {}
 
 	async execute(
@@ -41,36 +43,38 @@ export class AnswerGameQuestionUseCase {
 
 		// Получить текущий неотвеченный вопрос
 		const resCurrentGameQuestionRes =
-			await this.gameQuestionRepository.getPlayerCurrentQuestion(player.id)
+			await this.gameQuestionRepository.getPlayerCurrentGameQuestion(player.id)
 		if (resCurrentGameQuestionRes.code !== LayerSuccessCode.Success) {
 			return resCurrentGameQuestionRes
 		}
 		const gameQuestion = resCurrentGameQuestionRes.data
 
-		const isUserAnswerCorrect = gameQuestion.correctAnswers.includes(reqBodyDto.answer)
+		const isUserAnswerCorrect = gameQuestion.question.correctAnswers.includes(reqBodyDto.answer)
 			? GameAnswerStatus.Correct
 			: GameAnswerStatus.Incorrect
 
-		// Если игрок ответил правильно, то увеличить поле score у игрока
-		await this.gamePlayerRepository.increaseScore(player.id)
-
-		return this.createAnswerAndReturn(player.id, gameQuestion.id, isUserAnswerCorrect)
-	}
-
-	async createAnswerAndReturn(
-		playerId: string,
-		gameQuestionId: string,
-		isUserAnswerCorrect: GameAnswerStatus,
-	): Promise<LayerResult<GameAnswerOutModel>> {
-		const createGameAnswerRes = await this.gameAnswerRepository.createGameAnswer(
-			playerId,
-			gameQuestionId,
+		// Создать ответ
+		const createAnswerRes = await this.gameAnswerRepository.createGameAnswer(
+			player.id,
+			gameQuestion.question.questionId,
 			isUserAnswerCorrect,
 		)
-		if (createGameAnswerRes.code !== LayerSuccessCode.Success) {
-			return createGameAnswerRes
+
+		if (createAnswerRes.code !== LayerSuccessCode.Success) {
+			return createAnswerRes
 		}
-		const answerId = createGameAnswerRes.data
+
+		// Если игрок ответил правильно, то увеличить поле score у игрока
+		if (isUserAnswerCorrect) {
+			await this.gamePlayerRepository.increaseScore(player.id)
+		}
+
+		// Если игрок ответил на все вопросы, то узнать ответил ли на все вопросы другой игрок и завершить игру
+		if (getPlayerRes.data.answers.length + 1 === gameConfig.questionsNumber) {
+			await this.gameRepository.finishGameIfNeed(gameQuestion.gameId)
+		}
+
+		const answerId = createAnswerRes.data
 
 		const newAnswer = await this.gameAnswerQueryRepository.getAnswer(answerId)
 		if (newAnswer.code !== LayerSuccessCode.Success) {

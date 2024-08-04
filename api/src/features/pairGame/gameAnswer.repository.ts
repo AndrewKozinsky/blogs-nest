@@ -11,12 +11,12 @@ export class GameAnswerRepository {
 
 	async createGameAnswer(
 		playerId: string,
-		gameQuestionId: string,
+		questionId: string,
 		status: GameAnswerStatus,
 	): Promise<LayerResult<string>> {
 		const createdGameQuestionRes = await this.dataSource
 			.getRepository(GameAnswer)
-			.insert({ playerId, gameQuestionId: gameQuestionId, status })
+			.insert({ playerId, questionId, status })
 
 		return {
 			code: LayerSuccessCode.Success,

@@ -25,9 +25,9 @@ export class GameAnswer {
 	playerId: string
 
 	@ManyToOne(() => Question)
-	gameQuestion: Question
+	question: Question
 	@Column({ type: 'varchar' })
-	gameQuestionId: string
+	questionId: string
 
 	@Column({ type: 'varchar' })
 	status: GameAnswerStatus

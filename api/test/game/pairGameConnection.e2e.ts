@@ -1,22 +1,14 @@
 import { INestApplication } from '@nestjs/common'
-// import { agent as request } from 'supertest'
-import { Response } from 'express'
 import { GameStatus } from '../../src/db/pg/entities/game/game'
 import { HTTP_STATUSES } from '../../src/settings/config'
 import RouteNames from '../../src/settings/routeNames'
 import { createTestApp } from '../utils/common'
 import { clearAllDB } from '../utils/db'
-import {
-	addQuizQuestionRequest,
-	addUserByAdminRequest,
-	loginRequest,
-	userEmail,
-	userPassword,
-} from '../utils/utils'
+import { addUserByAdminRequest, loginRequest, userEmail, userPassword } from '../utils/utils'
 import { agent as request } from 'supertest'
 import { checkGameObj, createGameQuestions } from './common'
 
-it('123', async () => {
+it.only('123', async () => {
 	expect(2).toBe(2)
 })
 
@@ -79,7 +71,7 @@ describe('ROOT', () => {
 			expect(connectToGameRes.body.finishGameDate).toBe(null)
 		})
 
-		it.only('should return an object if the second user connected to the game', async () => {
+		it('should return an object if the second user connected to the game', async () => {
 			await createGameQuestions(app, 10)
 
 			// Create a first user

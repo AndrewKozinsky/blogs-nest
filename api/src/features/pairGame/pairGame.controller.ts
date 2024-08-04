@@ -69,6 +69,10 @@ export class PairGameController {
 			throw new UnauthorizedException()
 		}
 
+		if (answerGameQuestionStatus.code === LayerErrorCode.Forbidden) {
+			throw new ForbiddenException()
+		}
+
 		if (answerGameQuestionStatus.code !== LayerSuccessCode.Success) {
 			throw new BadRequestException()
 		}
