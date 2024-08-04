@@ -9,7 +9,6 @@ import {
 } from 'typeorm'
 import { GameQuestion } from './gameQuestion'
 import { GamePlayer } from './gamePlayer'
-import { User } from '../user'
 
 export enum GameStatus {
 	Pending = 'PendingSecondPlayer',

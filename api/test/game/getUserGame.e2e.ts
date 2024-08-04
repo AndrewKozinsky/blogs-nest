@@ -1,10 +1,18 @@
 import { INestApplication } from '@nestjs/common'
+import { DBTypes } from '../../src/db/mongo/dbTypes'
 import { GameStatus } from '../../src/db/pg/entities/game/game'
+import { gameConfig } from '../../src/features/pairGame/config'
 import { HTTP_STATUSES } from '../../src/settings/config'
 import RouteNames from '../../src/settings/routeNames'
 import { createTestApp } from '../utils/common'
 import { clearAllDB } from '../utils/db'
-import { addUserByAdminRequest, loginRequest, userEmail, userPassword } from '../utils/utils'
+import {
+	addQuizQuestionRequest,
+	addUserByAdminRequest,
+	loginRequest,
+	userEmail,
+	userPassword,
+} from '../utils/utils'
 import { agent as request } from 'supertest'
 import { checkGameObj, createGameQuestions, createGameWithPlayers } from './common'
 
@@ -23,45 +31,43 @@ describe('ROOT', () => {
 		await clearAllDB(app)
 	})
 
-	describe('Connection to a game', () => {
+	describe('Get user game', () => {
 		it('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
-		it('should return 403 if current user is already participating in active pair', async () => {
+		it('should return 403 if current user is not a player', async () => {
 			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const loginUserRes = await loginRequest(app, userEmail, userPassword)
 			const userAccessToken = loginUserRes.body.accessToken
 
 			await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
 				.set('authorization', 'Bearer ' + userAccessToken)
-				.expect(HTTP_STATUSES.OK_200)
-
-			await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.CONNECTION.full)
-				.set('authorization', 'Bearer ' + userAccessToken)
-				.expect(HTTP_STATUSES.FORBIDDEN_403)
+				.expect(HTTP_STATUSES.BAD_REQUEST_400)
 		})
 
-		it('should return an object without questions if a single user connected to the empty game', async () => {
-			await createGameQuestions(app, 10)
-
+		it('only one player has joined to the game', async () => {
 			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const loginUserRes = await loginRequest(app, userEmail, userPassword)
 			const userAccessToken = loginUserRes.body.accessToken
 
-			const connectToGameRes = await request(app.getHttpServer())
+			await request(app.getHttpServer())
 				.get('/' + RouteNames.PAIR_GAME.CONNECTION.full)
 				.set('authorization', 'Bearer ' + userAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
-			const game = connectToGameRes.body
-			checkGameObj(connectToGameRes.body)
+			const getGameRes = await request(app.getHttpServer())
+				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
+				.set('authorization', 'Bearer ' + userAccessToken)
+				.expect(HTTP_STATUSES.OK_200)
+
+			const game = getGameRes.body
+			checkGameObj(game)
 
 			expect(game.firstPlayerProgress.answers.length).toBe(0)
 			expect(game.firstPlayerProgress.score).toBe(0)
@@ -72,10 +78,15 @@ describe('ROOT', () => {
 			expect(game.finishGameDate).toBe(null)
 		})
 
-		it('should return an object if the second user connected to the game', async () => {
-			const { userFirstAccessToken, userSecondAccessToken, game } =
-				await createGameWithPlayers(app)
+		it('two players have joined to the game', async () => {
+			const { userFirstAccessToken, userSecondAccessToken } = await createGameWithPlayers(app)
 
+			const getGameRes = await request(app.getHttpServer())
+				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
+				.set('authorization', 'Bearer ' + userFirstAccessToken)
+				.expect(HTTP_STATUSES.OK_200)
+
+			const game = getGameRes.body
 			checkGameObj(game)
 			expect(game.secondPlayerProgress).not.toBe(null)
 			expect(game.status).toBe(GameStatus.Active)

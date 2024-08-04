@@ -82,6 +82,30 @@ export class PairGameController {
 
 	// Send an answer for the next not answered question in an active pair
 	@UseGuards(CheckAccessTokenGuard)
+	@Get(RouteNames.PAIR_GAME.MY_CURRENT.value)
+	@HttpCode(HttpStatus.OK)
+	async getCurrentUserGame(@Req() req: Request) {
+		if (!req.user) return
+
+		const getCurrentUserGameStatus = await this.getCurrentUserGameUseCase.execute(req.user.id)
+
+		if (getCurrentUserGameStatus.code === LayerErrorCode.NotFound) {
+			throw new UnauthorizedException()
+		}
+
+		if (getCurrentUserGameStatus.code === LayerErrorCode.Forbidden) {
+			throw new ForbiddenException()
+		}
+
+		if (getCurrentUserGameStatus.code !== LayerSuccessCode.Success) {
+			throw new BadRequestException()
+		}
+
+		return getCurrentUserGameStatus.data
+	}
+
+	// Send an answer for the next not answered question in an active pair
+	@UseGuards(CheckAccessTokenGuard)
 	@Get(':gameId')
 	@HttpCode(HttpStatus.OK)
 	async getGame(@Req() req: Request, @Param('gameId') gameId: string) {
@@ -102,25 +126,5 @@ export class PairGameController {
 		}
 
 		return getGameStatus.data
-	}
-
-	// Send an answer for the next not answered question in an active pair
-	@UseGuards(CheckAccessTokenGuard)
-	@Get(RouteNames.PAIR_GAME.MY_CURRENT.value)
-	@HttpCode(HttpStatus.OK)
-	async getCurrentUserGame(@Req() req: Request) {
-		if (!req.user) return
-
-		const getCurrentUserGameStatus = await this.getCurrentUserGameUseCase.execute(req.user.id)
-
-		if (getCurrentUserGameStatus.code === LayerErrorCode.NotFound) {
-			throw new UnauthorizedException()
-		}
-
-		if (getCurrentUserGameStatus.code !== LayerSuccessCode.Success) {
-			throw new BadRequestException()
-		}
-
-		return getCurrentUserGameStatus.data
 	}
 }

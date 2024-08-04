@@ -93,7 +93,8 @@ export class GameRepository {
 		const firstPlayerFinished =
 			getGameRes.data.firstPlayer.answers.length === gameConfig.questionsNumber
 		const secondPlayerFinished =
-			getGameRes.data.firstPlayer.answers.length === gameConfig.questionsNumber
+			getGameRes.data.secondPlayer &&
+			getGameRes.data.secondPlayer.answers.length === gameConfig.questionsNumber
 
 		if (firstPlayerFinished && secondPlayerFinished) {
 			await this.dataSource

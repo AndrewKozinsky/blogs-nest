@@ -49,7 +49,7 @@ export class AnswerGameQuestionUseCase {
 		}
 		const gameQuestion = resCurrentGameQuestionRes.data
 
-		const isUserAnswerCorrect = gameQuestion.question.correctAnswers.includes(reqBodyDto.answer)
+		const userAnswerStatus = gameQuestion.question.correctAnswers.includes(reqBodyDto.answer)
 			? GameAnswerStatus.Correct
 			: GameAnswerStatus.Incorrect
 
@@ -57,7 +57,7 @@ export class AnswerGameQuestionUseCase {
 		const createAnswerRes = await this.gameAnswerRepository.createGameAnswer(
 			player.id,
 			gameQuestion.question.questionId,
-			isUserAnswerCorrect,
+			userAnswerStatus,
 		)
 
 		if (createAnswerRes.code !== LayerSuccessCode.Success) {
@@ -65,13 +65,16 @@ export class AnswerGameQuestionUseCase {
 		}
 
 		// Если игрок ответил правильно, то увеличить поле score у игрока
-		if (isUserAnswerCorrect) {
+		if (userAnswerStatus === GameAnswerStatus.Correct) {
 			await this.gamePlayerRepository.increaseScore(player.id)
 		}
 
 		// Если игрок ответил на все вопросы, то узнать ответил ли на все вопросы другой игрок и завершить игру
 		if (getPlayerRes.data.answers.length + 1 === gameConfig.questionsNumber) {
 			await this.gameRepository.finishGameIfNeed(gameQuestion.gameId)
+			await this.gamePlayerRepository.addExtraPointForPlayerWhichFinishedFirst(
+				gameQuestion.gameId,
+			)
 		}
 
 		const answerId = createAnswerRes.data
