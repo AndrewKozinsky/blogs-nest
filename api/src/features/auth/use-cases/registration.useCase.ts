@@ -18,7 +18,7 @@ export class RegistrationUseCase {
 	async execute(dto: AuthRegistrationDtoModel): Promise<LayerResult<null>> {
 		const userByEmail = await this.authRepository.getUserByLoginOrEmail(dto.email)
 		if (userByEmail) {
-			return { code: LayerErrorCode.BadRequest }
+			return { code: LayerErrorCode.BadRequest_400 }
 		}
 
 		const newUserDto = await this.commonService.getCreateUserDto(dto, false)
@@ -28,7 +28,7 @@ export class RegistrationUseCase {
 		const user = await this.usersService.getUser(userId)
 
 		if (!user) {
-			return { code: LayerErrorCode.BadRequest }
+			return { code: LayerErrorCode.BadRequest_400 }
 		}
 
 		try {
@@ -46,7 +46,7 @@ export class RegistrationUseCase {
 			await this.authRepository.deleteUser(userId)
 
 			return {
-				code: LayerErrorCode.BadRequest,
+				code: LayerErrorCode.BadRequest_400,
 			}
 		}
 	}

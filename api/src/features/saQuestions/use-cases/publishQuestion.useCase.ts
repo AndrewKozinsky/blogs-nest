@@ -1,26 +1,24 @@
 import { Injectable } from '@nestjs/common'
 import { LayerResult } from '../../../types/resultCodes'
 import {
-	CreateQuizQuestionDtoModel,
-	UpdateQuizQuestionDtoModel,
+	CreateQuestionDtoModel,
+	PublishQuestionDtoModel,
+	UpdateQuestionDtoModel,
 } from '../models/quizQuestions.input.model'
 import { QuizQuestionOutModel } from '../models/quizQuestions.output.model'
 import { SaQuestionsQueryRepository } from '../saQuestionsQueryRepository'
 import { SaQuestionsRepository } from '../saQuestionsRepository'
 
 @Injectable()
-export class UpdateQuizQuestionUseCase {
+export class PublishQuestionUseCase {
 	constructor(private saQuizQuestionsRepository: SaQuestionsRepository) {}
 
-	async execute(
-		quizQuestionId: string,
-		dto: UpdateQuizQuestionDtoModel,
-	): Promise<LayerResult<boolean>> {
-		const updatedQuizQuestionRes = await this.saQuizQuestionsRepository.updateGameQuestion(
-			quizQuestionId,
+	async execute(questionId: string, dto: PublishQuestionDtoModel): Promise<LayerResult<boolean>> {
+		const publishQuestionRes = await this.saQuizQuestionsRepository.setPublishStatusInQuestion(
+			questionId,
 			dto,
 		)
 
-		return updatedQuizQuestionRes
+		return publishQuestionRes
 	}
 }

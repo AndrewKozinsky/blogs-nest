@@ -15,8 +15,8 @@ export enum LayerSuccessCode {
 }
 
 export enum LayerErrorCode {
-	NotFound = 1,
-	Unauthorized = 2,
-	BadRequest = 3,
-	Forbidden = 4,
+	NotFound_404 = 1,
+	Unauthorized_401 = 2,
+	BadRequest_400 = 3,
+	Forbidden_403 = 4,
 }

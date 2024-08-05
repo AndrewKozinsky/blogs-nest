@@ -131,7 +131,7 @@ export const RouteNames = {
 			full: 'testing/all-data',
 		},
 	},
-	SA_QUIZ_QUESTIONS: {
+	SA_QUESTIONS: {
 		value: 'sa/quiz/questions',
 		QUESTION_ID(questionId: string) {
 			return {

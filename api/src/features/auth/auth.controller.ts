@@ -60,7 +60,7 @@ export class AuthController {
 		const loginServiceRes = await this.loginUseCase.execute(req, body)
 
 		if (
-			loginServiceRes.code === LayerErrorCode.Unauthorized ||
+			loginServiceRes.code === LayerErrorCode.Unauthorized_401 ||
 			loginServiceRes.code !== LayerSuccessCode.Success
 		) {
 			throw new UnauthorizedException()
@@ -88,7 +88,7 @@ export class AuthController {
 		)
 
 		if (
-			generateTokensRes.code === LayerErrorCode.Unauthorized ||
+			generateTokensRes.code === LayerErrorCode.Unauthorized_401 ||
 			generateTokensRes.code !== LayerSuccessCode.Success
 		) {
 			throw new UnauthorizedException()
@@ -115,7 +115,7 @@ export class AuthController {
 	async registration(@Body() body: AuthRegistrationDtoModel) {
 		const regStatus = await this.registrationUseCase.execute(body)
 
-		if (regStatus.code === LayerErrorCode.BadRequest) {
+		if (regStatus.code === LayerErrorCode.BadRequest_400) {
 			throw new BadRequestException()
 		}
 	}
@@ -127,7 +127,7 @@ export class AuthController {
 	async registrationEmailResending(@Body() body: AuthRegistrationEmailResendingDtoModel) {
 		const resendingStatus = await this.registrationEmailResendingUseCase.execute(body)
 
-		if (resendingStatus.code === LayerErrorCode.BadRequest) {
+		if (resendingStatus.code === LayerErrorCode.BadRequest_400) {
 			throw new BadRequestException()
 		}
 	}
@@ -140,7 +140,7 @@ export class AuthController {
 		const confirmationStatus: LayerResult<null> =
 			await this.confirmEmailAfterRegistrationUseCase.execute(body.code)
 
-		if (confirmationStatus.code === LayerErrorCode.BadRequest) {
+		if (confirmationStatus.code === LayerErrorCode.BadRequest_400) {
 			throw new BadRequestException()
 		}
 	}
@@ -165,7 +165,7 @@ export class AuthController {
 
 		const logoutServiceRes = await this.logoutUseCase.execute(refreshTokenFromCookie)
 
-		if (logoutServiceRes.code === LayerErrorCode.Unauthorized) {
+		if (logoutServiceRes.code === LayerErrorCode.Unauthorized_401) {
 			throw new UnauthorizedException()
 		}
 

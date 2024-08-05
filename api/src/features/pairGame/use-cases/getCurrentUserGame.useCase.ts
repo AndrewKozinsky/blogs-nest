@@ -15,10 +15,11 @@ export class GetCurrentUserGameUseCase {
 	constructor(private gameQueryRepository: GameQueryRepository) {}
 
 	async execute(userId: string): Promise<LayerResult<GameOutModel.Main>> {
-		const gerCurrentUserGameRes = await this.gameQueryRepository.getGameByUserId(userId)
+		const gerCurrentUserGameRes =
+			await this.gameQueryRepository.getUnfinishedGameByUserId(userId)
 		if (gerCurrentUserGameRes.code !== LayerSuccessCode.Success) {
 			return {
-				code: LayerErrorCode.NotFound,
+				code: LayerErrorCode.NotFound_404,
 			}
 		}
 

@@ -4,8 +4,9 @@ import { DataSource } from 'typeorm'
 import { Question } from '../../db/pg/entities/game/question'
 import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../types/resultCodes'
 import {
-	CreateQuizQuestionDtoModel,
-	UpdateQuizQuestionDtoModel,
+	CreateQuestionDtoModel,
+	PublishQuestionDtoModel,
+	UpdateQuestionDtoModel,
 } from './models/quizQuestions.input.model'
 import { QuizQuestionOutModel } from './models/quizQuestions.output.model'
 import { QuizQuestionServiceModel } from './models/quizQuestions.service.model'
@@ -14,14 +15,14 @@ import { QuizQuestionServiceModel } from './models/quizQuestions.service.model'
 export class SaQuestionsRepository {
 	constructor(@InjectDataSource() private dataSource: DataSource) {}
 
-	async getQuizQuestionById(quizQuestionId: string): Promise<LayerResult<Question>> {
+	async getQuestionById(questionId: string): Promise<LayerResult<Question>> {
 		const quizQuestion = await this.dataSource
 			.getRepository(Question)
-			.findOneBy({ id: quizQuestionId })
+			.findOneBy({ id: questionId })
 
 		if (!quizQuestion) {
 			return {
-				code: LayerErrorCode.NotFound,
+				code: LayerErrorCode.NotFound_404,
 			}
 		}
 
@@ -43,11 +44,11 @@ export class SaQuestionsRepository {
 
 		return {
 			code: LayerSuccessCode.Success,
-			data: quizQuestions.map(this.mapDbGameQuestionToServiceGameQuestion),
+			data: quizQuestions.map(this.mapDbQuestionToServiceQuestion),
 		}
 	}
 
-	async createQuizQuestion(dto: CreateQuizQuestionDtoModel): Promise<LayerResult<string>> {
+	async createQuestion(dto: CreateQuestionDtoModel): Promise<LayerResult<string>> {
 		const queryRes = await this.dataSource.getRepository(Question).insert({
 			body: dto.body,
 			correctAnswers: dto.correctAnswers,
@@ -60,14 +61,14 @@ export class SaQuestionsRepository {
 		}
 	}
 
-	async deleteGameQuestion(gameQuestionId: string): Promise<LayerResult<boolean>> {
+	async deleteQuestion(gameQuestionId: string): Promise<LayerResult<boolean>> {
 		const queryRes = await this.dataSource
 			.getRepository(Question)
 			.delete({ id: gameQuestionId })
 
 		if (queryRes.affected !== 1) {
 			return {
-				code: LayerErrorCode.NotFound,
+				code: LayerErrorCode.NotFound_404,
 			}
 		}
 
@@ -77,42 +78,17 @@ export class SaQuestionsRepository {
 		}
 	}
 
-	async updateGameQuestion(
-		quizQuestionId: string,
-		dto: UpdateQuizQuestionDtoModel,
+	async updateQuestion(
+		questionId: string,
+		dto: UpdateQuestionDtoModel,
 	): Promise<LayerResult<boolean>> {
-		const queryRes = await this.dataSource.getRepository(Question).update(quizQuestionId, dto)
-
-		if (queryRes.affected !== 1) {
-			return {
-				code: LayerErrorCode.NotFound,
-			}
-		}
-
-		return {
-			code: LayerSuccessCode.Success,
-			data: true,
-		}
-	}
-
-	async publishGameQuestion(quizQuestionId: string): Promise<LayerResult<boolean>> {
-		const getQuestionQueryRes = await this.getQuizQuestionById(quizQuestionId)
-
-		if (getQuestionQueryRes.code !== LayerSuccessCode.Success) {
-			return {
-				code: LayerErrorCode.NotFound,
-			}
-		}
-
-		const question = getQuestionQueryRes.data!
-
 		const queryRes = await this.dataSource
 			.getRepository(Question)
-			.update(quizQuestionId, { published: !question.published })
+			.update(questionId, { ...dto, updatedAt: new Date() })
 
 		if (queryRes.affected !== 1) {
 			return {
-				code: LayerErrorCode.BadRequest,
+				code: LayerErrorCode.NotFound_404,
 			}
 		}
 
@@ -122,14 +98,34 @@ export class SaQuestionsRepository {
 		}
 	}
 
-	mapDbGameQuestionToServiceGameQuestion(DbQuizQuestion: Question): QuizQuestionOutModel {
+	async setPublishStatusInQuestion(
+		quizQuestionId: string,
+		dto: PublishQuestionDtoModel,
+	): Promise<LayerResult<boolean>> {
+		const queryRes = await this.dataSource
+			.getRepository(Question)
+			.update(quizQuestionId, { published: dto.published, updatedAt: new Date() })
+
+		if (queryRes.affected !== 1) {
+			return {
+				code: LayerErrorCode.NotFound_404,
+			}
+		}
+
+		return {
+			code: LayerSuccessCode.Success,
+			data: true,
+		}
+	}
+
+	mapDbQuestionToServiceQuestion(DbQuizQuestion: Question): QuizQuestionOutModel {
 		return {
 			id: DbQuizQuestion.id.toString(),
 			body: DbQuizQuestion.body,
 			correctAnswers: DbQuizQuestion.correctAnswers,
 			published: DbQuizQuestion.published,
 			createdAt: DbQuizQuestion.createdAt.toISOString(),
-			updatedAt: DbQuizQuestion.updatedAt.toISOString(),
+			updatedAt: DbQuizQuestion.updatedAt ? DbQuizQuestion.updatedAt.toISOString() : null,
 		}
 	}
 }

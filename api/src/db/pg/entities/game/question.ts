@@ -1,10 +1,11 @@
+import { UpdateDateColumn } from 'typeorm'
 import {
+	BeforeUpdate,
 	Column,
 	CreateDateColumn,
 	Entity,
 	OneToMany,
 	PrimaryGeneratedColumn,
-	UpdateDateColumn,
 } from 'typeorm'
 import { GameQuestion } from './gameQuestion'
 
@@ -25,7 +26,7 @@ export class Question {
 	@CreateDateColumn()
 	createdAt: Date
 
-	@UpdateDateColumn()
+	@Column({ type: 'timestamp', nullable: true })
 	updatedAt: Date
 
 	@OneToMany(() => GameQuestion, (gameQuestion) => gameQuestion.question)

@@ -20,7 +20,7 @@ export class SetPostLikeStatusUseCase {
 		const post = await this.postsRepository.getPostById(postId)
 		if (!post) {
 			return {
-				code: LayerErrorCode.NotFound,
+				code: LayerErrorCode.NotFound_404,
 			}
 		}
 

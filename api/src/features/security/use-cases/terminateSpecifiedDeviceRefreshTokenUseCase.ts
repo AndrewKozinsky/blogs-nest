@@ -22,7 +22,7 @@ export class TerminateSpecifiedDeviceRefreshTokenUseCase {
 
 		if (!deviceRefreshToken) {
 			return {
-				code: LayerErrorCode.NotFound,
+				code: LayerErrorCode.NotFound_404,
 			}
 		}
 
@@ -33,7 +33,7 @@ export class TerminateSpecifiedDeviceRefreshTokenUseCase {
 
 		if (!currentUserDeviceId) {
 			return {
-				code: LayerErrorCode.Unauthorized,
+				code: LayerErrorCode.Unauthorized_401,
 			}
 		}
 
@@ -41,7 +41,7 @@ export class TerminateSpecifiedDeviceRefreshTokenUseCase {
 
 		if (userDevices.code !== LayerSuccessCode.Success) {
 			return {
-				code: LayerErrorCode.Forbidden,
+				code: LayerErrorCode.Forbidden_403,
 			}
 		}
 
@@ -51,7 +51,7 @@ export class TerminateSpecifiedDeviceRefreshTokenUseCase {
 
 		if (!deletionDeviceInUserDevices) {
 			return {
-				code: LayerErrorCode.Forbidden,
+				code: LayerErrorCode.Forbidden_403,
 			}
 		}
 
@@ -60,6 +60,6 @@ export class TerminateSpecifiedDeviceRefreshTokenUseCase {
 
 		return isDeviceDeleted
 			? { code: LayerSuccessCode.Success, data: null }
-			: { code: LayerErrorCode.Forbidden }
+			: { code: LayerErrorCode.Forbidden_403 }
 	}
 }

@@ -6,7 +6,7 @@ export type QuizQuestionOutModel = {
 	correctAnswers: string[]
 	published: boolean
 	createdAt: string // "2024-07-21T08:59:26.931Z"
-	updatedAt: string // "2024-07-21T08:59:26.931Z"
+	updatedAt: null | string // "2024-07-21T08:59:26.931Z"
 }
 
 export type GetQuizQuestionsOutModel = ItemsOutModel<QuizQuestionOutModel>

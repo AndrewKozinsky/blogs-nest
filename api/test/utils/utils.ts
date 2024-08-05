@@ -1,7 +1,7 @@
 // import dotenv from 'dotenv'
 import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
-import { CreateQuizQuestionDtoModel } from '../../src/features/saQuestions/models/quizQuestions.input.model'
+import { CreateQuestionDtoModel } from '../../src/features/saQuestions/models/quizQuestions.input.model'
 import { HTTP_STATUSES } from '../../src/settings/config'
 import RouteNames from '../../src/settings/routeNames'
 import { DBTypes } from '../../src/db/mongo/dbTypes'
@@ -258,8 +258,8 @@ export async function setPostLikeStatus(
 }
 
 export function createDtoQuizQuestion(
-	newQuizQuestionObj: Partial<CreateQuizQuestionDtoModel> = {},
-): CreateQuizQuestionDtoModel {
+	newQuizQuestionObj: Partial<CreateQuestionDtoModel> = {},
+): CreateQuestionDtoModel {
 	return Object.assign(
 		{
 			body: 'My difficult question.',
@@ -269,12 +269,12 @@ export function createDtoQuizQuestion(
 	)
 }
 
-export async function addQuizQuestionRequest(
+export async function addQuestionRequest(
 	app: INestApplication,
-	quizQuestionDto: Partial<CreateQuizQuestionDtoModel> = {},
+	quizQuestionDto: Partial<CreateQuestionDtoModel> = {},
 ) {
 	return request(app.getHttpServer())
-		.post('/' + RouteNames.SA_QUIZ_QUESTIONS.value)
+		.post('/' + RouteNames.SA_QUESTIONS.value)
 		.send(createDtoQuizQuestion(quizQuestionDto))
 		.set('Content-Type', 'application/json')
 		.set('Accept', 'application/json')

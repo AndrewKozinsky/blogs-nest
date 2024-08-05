@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
 import { HTTP_STATUSES } from '../../src/settings/config'
 import RouteNames from '../../src/settings/routeNames'
-import { addQuizQuestionRequest, addUserByAdminRequest, loginRequest } from '../utils/utils'
+import { addQuestionRequest, addUserByAdminRequest, loginRequest } from '../utils/utils'
 
 export function checkGameObj(gameObj: any) {
 	expect(typeof gameObj.id).toBe('string')
@@ -18,7 +18,9 @@ export function checkGameObj(gameObj: any) {
 	expect(typeof gameObj.pairCreatedDate).toBe('string')
 
 	if (gameObj.startGameDate) {
-		expect(typeof gameObj.startGameDate).toBe('string')
+		expect(gameObj.startGameDate).toMatch(
+			/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/,
+		)
 	} else {
 		expect(gameObj.startGameDate).toBe(null)
 	}
@@ -60,7 +62,7 @@ export async function createGameQuestions(app: INestApplication, questionsNumber
 	for (let i = 0; i < questionsNumber; i++) {
 		const counter = i + 1
 
-		await addQuizQuestionRequest(app, {
+		await addQuestionRequest(app, {
 			body: 'My question ' + counter,
 			correctAnswers: ['Answer 1', 'Answer 2'],
 		})
@@ -82,7 +84,7 @@ export async function createGameWithPlayers(app: INestApplication) {
 
 	// First user connects to the game
 	const firstConnectToGameRes = await request(app.getHttpServer())
-		.get('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+		.post('/' + RouteNames.PAIR_GAME.CONNECTION.full)
 		.set('authorization', 'Bearer ' + userFirstAccessToken)
 		.expect(HTTP_STATUSES.OK_200)
 
@@ -100,7 +102,7 @@ export async function createGameWithPlayers(app: INestApplication) {
 
 	// Second user connects to the game
 	const secondConnectToGameRes = await request(app.getHttpServer())
-		.get('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+		.post('/' + RouteNames.PAIR_GAME.CONNECTION.full)
 		.set('authorization', 'Bearer ' + userSecondAccessToken)
 		.expect(HTTP_STATUSES.OK_200)
 

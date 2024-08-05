@@ -28,7 +28,6 @@ export namespace GameOutModel {
 	export type Question = {
 		id: string
 		body: string
-		index: number
 	}
 
 	type Answer = {

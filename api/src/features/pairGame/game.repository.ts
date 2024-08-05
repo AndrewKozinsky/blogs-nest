@@ -47,7 +47,7 @@ export class GameRepository {
 
 		if (!getGameRes) {
 			return {
-				code: LayerErrorCode.NotFound,
+				code: LayerErrorCode.NotFound_404,
 			}
 		}
 
@@ -74,7 +74,7 @@ export class GameRepository {
 
 		if (updateGameRes.affected !== 1) {
 			return {
-				code: LayerErrorCode.BadRequest,
+				code: LayerErrorCode.BadRequest_400,
 			}
 		}
 
@@ -161,7 +161,8 @@ export class GameRepository {
 			}
 
 			if (typeof date === 'string') {
-				return date
+				const isoDate = new Date(date).toISOString()
+				return isoDate ?? date
 			}
 
 			return date.toISOString()

@@ -10,7 +10,7 @@ export class ConfirmEmailAfterRegistrationUseCase {
 		const user = await this.authRepository.getUserByConfirmationCode(confirmationCode)
 		if (!user || user.emailConfirmation.isConfirmed) {
 			return {
-				code: LayerErrorCode.BadRequest,
+				code: LayerErrorCode.BadRequest_400,
 			}
 		}
 
@@ -19,7 +19,7 @@ export class ConfirmEmailAfterRegistrationUseCase {
 			user.emailConfirmation.expirationDate < new Date()
 		) {
 			return {
-				code: LayerErrorCode.BadRequest,
+				code: LayerErrorCode.BadRequest_400,
 			}
 		}
 

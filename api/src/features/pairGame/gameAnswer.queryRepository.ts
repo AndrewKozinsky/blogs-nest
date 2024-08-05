@@ -16,7 +16,7 @@ export class GameAnswerQueryRepository {
 
 		if (!getPlayerRes) {
 			return {
-				code: LayerErrorCode.NotFound,
+				code: LayerErrorCode.NotFound_404,
 			}
 		}
 
@@ -28,7 +28,7 @@ export class GameAnswerQueryRepository {
 
 	mapDbGameAnswerToOutGameAnswer(dbGameAnswer: GameAnswer): GameAnswerOutModel {
 		return {
-			questionId: dbGameAnswer.questionId,
+			questionId: dbGameAnswer.questionId.toString(),
 			answerStatus: dbGameAnswer.status,
 			addedAt: dbGameAnswer.createdAt.toISOString(),
 		}

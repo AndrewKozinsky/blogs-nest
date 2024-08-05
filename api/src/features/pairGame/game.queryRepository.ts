@@ -1,13 +1,11 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
-import { DataSource, FindOptionsWhere } from 'typeorm'
-import { GameStatus, Game } from '../../db/pg/entities/game/game'
+import { DataSource, FindOptionsWhere, Not } from 'typeorm'
+import { Game, GameStatus } from '../../db/pg/entities/game/game'
 import { GamePlayer } from '../../db/pg/entities/game/gamePlayer'
-import { GameQuestion } from '../../db/pg/entities/game/gameQuestion'
 import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../types/resultCodes'
 import { GamePlayerRepository } from './gamePlayer.repository'
 import { GameOutModel } from './models/game.output.model'
-import { GameServiceModel } from './models/game.service.model'
 
 @Injectable()
 export class GameQueryRepository {
@@ -24,17 +22,20 @@ export class GameQueryRepository {
 		return this.getGameWhere({ id: gameId })
 	}
 
-	async getGameByUserId(userId: string): Promise<LayerResult<GameOutModel.Main>> {
+	async getUnfinishedGameByUserId(userId: string): Promise<LayerResult<GameOutModel.Main>> {
 		const getPlayerRes = await this.gamePlayerRepository.getPlayerByUserId(userId)
 		if (!getPlayerRes || getPlayerRes.code !== LayerSuccessCode.Success) {
 			return {
-				code: LayerErrorCode.NotFound,
+				code: LayerErrorCode.NotFound_404,
 			}
 		}
 
 		const player = getPlayerRes.data
 
-		return this.getGameWhere([{ firstPlayerId: player.id }, { secondPlayerId: player.id }])
+		return this.getGameWhere([
+			{ firstPlayerId: player.id, status: Not(GameStatus.Finished) },
+			{ secondPlayerId: player.id, status: Not(GameStatus.Finished) },
+		])
 	}
 
 	private async getGameWhere(
@@ -55,11 +56,19 @@ export class GameQueryRepository {
 					question: true,
 				},
 			},
+			order: {
+				firstPlayer: {
+					answers: 'DESC',
+				},
+				secondPlayer: {
+					answers: 'DESC',
+				},
+			},
 		})
 
 		if (!pendingGame) {
 			return {
-				code: LayerErrorCode.NotFound,
+				code: LayerErrorCode.NotFound_404,
 			}
 		}
 
@@ -80,7 +89,7 @@ export class GameQueryRepository {
 			status: dbGame.status,
 			firstPlayerProgress: preparePlayerData(dbGame.firstPlayer),
 			secondPlayerProgress,
-			questions: prepareQuestions(dbGame.gameQuestions),
+			questions: prepareQuestions(dbGame),
 			pairCreatedDate: dbGame.createdAt.toISOString(),
 			startGameDate: convertDate(dbGame.startGameDate),
 			finishGameDate: convertDate(dbGame.finishGameDate),
@@ -90,9 +99,8 @@ export class GameQueryRepository {
 			return {
 				answers: dbPlayer.answers.map((answer) => {
 					return {
-						id: answer.id.toString(),
 						answerStatus: answer.status,
-						questionId: answer.questionId,
+						questionId: answer.questionId.toString(),
 						addedAt: answer.createdAt.toISOString(),
 					}
 				}),
@@ -104,13 +112,15 @@ export class GameQueryRepository {
 			}
 		}
 
-		function prepareQuestions(gameQuestions: GameQuestion[]): GameOutModel.Question[] {
-			return gameQuestions.map((gameQuestion) => {
+		function prepareQuestions(dbGame: Game): null | GameOutModel.Question[] {
+			if (dbGame.status === GameStatus.Pending) {
+				return null
+			}
+
+			return dbGame.gameQuestions.map((gameQuestion) => {
 				return {
 					id: gameQuestion.questionId.toString(),
 					body: gameQuestion.question.body,
-					index: gameQuestion.index,
-					correctAnswers: gameQuestion.question.correctAnswers,
 				}
 			})
 		}
@@ -121,7 +131,8 @@ export class GameQueryRepository {
 			}
 
 			if (typeof date === 'string') {
-				return date
+				const isoDate = new Date(date).toISOString()
+				return isoDate ?? date
 			}
 
 			return date.toISOString()

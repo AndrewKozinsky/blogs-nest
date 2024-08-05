@@ -32,7 +32,7 @@ export class GamePlayerRepository {
 		const getPlayerRes = await this.getPlayerById(playerId)
 		if (getPlayerRes.code !== LayerSuccessCode.Success) {
 			return {
-				code: LayerErrorCode.NotFound,
+				code: LayerErrorCode.NotFound_404,
 			}
 		}
 
@@ -44,7 +44,7 @@ export class GamePlayerRepository {
 
 		if (updatePlayerRes.affected !== 1) {
 			return {
-				code: LayerErrorCode.BadRequest,
+				code: LayerErrorCode.BadRequest_400,
 			}
 		}
 
@@ -78,7 +78,7 @@ export class GamePlayerRepository {
 
 		if (!getPlayerRes) {
 			return {
-				code: LayerErrorCode.NotFound,
+				code: LayerErrorCode.NotFound_404,
 			}
 		}
 
@@ -143,7 +143,7 @@ export class GamePlayerRepository {
 		})
 		if (updatePlayerRes.affected !== 1) {
 			return {
-				code: LayerErrorCode.BadRequest,
+				code: LayerErrorCode.BadRequest_400,
 			}
 		}
 

@@ -24,7 +24,7 @@ export class ConnectToGameUseCase {
 		// Вернуть 403 если пользователь уже является игроком (зашёл повторно)
 		if (await this.isUserIsPlayerAlready(userId)) {
 			return {
-				code: LayerErrorCode.Forbidden,
+				code: LayerErrorCode.Forbidden_403,
 			}
 		}
 

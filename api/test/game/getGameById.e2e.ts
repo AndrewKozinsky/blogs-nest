@@ -7,7 +7,7 @@ import RouteNames from '../../src/settings/routeNames'
 import { createTestApp } from '../utils/common'
 import { clearAllDB } from '../utils/db'
 import {
-	addQuizQuestionRequest,
+	addQuestionRequest,
 	addUserByAdminRequest,
 	loginRequest,
 	userEmail,
@@ -16,7 +16,7 @@ import {
 import { agent as request } from 'supertest'
 import { checkGameObj, createGameQuestions, createGameWithPlayers } from './common'
 
-it.only('123', async () => {
+it('123', async () => {
 	expect(2).toBe(2)
 })
 
@@ -50,6 +50,25 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.FORBIDDEN_403)
 		})
 
+		it.only('should return 400 if game not exists', async () => {
+			const createdUserRes = await addUserByAdminRequest(app)
+			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const loginUserRes = await loginRequest(app, userEmail, userPassword)
+			const userAccessToken = loginUserRes.body.accessToken
+
+			const connectToGameRes = await request(app.getHttpServer())
+				.post('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+				.set('authorization', 'Bearer ' + userAccessToken)
+				.expect(HTTP_STATUSES.OK_200)
+
+			const game = connectToGameRes.body
+
+			await request(app.getHttpServer())
+				.get('/' + RouteNames.PAIR_GAME.GAME_ID('incorrect_id_format').full)
+				.set('authorization', 'Bearer ' + userAccessToken)
+				.expect(HTTP_STATUSES.BAD_REQUEST_400)
+		})
+
 		it('only one player has joined to the game', async () => {
 			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
@@ -57,7 +76,7 @@ describe('ROOT', () => {
 			const userAccessToken = loginUserRes.body.accessToken
 
 			const connectToGameRes = await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+				.post('/' + RouteNames.PAIR_GAME.CONNECTION.full)
 				.set('authorization', 'Bearer ' + userAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 			const game = connectToGameRes.body

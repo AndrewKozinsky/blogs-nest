@@ -6,7 +6,9 @@ import {
 	Get,
 	HttpCode,
 	HttpStatus,
+	NotFoundException,
 	Param,
+	ParseIntPipe,
 	Post,
 	Req,
 	UnauthorizedException,
@@ -33,14 +35,14 @@ export class PairGameController {
 
 	// Connect current user to existing random pending pair or create new pair which will be waiting second player
 	@UseGuards(CheckAccessTokenGuard)
-	@Get(RouteNames.PAIR_GAME.CONNECTION.value)
+	@Post(RouteNames.PAIR_GAME.CONNECTION.value)
 	@HttpCode(HttpStatus.OK)
 	async connectToGame(@Req() req: Request) {
 		if (!req.user) return
 
 		const getGameConnectionStatus = await this.connectToGameUseCase.execute(req.user.id)
 
-		if (getGameConnectionStatus.code === LayerErrorCode.Forbidden) {
+		if (getGameConnectionStatus.code === LayerErrorCode.Forbidden_403) {
 			throw new ForbiddenException()
 		}
 
@@ -65,22 +67,22 @@ export class PairGameController {
 			body,
 		)
 
-		if (answerGameQuestionStatus.code === LayerErrorCode.Unauthorized) {
+		if (answerGameQuestionStatus.code === LayerErrorCode.Unauthorized_401) {
 			throw new UnauthorizedException()
 		}
 
-		if (answerGameQuestionStatus.code === LayerErrorCode.Forbidden) {
+		if (answerGameQuestionStatus.code === LayerErrorCode.Forbidden_403) {
 			throw new ForbiddenException()
 		}
 
 		if (answerGameQuestionStatus.code !== LayerSuccessCode.Success) {
-			throw new BadRequestException()
+			throw new ForbiddenException()
 		}
 
 		return answerGameQuestionStatus.data
 	}
 
-	// Send an answer for the next not answered question in an active pair
+	// Returns current unfinished user game
 	@UseGuards(CheckAccessTokenGuard)
 	@Get(RouteNames.PAIR_GAME.MY_CURRENT.value)
 	@HttpCode(HttpStatus.OK)
@@ -89,40 +91,38 @@ export class PairGameController {
 
 		const getCurrentUserGameStatus = await this.getCurrentUserGameUseCase.execute(req.user.id)
 
-		if (getCurrentUserGameStatus.code === LayerErrorCode.NotFound) {
-			throw new UnauthorizedException()
-		}
-
-		if (getCurrentUserGameStatus.code === LayerErrorCode.Forbidden) {
+		if (getCurrentUserGameStatus.code === LayerErrorCode.Forbidden_403) {
 			throw new ForbiddenException()
 		}
 
-		if (getCurrentUserGameStatus.code !== LayerSuccessCode.Success) {
-			throw new BadRequestException()
+		if (
+			getCurrentUserGameStatus.code === LayerErrorCode.NotFound_404 ||
+			getCurrentUserGameStatus.code !== LayerSuccessCode.Success
+		) {
+			throw new NotFoundException()
 		}
 
 		return getCurrentUserGameStatus.data
 	}
 
-	// Send an answer for the next not answered question in an active pair
+	// Returns game by id
 	@UseGuards(CheckAccessTokenGuard)
 	@Get(':gameId')
 	@HttpCode(HttpStatus.OK)
-	async getGame(@Req() req: Request, @Param('gameId') gameId: string) {
+	async getGame(@Req() req: Request, @Param('gameId', ParseIntPipe) gameId: string) {
 		if (!req.user) return
 
 		const getGameStatus = await this.getGameUseCase.execute(req.user.id, gameId)
 
-		if (getGameStatus.code === LayerErrorCode.NotFound) {
-			throw new UnauthorizedException()
-		}
-
-		if (getGameStatus.code === LayerErrorCode.Forbidden) {
+		if (getGameStatus.code === LayerErrorCode.Forbidden_403) {
 			throw new ForbiddenException()
 		}
 
-		if (getGameStatus.code !== LayerSuccessCode.Success) {
-			throw new BadRequestException()
+		if (
+			getGameStatus.code === LayerErrorCode.NotFound_404 ||
+			getGameStatus.code !== LayerSuccessCode.Success
+		) {
+			throw new NotFoundException()
 		}
 
 		return getGameStatus.data

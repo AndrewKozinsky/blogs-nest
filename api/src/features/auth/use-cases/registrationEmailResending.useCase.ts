@@ -18,7 +18,7 @@ export class RegistrationEmailResendingUseCase {
 
 		if (!user || user.emailConfirmation.isConfirmed) {
 			return {
-				code: LayerErrorCode.BadRequest,
+				code: LayerErrorCode.BadRequest_400,
 			}
 		}
 
@@ -31,7 +31,7 @@ export class RegistrationEmailResendingUseCase {
 			console.log(err)
 
 			return {
-				code: LayerErrorCode.BadRequest,
+				code: LayerErrorCode.BadRequest_400,
 			}
 		}
 

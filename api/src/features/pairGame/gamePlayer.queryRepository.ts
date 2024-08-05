@@ -16,7 +16,7 @@ export class GamePlayerQueryRepository {
 
 		if (!getPlayerRes) {
 			return {
-				code: LayerErrorCode.NotFound,
+				code: LayerErrorCode.NotFound_404,
 			}
 		}
 

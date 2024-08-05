@@ -18,7 +18,7 @@ export class GetGameUseCase {
 		const gerGameRes = await this.gameQueryRepository.getGameById(gameId)
 		if (gerGameRes.code !== LayerSuccessCode.Success) {
 			return {
-				code: LayerErrorCode.NotFound,
+				code: LayerErrorCode.NotFound_404,
 			}
 		}
 
@@ -27,7 +27,7 @@ export class GetGameUseCase {
 		// Если пользователь пытается получить данные игры, к которой не принадлежит, то 403
 		if (!this.userIsParticipantOfGame(userId, game)) {
 			return {
-				code: LayerErrorCode.Forbidden,
+				code: LayerErrorCode.Forbidden_403,
 			}
 		}
 

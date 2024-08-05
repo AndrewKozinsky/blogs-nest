@@ -3,6 +3,7 @@ import { plainToInstance, Type } from 'class-transformer'
 import {
 	ArrayMinSize,
 	IsArray,
+	IsBoolean,
 	IsIn,
 	IsNumber,
 	IsOptional,
@@ -11,7 +12,7 @@ import {
 	MinLength,
 } from 'class-validator'
 
-export class CreateQuizQuestionDtoModel {
+export class CreateQuestionDtoModel {
 	@IsString({ message: 'Body must be a string' })
 	@MinLength(10, { message: 'Body is too short' })
 	@MaxLength(500, { message: 'Body is too long' })
@@ -23,7 +24,7 @@ export class CreateQuizQuestionDtoModel {
 	correctAnswers: string[]
 }
 
-export class UpdateQuizQuestionDtoModel {
+export class UpdateQuestionDtoModel {
 	@IsString({ message: 'Body must be a string' })
 	@MinLength(10, { message: 'Body is too short' })
 	@MaxLength(500, { message: 'Body is too long' })
@@ -35,7 +36,7 @@ export class UpdateQuizQuestionDtoModel {
 	correctAnswers: string[]
 }
 
-export class GetQuizQuestionsQueries {
+export class GetQuestionsQueries {
 	@IsOptional()
 	@IsString({ message: 'BodySearchTerm must be a string' })
 	// Search term for blog Name: Name should contain this term in any position
@@ -69,12 +70,17 @@ export class GetQuizQuestionsQueries {
 }
 
 @Injectable()
-export class GetQuizQuestionsQueriesPipe implements PipeTransform {
-	async transform(dto: GetQuizQuestionsQueries, { metatype }: ArgumentMetadata) {
+export class GetQuestionsQueriesPipe implements PipeTransform {
+	async transform(dto: GetQuestionsQueries, { metatype }: ArgumentMetadata) {
 		if (!metatype) {
 			return dto
 		}
 
 		return plainToInstance(metatype, dto)
 	}
+}
+
+export class PublishQuestionDtoModel {
+	@IsBoolean({ message: 'Body must be a string' })
+	published: boolean
 }

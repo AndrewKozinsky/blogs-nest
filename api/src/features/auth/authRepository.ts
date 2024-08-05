@@ -161,7 +161,7 @@ export class AuthRepository {
 
 		if (!user || !user.emailConfirmation.isConfirmed) {
 			return {
-				code: LayerErrorCode.NotFound,
+				code: LayerErrorCode.NotFound_404,
 			}
 		}
 
@@ -383,7 +383,7 @@ export class AuthRepository {
 
 		if (!userByDeviceToken) {
 			return {
-				code: LayerErrorCode.NotFound,
+				code: LayerErrorCode.NotFound_404,
 			}
 		}
 
@@ -393,7 +393,7 @@ export class AuthRepository {
 
 		if (!userDevices.length) {
 			return {
-				code: LayerErrorCode.NotFound,
+				code: LayerErrorCode.NotFound_404,
 			}
 		}
 

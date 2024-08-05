@@ -23,7 +23,7 @@ export class LoginUseCase {
 
 		if (getUserRes.code !== LayerSuccessCode.Success || !getUserRes.data) {
 			return {
-				code: LayerErrorCode.Unauthorized,
+				code: LayerErrorCode.Unauthorized_401,
 			}
 		}
 

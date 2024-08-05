@@ -10,7 +10,7 @@ export class SetNewPasswordUseCase {
 		const user = await this.usersRepository.getUserByPasswordRecoveryCode(passRecoveryCode)
 
 		if (!user) {
-			return { code: LayerErrorCode.BadRequest }
+			return { code: LayerErrorCode.BadRequest_400 }
 		}
 
 		await this.usersRepository.setPasswordRecoveryCodeToUser(user.id, null)

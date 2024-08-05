@@ -28,7 +28,7 @@ export class AnswerGameQuestionUseCase {
 		const getPlayerRes = await this.gamePlayerRepository.getPlayerByUserId(userId)
 		if (getPlayerRes.code !== LayerSuccessCode.Success) {
 			return {
-				code: LayerErrorCode.Unauthorized,
+				code: LayerErrorCode.Forbidden_403,
 			}
 		}
 
@@ -37,7 +37,7 @@ export class AnswerGameQuestionUseCase {
 		// Завернуть если пользователь ответил на все вопросы
 		if (player.answers.length >= gameConfig.questionsNumber) {
 			return {
-				code: LayerErrorCode.Forbidden,
+				code: LayerErrorCode.Forbidden_403,
 			}
 		}
 

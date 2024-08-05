@@ -18,7 +18,7 @@ export class GenerateAccessAndRefreshTokensUseCase {
 	): Promise<LayerResult<{ newAccessToken: string; newRefreshToken: string }>> {
 		if (!deviceRefreshToken) {
 			return {
-				code: LayerErrorCode.Unauthorized,
+				code: LayerErrorCode.Unauthorized_401,
 			}
 		}
 
@@ -26,7 +26,7 @@ export class GenerateAccessAndRefreshTokensUseCase {
 		const user = await this.usersRepository.getUserById(deviceRefreshToken.userId)
 		if (!user) {
 			return {
-				code: LayerErrorCode.Unauthorized,
+				code: LayerErrorCode.Unauthorized_401,
 			}
 		}
 

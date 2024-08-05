@@ -8,7 +8,7 @@ import { addUserByAdminRequest, loginRequest, userEmail, userPassword } from '..
 import { agent as request } from 'supertest'
 import { checkGameObj, createGameQuestions, createGameWithPlayers } from './common'
 
-it.only('123', async () => {
+it('123', async () => {
 	expect(2).toBe(2)
 })
 
@@ -26,7 +26,7 @@ describe('ROOT', () => {
 	describe('Connection to a game', () => {
 		it('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+				.post('/' + RouteNames.PAIR_GAME.CONNECTION.full)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
@@ -37,7 +37,7 @@ describe('ROOT', () => {
 			const userAccessToken = loginUserRes.body.accessToken
 
 			await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+				.post('/' + RouteNames.PAIR_GAME.CONNECTION.full)
 				.set('authorization', 'Bearer ' + userAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
@@ -56,7 +56,7 @@ describe('ROOT', () => {
 			const userAccessToken = loginUserRes.body.accessToken
 
 			const connectToGameRes = await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+				.post('/' + RouteNames.PAIR_GAME.CONNECTION.full)
 				.set('authorization', 'Bearer ' + userAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
@@ -66,20 +66,27 @@ describe('ROOT', () => {
 			expect(game.firstPlayerProgress.answers.length).toBe(0)
 			expect(game.firstPlayerProgress.score).toBe(0)
 			expect(game.secondPlayerProgress).toBe(null)
-			expect(game.questions.length).toBe(0)
+			expect(game.questions).toBe(null)
 			expect(game.status).toBe(GameStatus.Pending)
 			expect(game.startGameDate).toBe(null)
 			expect(game.finishGameDate).toBe(null)
 		})
 
-		it('should return an object if the second user connected to the game', async () => {
+		it.only('should return an object if the second user connected to the game', async () => {
 			const { userFirstAccessToken, userSecondAccessToken, game } =
 				await createGameWithPlayers(app)
 
-			checkGameObj(game)
-			expect(game.secondPlayerProgress).not.toBe(null)
-			expect(game.status).toBe(GameStatus.Active)
-			expect(game.questions.length).toBe(5)
+			const updatedGameRes = await request(app.getHttpServer())
+				.get('/' + RouteNames.PAIR_GAME.GAME_ID(game.id).full)
+				.set('authorization', 'Bearer ' + userFirstAccessToken)
+				.expect(HTTP_STATUSES.OK_200)
+
+			const updatedGame = updatedGameRes.body
+
+			checkGameObj(updatedGame)
+			expect(updatedGame.secondPlayerProgress).not.toBe(null)
+			expect(updatedGame.status).toBe(GameStatus.Active)
+			expect(updatedGame.questions.length).toBe(5)
 		})
 	})
 })

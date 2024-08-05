@@ -18,28 +18,43 @@ import { CheckAdminAuthGuard } from '../../infrastructure/guards/checkAdminAuth.
 import RouteNames from '../../settings/routeNames'
 import { LayerErrorCode, LayerSuccessCode } from '../../types/resultCodes'
 import {
-	CreateQuizQuestionDtoModel,
-	GetQuizQuestionsQueries,
-	GetQuizQuestionsQueriesPipe,
-	UpdateQuizQuestionDtoModel,
+	CreateQuestionDtoModel,
+	GetQuestionsQueries,
+	GetQuestionsQueriesPipe,
+	PublishQuestionDtoModel,
+	UpdateQuestionDtoModel,
 } from './models/quizQuestions.input.model'
-import { CreateQuizQuestionUseCase } from './use-cases/createQuizQuestion.useCase'
-import { DeleteQuizQuestionUseCase } from './use-cases/deleteQuizQuestion.useCase'
-import { GetQuizQuestionUseCase } from './use-cases/getQuizQuestion.useCase'
-import { GetQuizQuestionsUseCase } from './use-cases/getQuizQuestions.useCase'
-import { PublishQuizQuestionUseCase } from './use-cases/publishQuizQuestion.useCase'
-import { UpdateQuizQuestionUseCase } from './use-cases/updateQuizQuestion.useCase'
+import { CreateQuestionUseCase } from './use-cases/createQuestion.useCase'
+import { DeleteQuestionUseCase } from './use-cases/deleteQuestion.useCase'
+import { GetQuestionUseCase } from './use-cases/getQuestion.useCase'
+import { GetQuestionsUseCase } from './use-cases/getQuestions.useCase'
+import { PublishQuestionUseCase } from './use-cases/publishQuestion.useCase'
+import { UpdateQuestionUseCase } from './use-cases/updateQuestion.useCase'
 
-@Controller(RouteNames.SA_QUIZ_QUESTIONS.value)
+@Controller(RouteNames.SA_QUESTIONS.value)
 export class SaQuestionsController {
 	constructor(
-		private createQuizQuestionUseCase: CreateQuizQuestionUseCase,
-		private deleteQuizQuestionUseCase: DeleteQuizQuestionUseCase,
-		private updateQuizQuestionUseCase: UpdateQuizQuestionUseCase,
-		private publishQuizQuestionUseCaseUseCase: PublishQuizQuestionUseCase,
-		private getQuizQuestionsUseCase: GetQuizQuestionsUseCase,
-		private getQuizQuestionUseCase: GetQuizQuestionUseCase,
+		private createQuestionUseCase: CreateQuestionUseCase,
+		private deleteQuestionUseCase: DeleteQuestionUseCase,
+		private updateQuestionUseCase: UpdateQuestionUseCase,
+		private publishQuestionUseCaseUseCase: PublishQuestionUseCase,
+		private getQuizQuestionsUseCase: GetQuestionsUseCase,
+		private getQuizQuestionUseCase: GetQuestionUseCase,
 	) {}
+
+	// Returns all questions with pagination and filtering
+	@UseGuards(CheckAdminAuthGuard)
+	@Get()
+	@HttpCode(HttpStatus.OK)
+	async getQuizQuestions(@Query(new GetQuestionsQueriesPipe()) query: GetQuestionsQueries) {
+		const getQuizQuestionsStatus = await this.getQuizQuestionsUseCase.execute(query)
+
+		if (getQuizQuestionsStatus.code !== LayerSuccessCode.Success) {
+			throw new BadRequestException()
+		}
+
+		return getQuizQuestionsStatus.data
+	}
 
 	// Returns a question
 	@UseGuards(CheckAdminAuthGuard)
@@ -48,7 +63,7 @@ export class SaQuestionsController {
 	async getQuizQuestion(@Param('questionId') questionId: string) {
 		const getQuizQuestionStatus = await this.getQuizQuestionUseCase.execute(questionId)
 
-		if (getQuizQuestionStatus.code === LayerErrorCode.NotFound) {
+		if (getQuizQuestionStatus.code === LayerErrorCode.NotFound_404) {
 			throw new NotFoundException()
 		}
 
@@ -59,28 +74,12 @@ export class SaQuestionsController {
 		return getQuizQuestionStatus.data
 	}
 
-	// Returns all questions with pagination and filtering
-	@UseGuards(CheckAdminAuthGuard)
-	@Get()
-	@HttpCode(HttpStatus.OK)
-	async getQuizQuestions(
-		@Query(new GetQuizQuestionsQueriesPipe()) query: GetQuizQuestionsQueries,
-	) {
-		const getQuizQuestionsStatus = await this.getQuizQuestionsUseCase.execute(query)
-
-		if (getQuizQuestionsStatus.code !== LayerSuccessCode.Success) {
-			throw new BadRequestException()
-		}
-
-		return getQuizQuestionsStatus.data
-	}
-
 	// Create a question
 	@UseGuards(CheckAdminAuthGuard)
 	@Post()
 	@HttpCode(HttpStatus.CREATED)
-	async createQuizQuestion(@Body() body: CreateQuizQuestionDtoModel) {
-		const createdQuizQuestionStatus = await this.createQuizQuestionUseCase.execute(body)
+	async createQuizQuestion(@Body() body: CreateQuestionDtoModel) {
+		const createdQuizQuestionStatus = await this.createQuestionUseCase.execute(body)
 
 		if (createdQuizQuestionStatus.code !== LayerSuccessCode.Success) {
 			throw new BadRequestException()
@@ -94,9 +93,9 @@ export class SaQuestionsController {
 	@Delete(':questionId')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteQuizQuestion(@Param('questionId') questionId: string) {
-		const deleteQuizQuestionStatus = await this.deleteQuizQuestionUseCase.execute(questionId)
+		const deleteQuizQuestionStatus = await this.deleteQuestionUseCase.execute(questionId)
 
-		if (deleteQuizQuestionStatus.code === LayerErrorCode.NotFound) {
+		if (deleteQuizQuestionStatus.code === LayerErrorCode.NotFound_404) {
 			throw new NotFoundException()
 		}
 
@@ -111,14 +110,11 @@ export class SaQuestionsController {
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async updateQuizQuestion(
 		@Param('questionId') questionId: string,
-		@Body() body: UpdateQuizQuestionDtoModel,
+		@Body() body: UpdateQuestionDtoModel,
 	) {
-		const updateQuizQuestionStatus = await this.updateQuizQuestionUseCase.execute(
-			questionId,
-			body,
-		)
+		const updateQuizQuestionStatus = await this.updateQuestionUseCase.execute(questionId, body)
 
-		if (updateQuizQuestionStatus.code === LayerErrorCode.NotFound) {
+		if (updateQuizQuestionStatus.code === LayerErrorCode.NotFound_404) {
 			throw new NotFoundException()
 		}
 
@@ -129,13 +125,18 @@ export class SaQuestionsController {
 
 	// Publish/unpublish a question
 	@UseGuards(CheckAdminAuthGuard)
-	@Put(':questionId/publish')
+	@Put(':questionId/' + RouteNames.SA_QUESTIONS.QUESTION_ID('').PUBLISH.value)
 	@HttpCode(HttpStatus.NO_CONTENT)
-	async publishQuizQuestion(@Param('questionId') questionId: string) {
-		const publishQuizQuestionStatus =
-			await this.publishQuizQuestionUseCaseUseCase.execute(questionId)
+	async publishQuizQuestion(
+		@Param('questionId') questionId: string,
+		@Body() body: PublishQuestionDtoModel,
+	) {
+		const publishQuizQuestionStatus = await this.publishQuestionUseCaseUseCase.execute(
+			questionId,
+			body,
+		)
 
-		if (publishQuizQuestionStatus.code === LayerErrorCode.NotFound) {
+		if (publishQuizQuestionStatus.code === LayerErrorCode.NotFound_404) {
 			throw new NotFoundException()
 		}
 

@@ -3,7 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource, ILike } from 'typeorm'
 import { Question } from '../../db/pg/entities/game/question'
 import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../types/resultCodes'
-import { GetQuizQuestionsQueries } from './models/quizQuestions.input.model'
+import { GetQuestionsQueries } from './models/quizQuestions.input.model'
 import { GetQuizQuestionsOutModel, QuizQuestionOutModel } from './models/quizQuestions.output.model'
 
 @Injectable()
@@ -17,18 +17,18 @@ export class SaQuestionsQueryRepository {
 
 		if (!quizQuestion) {
 			return {
-				code: LayerErrorCode.NotFound,
+				code: LayerErrorCode.NotFound_404,
 			}
 		}
 
 		return {
 			code: LayerSuccessCode.Success,
-			data: this.mapDbQuizQuestionToQuizQuestion(quizQuestion),
+			data: this.mapDbQuestionToOutQuestion(quizQuestion),
 		}
 	}
 
 	async getQuizQuestions(
-		query: GetQuizQuestionsQueries,
+		query: GetQuestionsQueries,
 	): Promise<LayerResult<GetQuizQuestionsOutModel>> {
 		const bodySearchTerm = query.bodySearchTerm ?? ''
 		const publishedStatus = query.publishedStatus ?? 'all'
@@ -65,19 +65,19 @@ export class SaQuestionsQueryRepository {
 				page: pageNumber,
 				pageSize,
 				totalCount: totalQuizQuestionsCount,
-				items: quizQuestions.map(this.mapDbQuizQuestionToQuizQuestion),
+				items: quizQuestions.map(this.mapDbQuestionToOutQuestion),
 			},
 		}
 	}
 
-	mapDbQuizQuestionToQuizQuestion(DbQuizQuestion: Question): QuizQuestionOutModel {
+	mapDbQuestionToOutQuestion(dbQuizQuestion: Question): QuizQuestionOutModel {
 		return {
-			id: DbQuizQuestion.id.toString(),
-			body: DbQuizQuestion.body,
-			correctAnswers: DbQuizQuestion.correctAnswers,
-			published: DbQuizQuestion.published,
-			createdAt: DbQuizQuestion.createdAt.toISOString(),
-			updatedAt: DbQuizQuestion.updatedAt.toISOString(),
+			id: dbQuizQuestion.id.toString(),
+			body: dbQuizQuestion.body,
+			correctAnswers: dbQuizQuestion.correctAnswers,
+			published: dbQuizQuestion.published,
+			createdAt: dbQuizQuestion.createdAt.toISOString(),
+			updatedAt: dbQuizQuestion.updatedAt ? dbQuizQuestion.updatedAt.toISOString() : null,
 		}
 	}
 }

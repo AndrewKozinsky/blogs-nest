@@ -37,7 +37,7 @@ export class RecoveryPasswordUseCase {
 			await this.authRepository.deleteUser(user.id)
 
 			return {
-				code: LayerErrorCode.BadRequest,
+				code: LayerErrorCode.BadRequest_400,
 			}
 		}
 	}

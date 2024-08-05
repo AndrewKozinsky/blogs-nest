@@ -107,7 +107,7 @@ export class CommentsController {
 			body.likeStatus,
 		)
 
-		if (setLikeStatus.code === LayerErrorCode.NotFound) {
+		if (setLikeStatus.code === LayerErrorCode.NotFound_404) {
 			throw new NotFoundException()
 		}
 	}

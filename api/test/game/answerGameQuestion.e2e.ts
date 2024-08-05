@@ -7,7 +7,7 @@ import RouteNames from '../../src/settings/routeNames'
 import { createTestApp } from '../utils/common'
 import { clearAllDB } from '../utils/db'
 import {
-	addQuizQuestionRequest,
+	addQuestionRequest,
 	addUserByAdminRequest,
 	loginRequest,
 	userEmail,
@@ -63,12 +63,12 @@ describe('ROOT', () => {
 					.expect(HTTP_STATUSES.OK_200)
 			}
 
-			// Try to answer one more time to check for forbidden status
+			// Try to answer one more time to check for Unauthorized status
 			await request(app.getHttpServer())
 				.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
 				.send({ answer: 'My wrong answer' })
 				.set('authorization', 'Bearer ' + userSecondAccessToken)
-				.expect(HTTP_STATUSES.FORBIDDEN_403)
+				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
 		it('players has finished game', async () => {

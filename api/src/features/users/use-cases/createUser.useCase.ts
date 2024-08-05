@@ -20,7 +20,7 @@ export class CreateUserUseCase {
 		const userByEmail = await this.authRepository.getUserByEmail(data.email)
 
 		if (userByEmail) {
-			return { code: LayerErrorCode.BadRequest }
+			return { code: LayerErrorCode.BadRequest_400 }
 		}
 
 		const newUserDto = await this.commonService.getCreateUserDto(data, true)
@@ -29,7 +29,7 @@ export class CreateUserUseCase {
 		const createdUser = await this.usersQueryRepository.getUser(createdUserId)
 
 		if (!createdUser) {
-			return { code: LayerErrorCode.BadRequest }
+			return { code: LayerErrorCode.BadRequest_400 }
 		}
 
 		return {

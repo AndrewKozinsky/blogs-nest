@@ -47,7 +47,7 @@ export class GameQuestionRepository {
 		const unansweredGameQuestion = game.gameQuestions[player.answers.length]
 		if (!unansweredGameQuestion) {
 			return {
-				code: LayerErrorCode.BadRequest,
+				code: LayerErrorCode.BadRequest_400,
 			}
 		}
 
@@ -59,7 +59,7 @@ export class GameQuestionRepository {
 		})
 		if (!getGameQuestionRes) {
 			return {
-				code: LayerErrorCode.NotFound,
+				code: LayerErrorCode.NotFound_404,
 			}
 		}
 

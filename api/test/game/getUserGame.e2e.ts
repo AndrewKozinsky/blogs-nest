@@ -7,7 +7,7 @@ import RouteNames from '../../src/settings/routeNames'
 import { createTestApp } from '../utils/common'
 import { clearAllDB } from '../utils/db'
 import {
-	addQuizQuestionRequest,
+	addQuestionRequest,
 	addUserByAdminRequest,
 	loginRequest,
 	userEmail,
@@ -16,7 +16,7 @@ import {
 import { agent as request } from 'supertest'
 import { checkGameObj, createGameQuestions, createGameWithPlayers } from './common'
 
-it.only('123', async () => {
+it('123', async () => {
 	expect(2).toBe(2)
 })
 
@@ -38,7 +38,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
-		it('should return 403 if current user is not a player', async () => {
+		it.only('should return 404 if current user is not a player', async () => {
 			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const loginUserRes = await loginRequest(app, userEmail, userPassword)
@@ -47,7 +47,7 @@ describe('ROOT', () => {
 			await request(app.getHttpServer())
 				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
 				.set('authorization', 'Bearer ' + userAccessToken)
-				.expect(HTTP_STATUSES.BAD_REQUEST_400)
+				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
 
 		it('only one player has joined to the game', async () => {
@@ -57,7 +57,7 @@ describe('ROOT', () => {
 			const userAccessToken = loginUserRes.body.accessToken
 
 			await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+				.post('/' + RouteNames.PAIR_GAME.CONNECTION.full)
 				.set('authorization', 'Bearer ' + userAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
@@ -72,7 +72,7 @@ describe('ROOT', () => {
 			expect(game.firstPlayerProgress.answers.length).toBe(0)
 			expect(game.firstPlayerProgress.score).toBe(0)
 			expect(game.secondPlayerProgress).toBe(null)
-			expect(game.questions.length).toBe(0)
+			expect(game.questions).toBe(null)
 			expect(game.status).toBe(GameStatus.Pending)
 			expect(game.startGameDate).toBe(null)
 			expect(game.finishGameDate).toBe(null)

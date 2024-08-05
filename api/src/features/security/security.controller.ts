@@ -68,11 +68,11 @@ export class SecurityController {
 			deviceId,
 		)
 
-		if (terminateDeviceRes.code === LayerErrorCode.NotFound) {
+		if (terminateDeviceRes.code === LayerErrorCode.NotFound_404) {
 			throw new NotFoundException()
 		}
 
-		if (terminateDeviceRes.code === LayerErrorCode.Forbidden) {
+		if (terminateDeviceRes.code === LayerErrorCode.Forbidden_403) {
 			throw new ForbiddenException()
 		}
 	}

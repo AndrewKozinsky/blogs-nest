@@ -20,7 +20,7 @@ export class SetCommentLikeStatusUseCase {
 		const comment = await this.commentsRepository.getComment(commentId)
 		if (!comment) {
 			return {
-				code: LayerErrorCode.NotFound,
+				code: LayerErrorCode.NotFound_404,
 			}
 		}
 

@@ -15,7 +15,7 @@ export class LogoutUseCase {
 			await this.authRepository.getDeviceRefreshTokenByTokenStr(refreshTokenStr)
 
 		if (!refreshTokenInDb || !this.jwtService.isRefreshTokenStrValid(refreshTokenStr)) {
-			return { code: LayerErrorCode.Unauthorized }
+			return { code: LayerErrorCode.Unauthorized_401 }
 		}
 
 		await this.authRepository.deleteDeviceRefreshTokenByDeviceId(refreshTokenInDb.deviceId)
