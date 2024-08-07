@@ -17,12 +17,17 @@ export class GetCurrentUserGameUseCase {
 	async execute(userId: string): Promise<LayerResult<GameOutModel.Main>> {
 		const gerCurrentUserGameRes =
 			await this.gameQueryRepository.getUnfinishedGameByUserId(userId)
-		if (gerCurrentUserGameRes.code !== LayerSuccessCode.Success) {
+
+		if (
+			gerCurrentUserGameRes.code !== LayerSuccessCode.Success ||
+			!gerCurrentUserGameRes.data
+		) {
 			return {
 				code: LayerErrorCode.NotFound_404,
 			}
 		}
 
+		// @ts-ignore
 		return gerCurrentUserGameRes
 	}
 }

@@ -16,7 +16,7 @@ import {
 import { agent as request } from 'supertest'
 import { checkGameObj, createGameQuestions, createGameWithPlayers } from './common'
 
-it('123', async () => {
+it.only('123', async () => {
 	expect(2).toBe(2)
 })
 
@@ -39,18 +39,21 @@ describe('ROOT', () => {
 		})
 
 		it('should return 403 if current user is not a player', async () => {
+			const { userFirstAccessToken, userSecondAccessToken, game } =
+				await createGameWithPlayers(app)
+
 			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const loginUserRes = await loginRequest(app, userEmail, userPassword)
 			const userAccessToken = loginUserRes.body.accessToken
 
 			await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.GAME_ID('33').full)
+				.get('/' + RouteNames.PAIR_GAME.GAME_ID(game.id).full)
 				.set('authorization', 'Bearer ' + userAccessToken)
 				.expect(HTTP_STATUSES.FORBIDDEN_403)
 		})
 
-		it.only('should return 400 if game not exists', async () => {
+		it('should return 400 if game not exists', async () => {
 			const createdUserRes = await addUserByAdminRequest(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const loginUserRes = await loginRequest(app, userEmail, userPassword)
@@ -92,7 +95,7 @@ describe('ROOT', () => {
 			expect(game2.firstPlayerProgress.answers.length).toBe(0)
 			expect(game2.firstPlayerProgress.score).toBe(0)
 			expect(game2.secondPlayerProgress).toBe(null)
-			expect(game2.questions.length).toBe(0)
+			expect(game2.questions).toBe(null)
 			expect(game2.status).toBe(GameStatus.Pending)
 			expect(game2.startGameDate).toBe(null)
 			expect(game2.finishGameDate).toBe(null)

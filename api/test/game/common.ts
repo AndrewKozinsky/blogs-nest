@@ -48,13 +48,17 @@ function checkPlayerObj(playerObj: any) {
 }
 
 function checkQuestionsObj(questions: any) {
-	expect({}.toString.call(questions)).toBe('[object Array]')
+	if (questions) {
+		expect({}.toString.call(questions)).toBe('[object Array]')
 
-	if (questions.length) {
-		const questionObj = questions[0]
+		if (questions.length) {
+			const questionObj = questions[0]
 
-		expect(typeof questionObj.id).toBe('string')
-		expect(typeof questionObj.body).toBe('string')
+			expect(typeof questionObj.id).toBe('string')
+			expect(typeof questionObj.body).toBe('string')
+		}
+	} else {
+		expect(questions).toBe(null)
 	}
 }
 

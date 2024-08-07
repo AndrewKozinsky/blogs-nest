@@ -38,6 +38,12 @@ export class GamePlayerRepository {
 
 		const player = getPlayerRes.data
 
+		if (!player) {
+			return {
+				code: LayerErrorCode.BadRequest_400,
+			}
+		}
+
 		const updatePlayerRes = await this.dataSource
 			.getRepository(GamePlayer)
 			.update(player.id, { score: player.score + 1 })
@@ -54,17 +60,17 @@ export class GamePlayerRepository {
 		}
 	}
 
-	async getPlayerById(playerId: string): Promise<LayerResult<GamePlayerServiceModel>> {
+	async getPlayerById(playerId: string): Promise<LayerResult<null | GamePlayerServiceModel>> {
 		return this.getPlayerWhere({ id: playerId })
 	}
 
-	async getPlayerByUserId(userId: string): Promise<LayerResult<GamePlayerServiceModel>> {
+	async getPlayerByUserId(userId: string): Promise<LayerResult<null | GamePlayerServiceModel>> {
 		return this.getPlayerWhere({ userId })
 	}
 
 	private async getPlayerWhere(
 		whereCondition: FindOptionsWhere<GamePlayer> | FindOptionsWhere<GamePlayer>[] | undefined,
-	): Promise<LayerResult<GamePlayerServiceModel>> {
+	): Promise<LayerResult<null | GamePlayerServiceModel>> {
 		const getPlayerRes = await this.dataSource.getRepository(GamePlayer).findOne({
 			where: whereCondition,
 			relations: {
@@ -78,7 +84,8 @@ export class GamePlayerRepository {
 
 		if (!getPlayerRes) {
 			return {
-				code: LayerErrorCode.NotFound_404,
+				code: LayerSuccessCode.Success,
+				data: null,
 			}
 		}
 
@@ -90,8 +97,10 @@ export class GamePlayerRepository {
 
 	async addExtraPointForPlayerWhichFinishedFirst(gameId: string): Promise<LayerResult<null>> {
 		const getGameRes = await this.gameRepository.getGameById(gameId)
-		if (getGameRes.code !== LayerSuccessCode.Success) {
-			return getGameRes
+		if (getGameRes.code !== LayerSuccessCode.Success || !getGameRes.data) {
+			return {
+				code: LayerErrorCode.BadRequest_400,
+			}
 		}
 
 		const { firstPlayer, secondPlayer } = getGameRes.data
@@ -100,21 +109,34 @@ export class GamePlayerRepository {
 		const secondPlayerFinished =
 			secondPlayer && secondPlayer.answers.length === gameConfig.questionsNumber
 
-		if (
-			firstPlayerFinished &&
-			!secondPlayerFinished &&
-			getPlayerAnsweredQuestionsLength(firstPlayer) > 0
-		) {
-			const { firstPlayer } = getGameRes.data
+		if (!firstPlayerFinished || !secondPlayerFinished) {
+			return {
+				code: LayerSuccessCode.Success,
+				data: null,
+			}
+		}
 
-			await this.addExtraPointForPlayer(firstPlayer.id)
-		} else if (
-			!secondPlayerFinished &&
-			secondPlayerFinished &&
-			getPlayerAnsweredQuestionsLength(secondPlayer) > 0
+		const firstPlayerLastAnswerDate =
+			firstPlayer.answers[gameConfig.questionsNumber - 1].addedAt
+		const secondPlayerLastAnswerDate =
+			secondPlayer.answers[gameConfig.questionsNumber - 1].addedAt
+		console.log({ firstPlayerLastAnswerDate })
+		console.log({ secondPlayerLastAnswerDate })
+
+		// If first player gave at least 1 right answer and finished first
+		if (
+			getPlayerRightAnswersLength(firstPlayer) > 0 &&
+			firstPlayerLastAnswerDate < secondPlayerLastAnswerDate
 		) {
-			const { secondPlayer } = getGameRes.data
-			await this.addExtraPointForPlayer(secondPlayer!.id)
+			await this.addExtraPointToPlayer(firstPlayer.id)
+		}
+
+		// If second player gave at least 1 right answer and finished first
+		if (
+			getPlayerRightAnswersLength(secondPlayer) > 0 &&
+			secondPlayerLastAnswerDate < firstPlayerLastAnswerDate
+		) {
+			await this.addExtraPointToPlayer(secondPlayer.id)
 		}
 
 		return {
@@ -122,7 +144,7 @@ export class GamePlayerRepository {
 			data: null,
 		}
 
-		function getPlayerAnsweredQuestionsLength(player: null | GameServiceModel.Player): number {
+		function getPlayerRightAnswersLength(player: null | GameServiceModel.Player): number {
 			if (!player) return 0
 
 			return player.answers.filter((answer) => {
@@ -131,16 +153,20 @@ export class GamePlayerRepository {
 		}
 	}
 
-	async addExtraPointForPlayer(playerId: string): Promise<LayerResult<null>> {
+	async addExtraPointToPlayer(playerId: string): Promise<LayerResult<null>> {
 		const getPlayerRes = await this.getPlayerWhere({ id: playerId })
-		if (getPlayerRes.code !== LayerSuccessCode.Success) {
-			return getPlayerRes
+		if (getPlayerRes.code !== LayerSuccessCode.Success || !getPlayerRes.data) {
+			return {
+				code: LayerErrorCode.NotFound_404,
+			}
 		}
+
 		const player = getPlayerRes.data
 
 		const updatePlayerRes = await this.dataSource.getRepository(GamePlayer).update(playerId, {
 			score: player.score + 1,
 		})
+
 		if (updatePlayerRes.affected !== 1) {
 			return {
 				code: LayerErrorCode.BadRequest_400,

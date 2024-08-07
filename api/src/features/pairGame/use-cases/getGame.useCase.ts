@@ -1,28 +1,21 @@
 import { Injectable } from '@nestjs/common'
 import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../../types/resultCodes'
-import { SaQuestionsRepository } from '../../saQuestions/saQuestionsRepository'
 import { GameQueryRepository } from '../game.queryRepository'
 import { GameOutModel } from '../models/game.output.model'
-import { GameAnswerQueryRepository } from '../gameAnswer.queryRepository'
-import { GameAnswerRepository } from '../gameAnswer.repository'
-import { GameQuestionRepository } from '../gameQuestion.repository'
-import { GameRepository } from '../game.repository'
-import { GamePlayerRepository } from '../gamePlayer.repository'
-import { GameServiceModel } from '../models/game.service.model'
 
 @Injectable()
 export class GetGameUseCase {
 	constructor(private gameQueryRepository: GameQueryRepository) {}
 
 	async execute(userId: string, gameId: string): Promise<LayerResult<GameOutModel.Main>> {
-		const gerGameRes = await this.gameQueryRepository.getGameById(gameId)
-		if (gerGameRes.code !== LayerSuccessCode.Success) {
+		const getGameRes = await this.gameQueryRepository.getGameById(gameId)
+		if (getGameRes.code !== LayerSuccessCode.Success || !getGameRes.data) {
 			return {
 				code: LayerErrorCode.NotFound_404,
 			}
 		}
 
-		const game = gerGameRes.data
+		const game = getGameRes.data
 
 		// Если пользователь пытается получить данные игры, к которой не принадлежит, то 403
 		if (!this.userIsParticipantOfGame(userId, game)) {
@@ -31,7 +24,8 @@ export class GetGameUseCase {
 			}
 		}
 
-		return gerGameRes
+		// @ts-ignore
+		return getGameRes
 	}
 
 	userIsParticipantOfGame(userId: string, game: GameOutModel.Main): boolean {

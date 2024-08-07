@@ -14,17 +14,32 @@ export class GameQueryRepository {
 		private gamePlayerRepository: GamePlayerRepository,
 	) {}
 
-	async getPendingGame(): Promise<LayerResult<GameOutModel.Main>> {
+	/*async getPendingGame(): Promise<LayerResult<GameOutModel.Main>> {
 		return this.getGameWhere({ status: GameStatus.Pending })
-	}
+	}*/
 
-	async getGameById(gameId: string): Promise<LayerResult<GameOutModel.Main>> {
+	async getGameById(gameId: string): Promise<LayerResult<null | GameOutModel.Main>> {
 		return this.getGameWhere({ id: gameId })
 	}
 
-	async getUnfinishedGameByUserId(userId: string): Promise<LayerResult<GameOutModel.Main>> {
+	async getGameByUserId(userId: string): Promise<LayerResult<null | GameOutModel.Main>> {
 		const getPlayerRes = await this.gamePlayerRepository.getPlayerByUserId(userId)
-		if (!getPlayerRes || getPlayerRes.code !== LayerSuccessCode.Success) {
+		if (getPlayerRes.code !== LayerSuccessCode.Success || !getPlayerRes.data) {
+			return {
+				code: LayerErrorCode.NotFound_404,
+			}
+		}
+
+		const player = getPlayerRes.data
+
+		return this.getGameWhere([{ firstPlayerId: player.id }, { secondPlayerId: player.id }])
+	}
+
+	async getUnfinishedGameByUserId(
+		userId: string,
+	): Promise<LayerResult<null | GameOutModel.Main>> {
+		const getPlayerRes = await this.gamePlayerRepository.getPlayerByUserId(userId)
+		if (getPlayerRes.code !== LayerSuccessCode.Success || !getPlayerRes.data) {
 			return {
 				code: LayerErrorCode.NotFound_404,
 			}
@@ -40,8 +55,8 @@ export class GameQueryRepository {
 
 	private async getGameWhere(
 		whereCondition: FindOptionsWhere<Game> | FindOptionsWhere<Game>[] | undefined,
-	): Promise<LayerResult<GameOutModel.Main>> {
-		const pendingGame = await this.dataSource.getRepository(Game).findOne({
+	): Promise<LayerResult<null | GameOutModel.Main>> {
+		const game = await this.dataSource.getRepository(Game).findOne({
 			where: whereCondition,
 			relations: {
 				firstPlayer: {
@@ -56,25 +71,22 @@ export class GameQueryRepository {
 					question: true,
 				},
 			},
-			order: {
-				firstPlayer: {
-					answers: 'DESC',
-				},
-				secondPlayer: {
-					answers: 'DESC',
-				},
-			},
 		})
 
-		if (!pendingGame) {
+		if (!game) {
 			return {
-				code: LayerErrorCode.NotFound_404,
+				code: LayerSuccessCode.Success,
+				data: null,
 			}
 		}
 
+		game.gameQuestions = game.gameQuestions.sort((a, b) => {
+			return a.index > b.index ? 1 : -1
+		})
+
 		return {
 			code: LayerSuccessCode.Success,
-			data: this.mapDbGameToOutGame(pendingGame),
+			data: this.mapDbGameToOutGame(game),
 		}
 	}
 

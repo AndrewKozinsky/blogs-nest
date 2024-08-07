@@ -9,14 +9,15 @@ import { GameAnswerOutModel } from './models/game.output.model'
 export class GameAnswerQueryRepository {
 	constructor(@InjectDataSource() private dataSource: DataSource) {}
 
-	async getAnswer(answerId: string): Promise<LayerResult<GameAnswerOutModel>> {
+	async getAnswer(answerId: string): Promise<LayerResult<null | GameAnswerOutModel>> {
 		const getPlayerRes = await this.dataSource
 			.getRepository(GameAnswer)
 			.findOneBy({ id: answerId })
 
 		if (!getPlayerRes) {
 			return {
-				code: LayerErrorCode.NotFound_404,
+				code: LayerSuccessCode.Success,
+				data: null,
 			}
 		}
 

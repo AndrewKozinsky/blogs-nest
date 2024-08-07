@@ -23,10 +23,14 @@ export class AnswerGameQuestionUseCase {
 	async execute(
 		userId: string,
 		reqBodyDto: AnswerGameQuestionDtoModel,
-	): Promise<LayerResult<GameAnswerOutModel>> {
+	): Promise<LayerResult<null | GameAnswerOutModel>> {
 		// Завернуть если пользователь не является игроком
 		const getPlayerRes = await this.gamePlayerRepository.getPlayerByUserId(userId)
-		if (getPlayerRes.code !== LayerSuccessCode.Success) {
+
+		// Найти незавершённую игру, где пользователь является игроком.
+		// И если находится, то отдавать 403
+		// !!!!!!
+		if (getPlayerRes.code !== LayerSuccessCode.Success || !getPlayerRes.data) {
 			return {
 				code: LayerErrorCode.Forbidden_403,
 			}
@@ -44,9 +48,15 @@ export class AnswerGameQuestionUseCase {
 		// Получить текущий неотвеченный вопрос
 		const resCurrentGameQuestionRes =
 			await this.gameQuestionRepository.getPlayerCurrentGameQuestion(player.id)
-		if (resCurrentGameQuestionRes.code !== LayerSuccessCode.Success) {
-			return resCurrentGameQuestionRes
+		if (
+			resCurrentGameQuestionRes.code !== LayerSuccessCode.Success ||
+			!resCurrentGameQuestionRes.data
+		) {
+			return {
+				code: LayerErrorCode.NotFound_404,
+			}
 		}
+
 		const gameQuestion = resCurrentGameQuestionRes.data
 
 		const userAnswerStatus = gameQuestion.question.correctAnswers.includes(reqBodyDto.answer)
@@ -61,7 +71,9 @@ export class AnswerGameQuestionUseCase {
 		)
 
 		if (createAnswerRes.code !== LayerSuccessCode.Success) {
-			return createAnswerRes
+			return {
+				code: LayerErrorCode.BadRequest_400,
+			}
 		}
 
 		// Если игрок ответил правильно, то увеличить поле score у игрока
@@ -81,7 +93,9 @@ export class AnswerGameQuestionUseCase {
 
 		const newAnswer = await this.gameAnswerQueryRepository.getAnswer(answerId)
 		if (newAnswer.code !== LayerSuccessCode.Success) {
-			return newAnswer
+			return {
+				code: LayerErrorCode.BadRequest_400,
+			}
 		}
 
 		return {

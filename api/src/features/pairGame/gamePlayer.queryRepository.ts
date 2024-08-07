@@ -9,7 +9,7 @@ import { GamePlayerOutModel } from './models/game.output.model'
 export class GamePlayerQueryRepository {
 	constructor(@InjectDataSource() private dataSource: DataSource) {}
 
-	async getPlayer(playerId: string): Promise<LayerResult<GamePlayerOutModel>> {
+	/*async getPlayer(playerId: string): Promise<LayerResult<GamePlayerOutModel>> {
 		const getPlayerRes = await this.dataSource
 			.getRepository(GamePlayer)
 			.findOneBy({ id: playerId })
@@ -24,12 +24,12 @@ export class GamePlayerQueryRepository {
 			code: LayerSuccessCode.Success,
 			data: this.mapDbGamePlayerToOutGamePlayer(getPlayerRes),
 		}
-	}
+	}*/
 
-	mapDbGamePlayerToOutGamePlayer(DbGamePlayer: GamePlayer): GamePlayerOutModel {
+	/*mapDbGamePlayerToOutGamePlayer(DbGamePlayer: GamePlayer): GamePlayerOutModel {
 		return {
 			id: DbGamePlayer.id.toString(),
 			login: DbGamePlayer.user.login,
 		}
-	}
+	}*/
 }

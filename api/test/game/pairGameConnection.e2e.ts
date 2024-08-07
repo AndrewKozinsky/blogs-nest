@@ -8,7 +8,7 @@ import { addUserByAdminRequest, loginRequest, userEmail, userPassword } from '..
 import { agent as request } from 'supertest'
 import { checkGameObj, createGameQuestions, createGameWithPlayers } from './common'
 
-it('123', async () => {
+it.only('123', async () => {
 	expect(2).toBe(2)
 })
 
@@ -42,7 +42,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.OK_200)
 
 			await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+				.post('/' + RouteNames.PAIR_GAME.CONNECTION.full)
 				.set('authorization', 'Bearer ' + userAccessToken)
 				.expect(HTTP_STATUSES.FORBIDDEN_403)
 		})
@@ -72,7 +72,7 @@ describe('ROOT', () => {
 			expect(game.finishGameDate).toBe(null)
 		})
 
-		it.only('should return an object if the second user connected to the game', async () => {
+		it('should return an object if the second user connected to the game', async () => {
 			const { userFirstAccessToken, userSecondAccessToken, game } =
 				await createGameWithPlayers(app)
 

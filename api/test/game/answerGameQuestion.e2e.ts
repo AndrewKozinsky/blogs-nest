@@ -16,7 +16,7 @@ import {
 import { agent as request } from 'supertest'
 import { checkGameObj, createGameQuestions, createGameWithPlayers } from './common'
 
-it.only('123', async () => {
+it('123', async () => {
 	expect(2).toBe(2)
 })
 
@@ -68,16 +68,114 @@ describe('ROOT', () => {
 				.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
 				.send({ answer: 'My wrong answer' })
 				.set('authorization', 'Bearer ' + userSecondAccessToken)
-				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
+				.expect(HTTP_STATUSES.FORBIDDEN_403)
 		})
 
-		it('players has finished game', async () => {
+		it('first and second players gave a few answers', async () => {
 			const { userFirstAccessToken, userSecondAccessToken, game } =
 				await createGameWithPlayers(app)
 
-			// Give 5 answers by first and second user
-			// First user give only one right answer, but second user answered all questions right
-			for (let i = 0; i < gameConfig.questionsNumber; i++) {
+			// First player gave correct answer
+			const answer1Req = request(app.getHttpServer())
+				.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+				.send({ answer: 'Answer 1' })
+				.set('authorization', 'Bearer ' + userFirstAccessToken)
+				.expect(HTTP_STATUSES.OK_200)
+
+			// Second player gave incorrect answer
+			const answer2Req = request(app.getHttpServer())
+				.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+				.send({ answer: 'Wrong answer' })
+				.set('authorization', 'Bearer ' + userSecondAccessToken)
+				.expect(HTTP_STATUSES.OK_200)
+
+			// Second player gave correct answer
+			const answer3Req = request(app.getHttpServer())
+				.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+				.send({ answer: 'Answer 1' })
+				.set('authorization', 'Bearer ' + userSecondAccessToken)
+				.expect(HTTP_STATUSES.OK_200)
+
+			await Promise.all([answer1Req, answer2Req, answer3Req])
+
+			const getFirstPlayerGameRes = await request(app.getHttpServer())
+				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
+				.set('authorization', 'Bearer ' + userFirstAccessToken)
+				.expect(HTTP_STATUSES.OK_200)
+
+			const getSecondPlayerGameRes = await request(app.getHttpServer())
+				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
+				.set('authorization', 'Bearer ' + userSecondAccessToken)
+				.expect(HTTP_STATUSES.OK_200)
+
+			// Check user 1 has score 1 and user 2 has score 2
+			const updatedGame = getFirstPlayerGameRes.body
+			expect(updatedGame.status).toBe(GameStatus.Active)
+			expect(updatedGame.firstPlayerProgress.score).toBe(1)
+			expect(updatedGame.firstPlayerProgress.answers.length).toBe(1)
+
+			expect(updatedGame.secondPlayerProgress.score).toBe(1)
+			expect(updatedGame.secondPlayerProgress.answers.length).toBe(2)
+
+			expect(typeof updatedGame.startGameDate).toBe('string')
+			expect(updatedGame.finishGameDate).toBe(null)
+		})
+
+		it('first player has finished game, but second not', async () => {
+			const { userFirstAccessToken, userSecondAccessToken, game } =
+				await createGameWithPlayers(app)
+
+			// First player gave 3 wrong answers
+			for (let i = 0; i < gameConfig.questionsNumber - 2; i++) {
+				await request(app.getHttpServer())
+					.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+					.send({ answer: 'Wrong answer' })
+					.set('authorization', 'Bearer ' + userFirstAccessToken)
+					.expect(HTTP_STATUSES.OK_200)
+			}
+			// First player gave 2 right answers
+			for (let i = 0; i < 2; i++) {
+				await request(app.getHttpServer())
+					.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+					.send({ answer: 'Answer 1' })
+					.set('authorization', 'Bearer ' + userFirstAccessToken)
+					.expect(HTTP_STATUSES.OK_200)
+			}
+
+			// Second player gave 3 right answers
+			for (let i = 0; i < gameConfig.questionsNumber - 2; i++) {
+				await request(app.getHttpServer())
+					.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+					.send({ answer: 'Answer 1' })
+					.set('authorization', 'Bearer ' + userSecondAccessToken)
+					.expect(HTTP_STATUSES.OK_200)
+			}
+
+			// Check user 1 has score 2 and user 2 has score 4
+			const getGameRes = await request(app.getHttpServer())
+				.get('/' + RouteNames.PAIR_GAME.GAME_ID(game.id).full)
+				.set('authorization', 'Bearer ' + userSecondAccessToken)
+				.expect(HTTP_STATUSES.OK_200)
+
+			const updatedGame = getGameRes.body
+			expect(updatedGame.status).toBe(GameStatus.Active)
+			expect(updatedGame.firstPlayerProgress.score).toBe(2)
+			expect(updatedGame.firstPlayerProgress.answers.length).toBe(5)
+
+			expect(updatedGame.secondPlayerProgress.score).toBe(3)
+			expect(updatedGame.secondPlayerProgress.answers.length).toBe(3)
+
+			expect(typeof updatedGame.startGameDate).toBe('string')
+			expect(updatedGame.finishGameDate).toBe(null)
+		})
+
+		it.only('players have finished game', async () => {
+			const { userFirstAccessToken, userSecondAccessToken, game } =
+				await createGameWithPlayers(app)
+
+			// Give 4 answers by first and second user
+			// First user give no right answers, but second user answered all questions right
+			for (let i = 0; i < gameConfig.questionsNumber - 1; i++) {
 				await request(app.getHttpServer())
 					.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
 					.send({ answer: 'Wrong answer' })
@@ -91,62 +189,48 @@ describe('ROOT', () => {
 					.expect(HTTP_STATUSES.OK_200)
 			}
 
-			// Check user 1 has score 2 and user 2 has score 5
+			// First player gave 1 correct answer
+			await request(app.getHttpServer())
+				.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+				.send({ answer: 'Answer 1' })
+				.set('authorization', 'Bearer ' + userFirstAccessToken)
+				.expect(HTTP_STATUSES.OK_200)
+
+			// Second player gave 1 correct answer
+			await request(app.getHttpServer())
+				.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+				.send({ answer: 'Answer 1' })
+				.set('authorization', 'Bearer ' + userSecondAccessToken)
+				.expect(HTTP_STATUSES.OK_200)
+
+			// Get the game
 			const getGameRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.PAIR_GAME.GAME_ID(game.id).full)
 				.send({ answer: 'Answer 1' })
 				.set('authorization', 'Bearer ' + userSecondAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
-			const updatedGame = getGameRes.body
-			expect(updatedGame.status).toBe(GameStatus.Finished)
-			expect(updatedGame.firstPlayerProgress.score).toBe(0)
-			expect(updatedGame.secondPlayerProgress.score).toBe(5)
-			expect(typeof updatedGame.startGameDate).toBe('string')
-			expect(typeof updatedGame.finishGameDate).toBe('string')
-		})
-
-		it('players has finished game', async () => {
-			const { userFirstAccessToken, userSecondAccessToken, game } =
-				await createGameWithPlayers(app)
-
-			// Give 5 answers by first and second user
-			// First user give only one right answer, but second user answered all questions right
-			for (let i = 0; i < gameConfig.questionsNumber; i++) {
-				if (i === 0) {
-					await request(app.getHttpServer())
-						.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
-						.send({ answer: 'Answer 1' })
-						.set('authorization', 'Bearer ' + userFirstAccessToken)
-						.expect(HTTP_STATUSES.OK_200)
-				} else {
-					await request(app.getHttpServer())
-						.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
-						.send({ answer: 'Wrong answer' })
-						.set('authorization', 'Bearer ' + userFirstAccessToken)
-						.expect(HTTP_STATUSES.OK_200)
-				}
-
-				await request(app.getHttpServer())
-					.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
-					.send({ answer: 'Answer 1' })
-					.set('authorization', 'Bearer ' + userSecondAccessToken)
-					.expect(HTTP_STATUSES.OK_200)
-			}
-
 			// Check user 1 has score 2 and user 2 has score 5
-			const getGameRes = await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.GAME_ID(game.id).full)
-				.send({ answer: 'Answer 1' })
-				.set('authorization', 'Bearer ' + userSecondAccessToken)
-				.expect(HTTP_STATUSES.OK_200)
-
 			const updatedGame = getGameRes.body
 			expect(updatedGame.status).toBe(GameStatus.Finished)
 			expect(updatedGame.firstPlayerProgress.score).toBe(2)
 			expect(updatedGame.secondPlayerProgress.score).toBe(5)
 			expect(typeof updatedGame.startGameDate).toBe('string')
 			expect(typeof updatedGame.finishGameDate).toBe('string')
+
+			// Get the game by first user
+			const getGameByFirstPlayerRes = await request(app.getHttpServer())
+				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
+				.send({ answer: 'Answer 1' })
+				.set('authorization', 'Bearer ' + userFirstAccessToken)
+				.expect(HTTP_STATUSES.OK_200)
+
+			// Get the game by second user
+			const getGameBySecondPlayerRes = await request(app.getHttpServer())
+				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
+				.send({ answer: 'Answer 1' })
+				.set('authorization', 'Bearer ' + userSecondAccessToken)
+				.expect(HTTP_STATUSES.OK_200)
 		})
 	})
 })

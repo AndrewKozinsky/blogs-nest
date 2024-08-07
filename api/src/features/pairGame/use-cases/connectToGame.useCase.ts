@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common'
 import { GameStatus } from '../../../db/pg/entities/game/game'
 import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../../types/resultCodes'
+import { SaQuestionsRepository } from '../../saQuestions/saQuestionsRepository'
 import { gameConfig } from '../config'
 import { GameQueryRepository } from '../game.queryRepository'
-import { SaQuestionsRepository } from '../../saQuestions/saQuestionsRepository'
-import { GameOutModel } from '../models/game.output.model'
-import { GameQuestionRepository } from '../gameQuestion.repository'
 import { GameRepository } from '../game.repository'
 import { GamePlayerRepository } from '../gamePlayer.repository'
+import { GameQuestionRepository } from '../gameQuestion.repository'
+import { GameOutModel } from '../models/game.output.model'
 import { GamePlayerServiceModel } from '../models/game.service.model'
 
 @Injectable()
@@ -22,7 +22,7 @@ export class ConnectToGameUseCase {
 
 	async execute(userId: string): Promise<LayerResult<GameOutModel.Main>> {
 		// Вернуть 403 если пользователь уже является игроком (зашёл повторно)
-		if (await this.isUserIsPlayerAlready(userId)) {
+		if (await this.isUserPlayer(userId)) {
 			return {
 				code: LayerErrorCode.Forbidden_403,
 			}
@@ -31,7 +31,9 @@ export class ConnectToGameUseCase {
 		// Создать нового игрока
 		const newPlayerRes = await this.createPlayerAndReturn(userId)
 		if (newPlayerRes.code !== LayerSuccessCode.Success) {
-			return newPlayerRes
+			return {
+				code: LayerErrorCode.Forbidden_403,
+			}
 		}
 		const newPlayer = newPlayerRes.data
 
@@ -41,7 +43,7 @@ export class ConnectToGameUseCase {
 		let gameId = ''
 
 		// Если свободной игры нет
-		if (getPendingGameRes.code !== LayerSuccessCode.Success) {
+		if (getPendingGameRes.code !== LayerSuccessCode.Success || !getPendingGameRes.data) {
 			const createGameRes = await this.createGameWithSinglePlayer(newPlayer)
 			if (createGameRes.code !== LayerSuccessCode.Success) {
 				return createGameRes
@@ -55,7 +57,16 @@ export class ConnectToGameUseCase {
 			await this.setSecondPlayerToGame(gameId, newPlayer)
 		}
 
-		return this.gameQueryRepository.getGameById(gameId)
+		const getGameRes = await this.gameQueryRepository.getGameById(gameId)
+
+		if (getGameRes.code !== LayerSuccessCode.Success || !getGameRes.data) {
+			return {
+				code: LayerErrorCode.NotFound_404,
+			}
+		}
+
+		// @ts-ignore
+		return getGameRes
 	}
 
 	async createGameWithSinglePlayer(player: GamePlayerServiceModel): Promise<LayerResult<string>> {
@@ -96,7 +107,7 @@ export class ConnectToGameUseCase {
 		}
 	}
 
-	async isUserIsPlayerAlready(userId: string): Promise<boolean> {
+	async isUserPlayer(userId: string): Promise<boolean> {
 		const getPlayerByUserIdRes = await this.gamePlayerRepository.getPlayerByUserId(userId)
 
 		if (getPlayerByUserIdRes.code !== LayerSuccessCode.Success) {
@@ -116,7 +127,14 @@ export class ConnectToGameUseCase {
 		const newPlayerId = createPlayerRes.data
 
 		// Вернуть созданного игрока
-		return await this.gamePlayerRepository.getPlayerById(newPlayerId)
+		const getPlayerRes = await this.gamePlayerRepository.getPlayerById(newPlayerId)
+		if (getPlayerRes.code !== LayerSuccessCode.Success || !getPlayerRes.data) {
+			return {
+				code: LayerErrorCode.NotFound_404,
+			}
+		}
+
+		return { code: LayerSuccessCode.Success, data: getPlayerRes.data }
 	}
 
 	/**

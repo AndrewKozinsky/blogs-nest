@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
-import { GamePlayer } from '../../db/pg/entities/game/gamePlayer'
 import { GameQuestion } from '../../db/pg/entities/game/gameQuestion'
 import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../types/resultCodes'
 import { GameRepository } from './game.repository'
 import { GamePlayerRepository } from './gamePlayer.repository'
-import { GamePlayerServiceModel, GameQuestionServiceModel } from './models/game.service.model'
+import { GameQuestionServiceModel } from './models/game.service.model'
 
 @Injectable()
 export class GameQuestionRepository {
@@ -31,16 +30,22 @@ export class GameQuestionRepository {
 		}
 	}
 
-	async getPlayerCurrentGameQuestion(playerId: string) {
+	async getPlayerCurrentGameQuestion(
+		playerId: string,
+	): Promise<LayerResult<GameQuestionServiceModel>> {
 		const getPlayerRes = await this.gamePlayerRepository.getPlayerById(playerId)
-		if (getPlayerRes.code !== LayerSuccessCode.Success) {
-			return getPlayerRes
+		if (getPlayerRes.code !== LayerSuccessCode.Success || !getPlayerRes.data) {
+			return {
+				code: LayerErrorCode.NotFound_404,
+			}
 		}
 		const player = getPlayerRes.data
 
 		const getGameRes = await this.gameRepository.getGameByPlayerId(playerId)
-		if (getGameRes.code !== LayerSuccessCode.Success) {
-			return getGameRes
+		if (getGameRes.code !== LayerSuccessCode.Success || !getGameRes.data) {
+			return {
+				code: LayerErrorCode.NotFound_404,
+			}
 		}
 		const game = getGameRes.data
 
