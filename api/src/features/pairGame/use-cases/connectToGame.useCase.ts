@@ -108,7 +108,8 @@ export class ConnectToGameUseCase {
 	}
 
 	async isUserPlayer(userId: string): Promise<boolean> {
-		const getPlayerByUserIdRes = await this.gamePlayerRepository.getPlayerByUserId(userId)
+		const getPlayerByUserIdRes =
+			await this.gamePlayerRepository.getPlayerOnUnfinishedGameByUserId(userId)
 
 		if (getPlayerByUserIdRes.code !== LayerSuccessCode.Success) {
 			return false

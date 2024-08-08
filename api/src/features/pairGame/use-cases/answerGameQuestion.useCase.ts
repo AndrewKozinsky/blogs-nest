@@ -24,12 +24,17 @@ export class AnswerGameQuestionUseCase {
 		userId: string,
 		reqBodyDto: AnswerGameQuestionDtoModel,
 	): Promise<LayerResult<null | GameAnswerOutModel>> {
-		// Завернуть если пользователь не является игроком
-		const getPlayerRes = await this.gamePlayerRepository.getPlayerByUserId(userId)
-
 		// Найти незавершённую игру, где пользователь является игроком.
 		// И если находится, то отдавать 403
-		// !!!!!!
+		const getGameByUserId = await this.gameRepository.getUnfinishedGameByUserId(userId)
+		if (getGameByUserId.code !== LayerSuccessCode.Success || !getGameByUserId.data) {
+			return {
+				code: LayerErrorCode.Forbidden_403,
+			}
+		}
+
+		const getPlayerRes = await this.gamePlayerRepository.getPlayerByUserId(userId)
+
 		if (getPlayerRes.code !== LayerSuccessCode.Success || !getPlayerRes.data) {
 			return {
 				code: LayerErrorCode.Forbidden_403,

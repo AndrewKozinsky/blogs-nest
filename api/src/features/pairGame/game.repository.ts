@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
-import { DataSource, FindOptionsWhere } from 'typeorm'
+import { DataSource, FindOptionsWhere, Not } from 'typeorm'
 import { Game, GameStatus } from '../../db/pg/entities/game/game'
 import { GameAnswer } from '../../db/pg/entities/game/gameAnswer'
 import { GamePlayer } from '../../db/pg/entities/game/gamePlayer'
 import { GameQuestion } from '../../db/pg/entities/game/gameQuestion'
 import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../types/resultCodes'
 import { gameConfig } from './config'
+import { GamePlayerRepository } from './gamePlayer.repository'
 import { GameServiceModel } from './models/game.service.model'
 
 @Injectable()
@@ -23,6 +24,29 @@ export class GameRepository {
 
 	async getGameByPlayerId(playerId: string): Promise<LayerResult<null | GameServiceModel.Main>> {
 		return this.getGameWhere([{ firstPlayerId: playerId }, { secondPlayerId: playerId }])
+	}
+
+	async getUnfinishedGameByUserId(
+		userId: string,
+	): Promise<LayerResult<null | GameServiceModel.Main>> {
+		return this.getGameWhere([
+			{
+				firstPlayer: {
+					user: {
+						id: userId,
+					},
+				},
+				status: Not(GameStatus.Finished),
+			},
+			{
+				secondPlayer: {
+					user: {
+						id: userId,
+					},
+				},
+				status: Not(GameStatus.Finished),
+			},
+		])
 	}
 
 	private async getGameWhere(
@@ -65,7 +89,7 @@ export class GameRepository {
 
 		function sortAnswers(answers: GameAnswer[]) {
 			return answers.sort((a, b) => {
-				return a.createdAt > b.createdAt ? -1 : 1
+				return a.createdAt < b.createdAt ? -1 : 1
 			})
 		}
 	}

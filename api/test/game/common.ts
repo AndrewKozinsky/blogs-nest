@@ -112,3 +112,45 @@ export async function createGameWithPlayers(app: INestApplication) {
 
 	return { userFirstAccessToken, userSecondAccessToken, game: firstConnectToGameRes.body }
 }
+
+export async function createGameWithAnotherPlayers(app: INestApplication) {
+	// Create a third user
+	const createdThirdUserRes = await addUserByAdminRequest(app, {
+		email: 'email-3@email.com',
+		login: 'login-3',
+		password: 'password-3',
+	})
+	expect(createdThirdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
+	const loginUserThirdRes = await loginRequest(app, 'email-3@email.com', 'password-3')
+	const userThirdAccessToken = loginUserThirdRes.body.accessToken
+
+	// Third user connects to the game
+	const firstConnectToGameRes = await request(app.getHttpServer())
+		.post('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+		.set('authorization', 'Bearer ' + userThirdAccessToken)
+		.expect(HTTP_STATUSES.OK_200)
+
+	// -----
+
+	// Create a fourth user
+	const createdFourthUserRes = await addUserByAdminRequest(app, {
+		email: 'email-4@email.com',
+		login: 'login-4',
+		password: 'password-4',
+	})
+	expect(createdFourthUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
+	const loginUserFourthRes = await loginRequest(app, 'email-4@email.com', 'password-4')
+	const userFourthAccessToken = loginUserFourthRes.body.accessToken
+
+	// Fourth user connects to the game
+	const fourthConnectToGameRes = await request(app.getHttpServer())
+		.post('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+		.set('authorization', 'Bearer ' + userFourthAccessToken)
+		.expect(HTTP_STATUSES.OK_200)
+
+	return {
+		userThirdAccessToken,
+		userFourthAccessToken,
+		game: firstConnectToGameRes.body,
+	}
+}

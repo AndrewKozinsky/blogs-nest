@@ -16,7 +16,7 @@ import {
 import { agent as request } from 'supertest'
 import { checkGameObj, createGameQuestions, createGameWithPlayers } from './common'
 
-it.only('123', async () => {
+it('123', async () => {
 	expect(2).toBe(2)
 })
 
@@ -93,7 +93,35 @@ describe('ROOT', () => {
 			expect(game.questions.length).toBe(5)
 		})
 
-		it('should return 404 if no active pair for current user', async () => {
+		it('should return 404 if players have finished game', async () => {
+			const { userFirstAccessToken, userSecondAccessToken } = await createGameWithPlayers(app)
+
+			for (let i = 0; i < 2; i++) {
+				await request(app.getHttpServer())
+					.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+					.send({ answer: 'Wrong answer' })
+					.set('authorization', 'Bearer ' + userFirstAccessToken)
+					.expect(HTTP_STATUSES.OK_200)
+
+				await request(app.getHttpServer())
+					.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+					.send({ answer: 'Wrong answer' })
+					.set('authorization', 'Bearer ' + userSecondAccessToken)
+					.expect(HTTP_STATUSES.OK_200)
+			}
+
+			const getGameByFirstPlayer = await request(app.getHttpServer())
+				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
+				.set('authorization', 'Bearer ' + userFirstAccessToken)
+				.expect(HTTP_STATUSES.OK_200)
+
+			await request(app.getHttpServer())
+				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
+				.set('authorization', 'Bearer ' + userSecondAccessToken)
+				.expect(HTTP_STATUSES.OK_200)
+		})
+
+		it.only('should return 404 if players have finished game', async () => {
 			const { userFirstAccessToken, userSecondAccessToken } = await createGameWithPlayers(app)
 
 			for (let i = 0; i < gameConfig.questionsNumber; i++) {
@@ -119,6 +147,12 @@ describe('ROOT', () => {
 				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
 				.set('authorization', 'Bearer ' + userSecondAccessToken)
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
+
+			// First user connects to the new game
+			await request(app.getHttpServer())
+				.post('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+				.set('authorization', 'Bearer ' + userFirstAccessToken)
+				.expect(HTTP_STATUSES.OK_200)
 		})
 	})
 })

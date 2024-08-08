@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource, FindOptionsWhere } from 'typeorm'
+import { GameStatus } from '../../db/pg/entities/game/game'
 import { GameAnswerStatus } from '../../db/pg/entities/game/gameAnswer'
 import { GamePlayer } from '../../db/pg/entities/game/gamePlayer'
 import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../types/resultCodes'
@@ -64,6 +65,31 @@ export class GamePlayerRepository {
 		return this.getPlayerWhere({ id: playerId })
 	}
 
+	async getPlayerOnUnfinishedGameByUserId(
+		userId: string,
+	): Promise<LayerResult<null | GamePlayerServiceModel>> {
+		const getPlayer = await this.getPlayerByUserId(userId)
+		if (getPlayer.code !== LayerSuccessCode.Success || !getPlayer.data) {
+			return {
+				code: LayerSuccessCode.Success,
+				data: null,
+			}
+		}
+
+		const getGame = await this.gameRepository.getGameByPlayerId(getPlayer.data.id)
+		if (
+			getGame.code !== LayerSuccessCode.Success ||
+			(getGame.data && getGame.data.status === GameStatus.Finished)
+		) {
+			return {
+				code: LayerSuccessCode.Success,
+				data: null,
+			}
+		}
+
+		return this.getPlayerWhere({ id: getPlayer.data.id })
+	}
+
 	async getPlayerByUserId(userId: string): Promise<LayerResult<null | GamePlayerServiceModel>> {
 		return this.getPlayerWhere({ userId })
 	}
@@ -120,8 +146,6 @@ export class GamePlayerRepository {
 			firstPlayer.answers[gameConfig.questionsNumber - 1].addedAt
 		const secondPlayerLastAnswerDate =
 			secondPlayer.answers[gameConfig.questionsNumber - 1].addedAt
-		console.log({ firstPlayerLastAnswerDate })
-		console.log({ secondPlayerLastAnswerDate })
 
 		// If first player gave at least 1 right answer and finished first
 		if (

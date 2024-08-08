@@ -14,9 +14,14 @@ import {
 	userPassword,
 } from '../utils/utils'
 import { agent as request } from 'supertest'
-import { checkGameObj, createGameQuestions, createGameWithPlayers } from './common'
+import {
+	checkGameObj,
+	createGameQuestions,
+	createGameWithAnotherPlayers,
+	createGameWithPlayers,
+} from './common'
 
-it('123', async () => {
+it.only('123', async () => {
 	expect(2).toBe(2)
 })
 
@@ -169,7 +174,7 @@ describe('ROOT', () => {
 			expect(updatedGame.finishGameDate).toBe(null)
 		})
 
-		it.only('players have finished game', async () => {
+		it('players have finished game and started another', async () => {
 			const { userFirstAccessToken, userSecondAccessToken, game } =
 				await createGameWithPlayers(app)
 
@@ -218,17 +223,79 @@ describe('ROOT', () => {
 			expect(typeof updatedGame.startGameDate).toBe('string')
 			expect(typeof updatedGame.finishGameDate).toBe('string')
 
+			// RUN A NEW GAME
+
+			// Create a third user
+			const createdThirdUserRes = await addUserByAdminRequest(app, {
+				email: 'email-3@email.com',
+				login: 'login-3',
+				password: 'password-3',
+			})
+			expect(createdThirdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const loginUserFirstRes = await loginRequest(app, 'email-3@email.com', 'password-3')
+			const userThirdAccessToken = loginUserFirstRes.body.accessToken
+
 			// Get the game by first user
 			const getGameByFirstPlayerRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
+				.set('authorization', 'Bearer ' + userFirstAccessToken)
+				.expect(HTTP_STATUSES.NOT_FOUNT_404)
+
+			// Get the game by second user
+			const getGameByThirdPlayerRes = await request(app.getHttpServer())
+				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
+				.set('authorization', 'Bearer ' + userThirdAccessToken)
+				.expect(HTTP_STATUSES.NOT_FOUNT_404)
+		})
+
+		it('players does not finished game and another started a new one', async () => {
+			const { userFirstAccessToken, userSecondAccessToken, game } =
+				await createGameWithPlayers(app)
+
+			// Give 4 answers by first and second user
+			// First user give no right answers, but second user answered all questions right
+			for (let i = 0; i < gameConfig.questionsNumber - 2; i++) {
+				await request(app.getHttpServer())
+					.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+					.send({ answer: 'Wrong answer' })
+					.set('authorization', 'Bearer ' + userFirstAccessToken)
+					.expect(HTTP_STATUSES.OK_200)
+
+				await request(app.getHttpServer())
+					.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+					.send({ answer: 'Answer 1' })
+					.set('authorization', 'Bearer ' + userSecondAccessToken)
+					.expect(HTTP_STATUSES.OK_200)
+			}
+
+			// New players RUN A NEW GAME
+
+			const { userThirdAccessToken, userFourthAccessToken } =
+				await createGameWithAnotherPlayers(app)
+
+			// Third and fourth players gave one answer each
+			await request(app.getHttpServer())
+				.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+				.send({ answer: 'Wrong answer' })
+				.set('authorization', 'Bearer ' + userThirdAccessToken)
+				.expect(HTTP_STATUSES.OK_200)
+
+			await request(app.getHttpServer())
+				.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+				.send({ answer: 'Answer 1' })
+				.set('authorization', 'Bearer ' + userFourthAccessToken)
+				.expect(HTTP_STATUSES.OK_200)
+
+			// First and second players gave one answer each
+			await request(app.getHttpServer())
+				.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
 				.send({ answer: 'Answer 1' })
 				.set('authorization', 'Bearer ' + userFirstAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
-			// Get the game by second user
-			const getGameBySecondPlayerRes = await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
-				.send({ answer: 'Answer 1' })
+			await request(app.getHttpServer())
+				.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+				.send({ answer: 'Wrong answer' })
 				.set('authorization', 'Bearer ' + userSecondAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 		})

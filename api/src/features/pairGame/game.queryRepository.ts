@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource, FindOptionsWhere, Not } from 'typeorm'
 import { Game, GameStatus } from '../../db/pg/entities/game/game'
+import { GameAnswer } from '../../db/pg/entities/game/gameAnswer'
 import { GamePlayer } from '../../db/pg/entities/game/gamePlayer'
 import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../types/resultCodes'
 import { GamePlayerRepository } from './gamePlayer.repository'
@@ -38,18 +39,23 @@ export class GameQueryRepository {
 	async getUnfinishedGameByUserId(
 		userId: string,
 	): Promise<LayerResult<null | GameOutModel.Main>> {
-		const getPlayerRes = await this.gamePlayerRepository.getPlayerByUserId(userId)
-		if (getPlayerRes.code !== LayerSuccessCode.Success || !getPlayerRes.data) {
-			return {
-				code: LayerErrorCode.NotFound_404,
-			}
-		}
-
-		const player = getPlayerRes.data
-
 		return this.getGameWhere([
-			{ firstPlayerId: player.id, status: Not(GameStatus.Finished) },
-			{ secondPlayerId: player.id, status: Not(GameStatus.Finished) },
+			{
+				firstPlayer: {
+					user: {
+						id: userId,
+					},
+				},
+				status: Not(GameStatus.Finished),
+			},
+			{
+				secondPlayer: {
+					user: {
+						id: userId,
+					},
+				},
+				status: Not(GameStatus.Finished),
+			},
 		])
 	}
 
@@ -84,9 +90,20 @@ export class GameQueryRepository {
 			return a.index > b.index ? 1 : -1
 		})
 
+		game.firstPlayer.answers = sortAnswers(game.firstPlayer.answers)
+		if (game.secondPlayer) {
+			game.secondPlayer.answers = sortAnswers(game.secondPlayer.answers)
+		}
+
 		return {
 			code: LayerSuccessCode.Success,
 			data: this.mapDbGameToOutGame(game),
+		}
+
+		function sortAnswers(answers: GameAnswer[]) {
+			return answers.sort((a, b) => {
+				return a.createdAt < b.createdAt ? -1 : 1
+			})
 		}
 	}
 
