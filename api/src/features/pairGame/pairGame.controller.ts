@@ -43,6 +43,7 @@ export class PairGameController {
 		const getGameConnectionStatus = await this.connectToGameUseCase.execute(req.user.id)
 
 		if (getGameConnectionStatus.code === LayerErrorCode.Forbidden_403) {
+			console.log('connectToGame')
 			throw new ForbiddenException()
 		}
 
@@ -90,10 +91,6 @@ export class PairGameController {
 		if (!req.user) return
 
 		const getCurrentUserGameStatus = await this.getCurrentUserGameUseCase.execute(req.user.id)
-
-		if (getCurrentUserGameStatus.code === LayerErrorCode.Forbidden_403) {
-			throw new ForbiddenException()
-		}
 
 		if (
 			getCurrentUserGameStatus.code === LayerErrorCode.NotFound_404 ||

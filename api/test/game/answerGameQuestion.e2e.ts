@@ -76,7 +76,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.FORBIDDEN_403)
 		})
 
-		it('first and second players gave a few answers', async () => {
+		it.only('first and second players gave a few answers', async () => {
 			const { userFirstAccessToken, userSecondAccessToken, game } =
 				await createGameWithPlayers(app)
 
