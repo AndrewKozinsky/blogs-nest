@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource, FindOptionsWhere } from 'typeorm'
-import { GameStatus } from '../../db/pg/entities/game/game'
 import { GameAnswerStatus } from '../../db/pg/entities/game/gameAnswer'
 import { GamePlayer } from '../../db/pg/entities/game/gamePlayer'
 import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../types/resultCodes'
@@ -62,7 +61,19 @@ export class GamePlayerRepository {
 	}
 
 	async getPlayerById(playerId: string): Promise<LayerResult<null | GamePlayerServiceModel>> {
-		return this.getPlayerWhere({ id: playerId })
+		const getPlayersRes = await this.getPlayersWhere({ id: playerId })
+
+		if (getPlayersRes.code !== LayerSuccessCode.Success || !getPlayersRes.data.length) {
+			return {
+				code: LayerSuccessCode.Success,
+				data: null,
+			}
+		}
+
+		return {
+			code: LayerSuccessCode.Success,
+			data: getPlayersRes.data[0],
+		}
 	}
 
 	async getUnfinishedGamePlayerByUserId(
@@ -96,29 +107,19 @@ export class GamePlayerRepository {
 			}
 		}
 
-		return this.getPlayerWhere({ id: playerId })
+		const getPlayersRes = await this.getPlayersWhere({ id: playerId })
 
-		// Получить всех игроков у которых стоит переданный идентификатор пользователя
-		/*const getUserPlayers = await this.getPlayersByUserId(userId)
-		if (getUserPlayers.code !== LayerSuccessCode.Success || !getUserPlayers.data) {
+		if (getPlayersRes.code !== LayerSuccessCode.Success || !getPlayersRes.data.length) {
 			return {
 				code: LayerSuccessCode.Success,
 				data: null,
 			}
 		}
 
-		const getGame = await this.gameRepository.getGameByPlayerId(getUserPlayers.data.id)
-		if (
-			getGame.code !== LayerSuccessCode.Success ||
-			(getGame.data && getGame.data.status === GameStatus.Finished)
-		) {
-			return {
-				code: LayerSuccessCode.Success,
-				data: null,
-			}
+		return {
+			code: LayerSuccessCode.Success,
+			data: getPlayersRes.data[0],
 		}
-
-		return this.getPlayerWhere({ id: getUserPlayers.data.id })*/
 	}
 
 	async getPlayersByUserId(
@@ -128,12 +129,24 @@ export class GamePlayerRepository {
 	}
 
 	async getPlayerByUserId(userId: string): Promise<LayerResult<null | GamePlayerServiceModel>> {
-		return this.getPlayerWhere({ userId })
+		const getPlayersRes = await this.getPlayersWhere({ userId })
+
+		if (getPlayersRes.code !== LayerSuccessCode.Success || !getPlayersRes.data.length) {
+			return {
+				code: LayerSuccessCode.Success,
+				data: null,
+			}
+		}
+
+		return {
+			code: LayerSuccessCode.Success,
+			data: getPlayersRes.data[0],
+		}
 	}
 
 	private async getPlayersWhere(
 		whereCondition: FindOptionsWhere<GamePlayer> | FindOptionsWhere<GamePlayer>[] | undefined,
-	): Promise<LayerResult<null | GamePlayerServiceModel[]>> {
+	): Promise<LayerResult<GamePlayerServiceModel[]>> {
 		const getPlayerRes = await this.dataSource.getRepository(GamePlayer).find({
 			where: whereCondition,
 			relations: {
@@ -145,43 +158,9 @@ export class GamePlayerRepository {
 			},
 		})
 
-		if (!getPlayerRes) {
-			return {
-				code: LayerSuccessCode.Success,
-				data: null,
-			}
-		}
-
 		return {
 			code: LayerSuccessCode.Success,
 			data: getPlayerRes.map(this.mapDbGamePlayerToServiceGamePlayer),
-		}
-	}
-
-	private async getPlayerWhere(
-		whereCondition: FindOptionsWhere<GamePlayer> | FindOptionsWhere<GamePlayer>[] | undefined,
-	): Promise<LayerResult<null | GamePlayerServiceModel>> {
-		const getPlayerRes = await this.dataSource.getRepository(GamePlayer).findOne({
-			where: whereCondition,
-			relations: {
-				user: true,
-				answers: {
-					question: true,
-					player: true,
-				},
-			},
-		})
-
-		if (!getPlayerRes) {
-			return {
-				code: LayerSuccessCode.Success,
-				data: null,
-			}
-		}
-
-		return {
-			code: LayerSuccessCode.Success,
-			data: this.mapDbGamePlayerToServiceGamePlayer(getPlayerRes),
 		}
 	}
 
@@ -242,14 +221,14 @@ export class GamePlayerRepository {
 	}
 
 	async addExtraPointToPlayer(playerId: string): Promise<LayerResult<null>> {
-		const getPlayerRes = await this.getPlayerWhere({ id: playerId })
-		if (getPlayerRes.code !== LayerSuccessCode.Success || !getPlayerRes.data) {
+		const getPlayersRes = await this.getPlayersWhere({ id: playerId })
+		if (getPlayersRes.code !== LayerSuccessCode.Success || !getPlayersRes.data.length) {
 			return {
 				code: LayerErrorCode.NotFound_404,
 			}
 		}
 
-		const player = getPlayerRes.data
+		const player = getPlayersRes.data[0]
 
 		const updatePlayerRes = await this.dataSource.getRepository(GamePlayer).update(playerId, {
 			score: player.score + 1,

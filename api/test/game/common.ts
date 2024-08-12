@@ -88,7 +88,7 @@ export async function createGameWithPlayers(app: INestApplication) {
 
 	// First user connects to the game
 	const firstConnectToGameRes = await request(app.getHttpServer())
-		.post('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+		.post('/' + RouteNames.PAIR_GAME.PAIRS.CONNECTION.full)
 		.set('authorization', 'Bearer ' + userFirstAccessToken)
 		.expect(HTTP_STATUSES.OK_200)
 
@@ -106,7 +106,7 @@ export async function createGameWithPlayers(app: INestApplication) {
 
 	// Second user connects to the game
 	const secondConnectToGameRes = await request(app.getHttpServer())
-		.post('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+		.post('/' + RouteNames.PAIR_GAME.PAIRS.CONNECTION.full)
 		.set('authorization', 'Bearer ' + userSecondAccessToken)
 		.expect(HTTP_STATUSES.OK_200)
 
@@ -126,7 +126,7 @@ export async function createGameWithAnotherPlayers(app: INestApplication) {
 
 	// Third user connects to the game
 	const firstConnectToGameRes = await request(app.getHttpServer())
-		.post('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+		.post('/' + RouteNames.PAIR_GAME.PAIRS.CONNECTION.full)
 		.set('authorization', 'Bearer ' + userThirdAccessToken)
 		.expect(HTTP_STATUSES.OK_200)
 
@@ -144,7 +144,7 @@ export async function createGameWithAnotherPlayers(app: INestApplication) {
 
 	// Fourth user connects to the game
 	const fourthConnectToGameRes = await request(app.getHttpServer())
-		.post('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+		.post('/' + RouteNames.PAIR_GAME.PAIRS.CONNECTION.full)
 		.set('authorization', 'Bearer ' + userFourthAccessToken)
 		.expect(HTTP_STATUSES.OK_200)
 

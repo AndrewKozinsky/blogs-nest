@@ -145,23 +145,39 @@ export const RouteNames = {
 		},
 	},
 	PAIR_GAME: {
-		value: 'pair-game-quiz/pairs',
-		GAME_ID(gameId: string) {
-			return {
-				value: gameId,
-				full: `pair-game-quiz/pairs/${gameId}`,
-			}
+		value: 'pair-game-quiz',
+		PAIRS: {
+			value: 'pairs',
+			full: 'pair-game-quiz/pairs',
+			MY_GAMES: {
+				value: 'my',
+				full: 'pair-game-quiz/pairs/my',
+			},
+			GAME_ID(gameId: string) {
+				return {
+					value: gameId,
+					full: `pair-game-quiz/pairs/${gameId}`,
+				}
+			},
+			CONNECTION: {
+				value: 'connection',
+				full: 'pair-game-quiz/pairs/connection',
+			},
+			MY_CURRENT: {
+				value: 'my-current',
+				full: 'pair-game-quiz/pairs/my-current',
+				ANSWERS: {
+					value: 'answers',
+					full: 'pair-game-quiz/pairs/my-current/answers',
+				},
+			},
 		},
-		CONNECTION: {
-			value: 'connection',
-			full: 'pair-game-quiz/pairs/connection',
-		},
-		MY_CURRENT: {
-			value: 'my-current',
-			full: 'pair-game-quiz/pairs/my-current',
-			ANSWERS: {
-				value: 'answers',
-				full: 'pair-game-quiz/pairs/my-current/answers',
+		USERS: {
+			value: 'users',
+			full: 'pair-game-quiz/users',
+			MY_STATISTIC: {
+				value: 'my-statistic',
+				full: 'pair-game-quiz/users/my-statistic',
 			},
 		},
 	},

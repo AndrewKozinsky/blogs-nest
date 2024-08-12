@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
-import { DataSource, FindOneOptions, FindOptionsWhere, Not } from 'typeorm'
+import { DataSource, FindOptionsWhere, Not } from 'typeorm'
 import { Game, GameStatus } from '../../db/pg/entities/game/game'
 import { GameAnswer } from '../../db/pg/entities/game/gameAnswer'
 import { GamePlayer } from '../../db/pg/entities/game/gamePlayer'
 import { GameQuestion } from '../../db/pg/entities/game/gameQuestion'
 import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../types/resultCodes'
 import { gameConfig } from './config'
-import { GamePlayerRepository } from './gamePlayer.repository'
 import { GameServiceModel } from './models/game.service.model'
 
 @Injectable()

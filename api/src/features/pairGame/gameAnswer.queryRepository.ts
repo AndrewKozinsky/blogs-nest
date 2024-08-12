@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
 import { GameAnswer } from '../../db/pg/entities/game/gameAnswer'
-import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../types/resultCodes'
+import { LayerResult, LayerSuccessCode } from '../../types/resultCodes'
 import { GameAnswerOutModel } from './models/game.output.model'
 
 @Injectable()

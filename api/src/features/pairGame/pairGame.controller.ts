@@ -18,11 +18,13 @@ import { Request } from 'express'
 import { CheckAccessTokenGuard } from '../../infrastructure/guards/checkAccessToken.guard'
 import RouteNames from '../../settings/routeNames'
 import { LayerErrorCode, LayerSuccessCode } from '../../types/resultCodes'
-import { AnswerGameQuestionDtoModel } from './models/game.input.model'
+import { AnswerGameQuestionDtoModel, GetMyGamesDtoModel } from './models/game.input.model'
 import { AnswerGameQuestionUseCase } from './use-cases/answerGameQuestion.useCase'
 import { ConnectToGameUseCase } from './use-cases/connectToGame.useCase'
 import { GetCurrentUserGameUseCase } from './use-cases/getCurrentUserGame.useCase'
 import { GetGameUseCase } from './use-cases/getGame.useCase'
+import { GetMyGamesUseCase } from './use-cases/getMyGames.useCase'
+import { GetMyStatisticUseCase } from './use-cases/getMyStatisticUseCase.useCase'
 
 @Controller(RouteNames.PAIR_GAME.value)
 export class PairGameController {
@@ -31,11 +33,13 @@ export class PairGameController {
 		private answerGameQuestionUseCase: AnswerGameQuestionUseCase,
 		private getGameUseCase: GetGameUseCase,
 		private getCurrentUserGameUseCase: GetCurrentUserGameUseCase,
+		private getMyStatisticUseCase: GetMyStatisticUseCase,
+		private getMyGamesUseCase: GetMyGamesUseCase,
 	) {}
 
 	// Connect current user to existing random pending pair or create new pair which will be waiting second player
 	@UseGuards(CheckAccessTokenGuard)
-	@Post(RouteNames.PAIR_GAME.CONNECTION.value)
+	@Post(RouteNames.PAIR_GAME.PAIRS.CONNECTION.value)
 	@HttpCode(HttpStatus.OK)
 	async connectToGame(@Req() req: Request) {
 		if (!req.user) return
@@ -53,10 +57,38 @@ export class PairGameController {
 		return getGameConnectionStatus.data
 	}
 
+	// Returns all my games (closed games and current)
+	@UseGuards(CheckAccessTokenGuard)
+	@Get(RouteNames.PAIR_GAME.PAIRS.MY_GAMES.value)
+	@HttpCode(HttpStatus.OK)
+	async getMyGames(@Req() req: Request, @Body() body: GetMyGamesDtoModel) {
+		if (!req.user) return
+
+		const getMyGamesStatus = await this.getMyGamesUseCase.execute(req.user.id, body)
+
+		//  Добавлена история (список завешенных и текущих) игр текущего пользователя.
+		//  Особенности сортировки списка: если по первому критерию (например status) одинаковые значения - сортируем по pairCreatedDate desc;
+		return null
+	}
+
+	// Get current user statistic
+	@UseGuards(CheckAccessTokenGuard)
+	@Get(RouteNames.PAIR_GAME.USERS.MY_STATISTIC.value)
+	@HttpCode(HttpStatus.OK)
+	async getMyStatistic(@Req() req: Request) {
+		if (!req.user) return
+
+		const getMyStatisticStatus = await this.getMyStatisticUseCase.execute(req.user.id)
+
+		return null
+	}
+
 	// Send an answer for the next not answered question in an active pair
 	@UseGuards(CheckAccessTokenGuard)
 	@Post(
-		RouteNames.PAIR_GAME.MY_CURRENT.value + '/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.value,
+		RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.value +
+			'/' +
+			RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.value,
 	)
 	@HttpCode(HttpStatus.OK)
 	async answerGameQuestion(@Req() req: Request, @Body() body: AnswerGameQuestionDtoModel) {
@@ -84,7 +116,7 @@ export class PairGameController {
 
 	// Returns current unfinished user game
 	@UseGuards(CheckAccessTokenGuard)
-	@Get(RouteNames.PAIR_GAME.MY_CURRENT.value)
+	@Get(RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.value)
 	@HttpCode(HttpStatus.OK)
 	async getCurrentUserGame(@Req() req: Request) {
 		if (!req.user) return

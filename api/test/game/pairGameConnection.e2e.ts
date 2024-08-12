@@ -26,7 +26,7 @@ describe('ROOT', () => {
 	describe('Connection to a game', () => {
 		it('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+				.post('/' + RouteNames.PAIR_GAME.PAIRS.CONNECTION.full)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
@@ -37,12 +37,12 @@ describe('ROOT', () => {
 			const userAccessToken = loginUserRes.body.accessToken
 
 			await request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+				.post('/' + RouteNames.PAIR_GAME.PAIRS.CONNECTION.full)
 				.set('authorization', 'Bearer ' + userAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
 			await request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+				.post('/' + RouteNames.PAIR_GAME.PAIRS.CONNECTION.full)
 				.set('authorization', 'Bearer ' + userAccessToken)
 				.expect(HTTP_STATUSES.FORBIDDEN_403)
 		})
@@ -56,7 +56,7 @@ describe('ROOT', () => {
 			const userAccessToken = loginUserRes.body.accessToken
 
 			const connectToGameRes = await request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+				.post('/' + RouteNames.PAIR_GAME.PAIRS.CONNECTION.full)
 				.set('authorization', 'Bearer ' + userAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
@@ -77,7 +77,7 @@ describe('ROOT', () => {
 				await createGameWithPlayers(app)
 
 			const updatedGameRes = await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.GAME_ID(game.id).full)
+				.get('/' + RouteNames.PAIR_GAME.PAIRS.GAME_ID(game.id).full)
 				.set('authorization', 'Bearer ' + userFirstAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 

@@ -39,7 +39,7 @@ describe('ROOT', () => {
 	describe('Answer game question', () => {
 		it('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+				.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
@@ -50,7 +50,7 @@ describe('ROOT', () => {
 			const userAccessToken = loginUserRes.body.accessToken
 
 			await request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+				.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 				.set('authorization', 'Bearer ' + userAccessToken)
 				.expect(HTTP_STATUSES.BAD_REQUEST_400)
 		})
@@ -62,7 +62,7 @@ describe('ROOT', () => {
 			// Give 5 answers by second user
 			for (let i = 0; i < gameConfig.questionsNumber; i++) {
 				const res = await request(app.getHttpServer())
-					.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+					.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 					.send({ answer: 'My wrong answer' })
 					.set('authorization', 'Bearer ' + userSecondAccessToken)
 					.expect(HTTP_STATUSES.OK_200)
@@ -70,7 +70,7 @@ describe('ROOT', () => {
 
 			// Try to answer one more time to check for Unauthorized status
 			await request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+				.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 				.send({ answer: 'My wrong answer' })
 				.set('authorization', 'Bearer ' + userSecondAccessToken)
 				.expect(HTTP_STATUSES.FORBIDDEN_403)
@@ -82,21 +82,21 @@ describe('ROOT', () => {
 
 			// First player gave correct answer
 			const answer1Req = request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+				.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 				.send({ answer: 'Answer 1' })
 				.set('authorization', 'Bearer ' + userFirstAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
 			// Second player gave incorrect answer
 			const answer2Req = request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+				.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 				.send({ answer: 'Wrong answer' })
 				.set('authorization', 'Bearer ' + userSecondAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
 			// Second player gave correct answer
 			const answer3Req = request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+				.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 				.send({ answer: 'Answer 1' })
 				.set('authorization', 'Bearer ' + userSecondAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
@@ -104,12 +104,12 @@ describe('ROOT', () => {
 			await Promise.all([answer1Req, answer2Req, answer3Req])
 
 			const getFirstPlayerGameRes = await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
+				.get('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.full)
 				.set('authorization', 'Bearer ' + userFirstAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
 			const getSecondPlayerGameRes = await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
+				.get('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.full)
 				.set('authorization', 'Bearer ' + userSecondAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
@@ -133,7 +133,7 @@ describe('ROOT', () => {
 			// First player gave 3 wrong answers
 			for (let i = 0; i < gameConfig.questionsNumber - 2; i++) {
 				await request(app.getHttpServer())
-					.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+					.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 					.send({ answer: 'Wrong answer' })
 					.set('authorization', 'Bearer ' + userFirstAccessToken)
 					.expect(HTTP_STATUSES.OK_200)
@@ -141,7 +141,7 @@ describe('ROOT', () => {
 			// First player gave 2 right answers
 			for (let i = 0; i < 2; i++) {
 				await request(app.getHttpServer())
-					.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+					.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 					.send({ answer: 'Answer 1' })
 					.set('authorization', 'Bearer ' + userFirstAccessToken)
 					.expect(HTTP_STATUSES.OK_200)
@@ -150,7 +150,7 @@ describe('ROOT', () => {
 			// Second player gave 3 right answers
 			for (let i = 0; i < gameConfig.questionsNumber - 2; i++) {
 				await request(app.getHttpServer())
-					.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+					.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 					.send({ answer: 'Answer 1' })
 					.set('authorization', 'Bearer ' + userSecondAccessToken)
 					.expect(HTTP_STATUSES.OK_200)
@@ -158,7 +158,7 @@ describe('ROOT', () => {
 
 			// Check user 1 has score 2 and user 2 has score 4
 			const getGameRes = await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.GAME_ID(game.id).full)
+				.get('/' + RouteNames.PAIR_GAME.PAIRS.GAME_ID(game.id).full)
 				.set('authorization', 'Bearer ' + userSecondAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
@@ -182,13 +182,13 @@ describe('ROOT', () => {
 			// First user give no right answers, but second user answered all questions right
 			for (let i = 0; i < gameConfig.questionsNumber - 1; i++) {
 				await request(app.getHttpServer())
-					.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+					.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 					.send({ answer: 'Wrong answer' })
 					.set('authorization', 'Bearer ' + userFirstAccessToken)
 					.expect(HTTP_STATUSES.OK_200)
 
 				await request(app.getHttpServer())
-					.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+					.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 					.send({ answer: 'Answer 1' })
 					.set('authorization', 'Bearer ' + userSecondAccessToken)
 					.expect(HTTP_STATUSES.OK_200)
@@ -196,21 +196,21 @@ describe('ROOT', () => {
 
 			// First player gave 1 correct answer
 			await request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+				.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 				.send({ answer: 'Answer 1' })
 				.set('authorization', 'Bearer ' + userFirstAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
 			// Second player gave 1 correct answer
 			await request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+				.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 				.send({ answer: 'Answer 1' })
 				.set('authorization', 'Bearer ' + userSecondAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
 			// Get the game
 			const getGameRes = await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.GAME_ID(game.id).full)
+				.get('/' + RouteNames.PAIR_GAME.PAIRS.GAME_ID(game.id).full)
 				.send({ answer: 'Answer 1' })
 				.set('authorization', 'Bearer ' + userSecondAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
@@ -237,13 +237,13 @@ describe('ROOT', () => {
 
 			// Get the game by first user
 			const getGameByFirstPlayerRes = await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
+				.get('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.full)
 				.set('authorization', 'Bearer ' + userFirstAccessToken)
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 
 			// Get the game by second user
 			const getGameByThirdPlayerRes = await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
+				.get('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.full)
 				.set('authorization', 'Bearer ' + userThirdAccessToken)
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
@@ -256,13 +256,13 @@ describe('ROOT', () => {
 			// First user give no right answers, but second user answered all questions right
 			for (let i = 0; i < gameConfig.questionsNumber - 2; i++) {
 				await request(app.getHttpServer())
-					.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+					.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 					.send({ answer: 'Wrong answer' })
 					.set('authorization', 'Bearer ' + userFirstAccessToken)
 					.expect(HTTP_STATUSES.OK_200)
 
 				await request(app.getHttpServer())
-					.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+					.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 					.send({ answer: 'Answer 1' })
 					.set('authorization', 'Bearer ' + userSecondAccessToken)
 					.expect(HTTP_STATUSES.OK_200)
@@ -275,26 +275,26 @@ describe('ROOT', () => {
 
 			// Third and fourth players gave one answer each
 			await request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+				.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 				.send({ answer: 'Wrong answer' })
 				.set('authorization', 'Bearer ' + userThirdAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
 			await request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+				.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 				.send({ answer: 'Answer 1' })
 				.set('authorization', 'Bearer ' + userFourthAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
 			// First and second players gave one answer each
 			await request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+				.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 				.send({ answer: 'Answer 1' })
 				.set('authorization', 'Bearer ' + userFirstAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
 			await request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+				.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 				.send({ answer: 'Wrong answer' })
 				.set('authorization', 'Bearer ' + userSecondAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
@@ -308,13 +308,13 @@ describe('ROOT', () => {
 			// First user give no right answers, but second user answered all questions right
 			for (let i = 0; i < gameConfig.questionsNumber; i++) {
 				await request(app.getHttpServer())
-					.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+					.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 					.send({ answer: 'Wrong answer' })
 					.set('authorization', 'Bearer ' + userFirstAccessToken)
 					.expect(HTTP_STATUSES.OK_200)
 
 				await request(app.getHttpServer())
-					.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+					.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 					.send({ answer: 'Answer 1' })
 					.set('authorization', 'Bearer ' + userSecondAccessToken)
 					.expect(HTTP_STATUSES.OK_200)
@@ -322,13 +322,13 @@ describe('ROOT', () => {
 
 			// First user connects to the new game
 			const firstConnectToGameRes = await request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+				.post('/' + RouteNames.PAIR_GAME.PAIRS.CONNECTION.full)
 				.set('authorization', 'Bearer ' + userFirstAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
 			// Second user connects to the game
 			const secondConnectToGameRes = await request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+				.post('/' + RouteNames.PAIR_GAME.PAIRS.CONNECTION.full)
 				.set('authorization', 'Bearer ' + userSecondAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
@@ -336,13 +336,13 @@ describe('ROOT', () => {
 			// First user give no right answers, but second user answered all questions right
 			for (let i = 0; i < gameConfig.questionsNumber; i++) {
 				await request(app.getHttpServer())
-					.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+					.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 					.send({ answer: 'Wrong answer' })
 					.set('authorization', 'Bearer ' + userFirstAccessToken)
 					.expect(HTTP_STATUSES.OK_200)
 
 				await request(app.getHttpServer())
-					.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+					.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 					.send({ answer: 'Answer 1' })
 					.set('authorization', 'Bearer ' + userSecondAccessToken)
 					.expect(HTTP_STATUSES.OK_200)

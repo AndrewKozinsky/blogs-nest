@@ -6,6 +6,7 @@ import { GameAnswer } from '../../db/pg/entities/game/gameAnswer'
 import { GamePlayer } from '../../db/pg/entities/game/gamePlayer'
 import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../types/resultCodes'
 import { GamePlayerRepository } from './gamePlayer.repository'
+import { GetMyGamesDtoModel } from './models/game.input.model'
 import { GameOutModel } from './models/game.output.model'
 
 @Injectable()
@@ -15,12 +16,27 @@ export class GameQueryRepository {
 		private gamePlayerRepository: GamePlayerRepository,
 	) {}
 
-	/*async getPendingGame(): Promise<LayerResult<GameOutModel.Main>> {
-		return this.getGameWhere({ status: GameStatus.Pending })
-	}*/
+	async getUserGames(
+		gameId: string,
+		queryOptions: GetMyGamesDtoModel,
+	): Promise<LayerResult<GameOutModel.Main[]>> {
+		return this.getGamesWhere({ id: gameId })
+	}
 
 	async getGameById(gameId: string): Promise<LayerResult<null | GameOutModel.Main>> {
-		return this.getGameWhere({ id: gameId })
+		const getGamesRes = await this.getGamesWhere({ id: gameId })
+
+		if (getGamesRes.code !== LayerSuccessCode.Success || !getGamesRes.data.length) {
+			return {
+				code: LayerSuccessCode.Success,
+				data: null,
+			}
+		}
+
+		return {
+			code: LayerSuccessCode.Success,
+			data: getGamesRes.data[0],
+		}
 	}
 
 	async getGameByUserId(userId: string): Promise<LayerResult<null | GameOutModel.Main>> {
@@ -33,13 +49,28 @@ export class GameQueryRepository {
 
 		const player = getPlayerRes.data
 
-		return this.getGameWhere([{ firstPlayerId: player.id }, { secondPlayerId: player.id }])
+		const getGamesRes = await this.getGamesWhere([
+			{ firstPlayerId: player.id },
+			{ secondPlayerId: player.id },
+		])
+
+		if (getGamesRes.code !== LayerSuccessCode.Success || !getGamesRes.data.length) {
+			return {
+				code: LayerSuccessCode.Success,
+				data: null,
+			}
+		}
+
+		return {
+			code: LayerSuccessCode.Success,
+			data: getGamesRes.data[0],
+		}
 	}
 
 	async getUnfinishedGameByUserId(
 		userId: string,
 	): Promise<LayerResult<null | GameOutModel.Main>> {
-		return this.getGameWhere([
+		const getGamesRes = await this.getGamesWhere([
 			{
 				firstPlayer: {
 					user: {
@@ -57,12 +88,24 @@ export class GameQueryRepository {
 				status: Not(GameStatus.Finished),
 			},
 		])
+
+		if (getGamesRes.code !== LayerSuccessCode.Success || !getGamesRes.data.length) {
+			return {
+				code: LayerSuccessCode.Success,
+				data: null,
+			}
+		}
+
+		return {
+			code: LayerSuccessCode.Success,
+			data: getGamesRes.data[0],
+		}
 	}
 
-	private async getGameWhere(
+	private async getGamesWhere(
 		whereCondition: FindOptionsWhere<Game> | FindOptionsWhere<Game>[] | undefined,
-	): Promise<LayerResult<null | GameOutModel.Main>> {
-		const game = await this.dataSource.getRepository(Game).findOne({
+	): Promise<LayerResult<GameOutModel.Main[]>> {
+		const getGameRes = await this.dataSource.getRepository(Game).find({
 			where: whereCondition,
 			relations: {
 				firstPlayer: {
@@ -79,25 +122,20 @@ export class GameQueryRepository {
 			},
 		})
 
-		if (!game) {
-			return {
-				code: LayerSuccessCode.Success,
-				data: null,
+		for (const game of getGameRes) {
+			game.gameQuestions = game.gameQuestions.sort((a, b) => {
+				return a.index > b.index ? 1 : -1
+			})
+
+			game.firstPlayer.answers = sortAnswers(game.firstPlayer.answers)
+			if (game.secondPlayer) {
+				game.secondPlayer.answers = sortAnswers(game.secondPlayer.answers)
 			}
-		}
-
-		game.gameQuestions = game.gameQuestions.sort((a, b) => {
-			return a.index > b.index ? 1 : -1
-		})
-
-		game.firstPlayer.answers = sortAnswers(game.firstPlayer.answers)
-		if (game.secondPlayer) {
-			game.secondPlayer.answers = sortAnswers(game.secondPlayer.answers)
 		}
 
 		return {
 			code: LayerSuccessCode.Success,
-			data: this.mapDbGameToOutGame(game),
+			data: getGameRes.map(this.mapDbGameToOutGame),
 		}
 
 		function sortAnswers(answers: GameAnswer[]) {

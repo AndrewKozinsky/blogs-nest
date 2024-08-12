@@ -34,7 +34,7 @@ describe('ROOT', () => {
 	describe('Get user game', () => {
 		it('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
+				.get('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.full)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
@@ -45,7 +45,7 @@ describe('ROOT', () => {
 			const userAccessToken = loginUserRes.body.accessToken
 
 			await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
+				.get('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.full)
 				.set('authorization', 'Bearer ' + userAccessToken)
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 		})
@@ -57,12 +57,12 @@ describe('ROOT', () => {
 			const userAccessToken = loginUserRes.body.accessToken
 
 			await request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+				.post('/' + RouteNames.PAIR_GAME.PAIRS.CONNECTION.full)
 				.set('authorization', 'Bearer ' + userAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
 			const getGameRes = await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
+				.get('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.full)
 				.set('authorization', 'Bearer ' + userAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
@@ -82,7 +82,7 @@ describe('ROOT', () => {
 			const { userFirstAccessToken, userSecondAccessToken } = await createGameWithPlayers(app)
 
 			const getGameRes = await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
+				.get('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.full)
 				.set('authorization', 'Bearer ' + userFirstAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
@@ -98,25 +98,25 @@ describe('ROOT', () => {
 
 			for (let i = 0; i < 2; i++) {
 				await request(app.getHttpServer())
-					.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+					.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 					.send({ answer: 'Wrong answer' })
 					.set('authorization', 'Bearer ' + userFirstAccessToken)
 					.expect(HTTP_STATUSES.OK_200)
 
 				await request(app.getHttpServer())
-					.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+					.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 					.send({ answer: 'Wrong answer' })
 					.set('authorization', 'Bearer ' + userSecondAccessToken)
 					.expect(HTTP_STATUSES.OK_200)
 			}
 
 			const getGameByFirstPlayer = await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
+				.get('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.full)
 				.set('authorization', 'Bearer ' + userFirstAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
 			await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
+				.get('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.full)
 				.set('authorization', 'Bearer ' + userSecondAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 		})
@@ -126,31 +126,31 @@ describe('ROOT', () => {
 
 			for (let i = 0; i < gameConfig.questionsNumber; i++) {
 				await request(app.getHttpServer())
-					.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+					.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 					.send({ answer: 'Wrong answer' })
 					.set('authorization', 'Bearer ' + userFirstAccessToken)
 					.expect(HTTP_STATUSES.OK_200)
 
 				await request(app.getHttpServer())
-					.post('/' + RouteNames.PAIR_GAME.MY_CURRENT.ANSWERS.full)
+					.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 					.send({ answer: 'Wrong answer' })
 					.set('authorization', 'Bearer ' + userSecondAccessToken)
 					.expect(HTTP_STATUSES.OK_200)
 			}
 
 			await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
+				.get('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.full)
 				.set('authorization', 'Bearer ' + userFirstAccessToken)
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 
 			await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.MY_CURRENT.full)
+				.get('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.full)
 				.set('authorization', 'Bearer ' + userSecondAccessToken)
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
 
 			// First user connects to the new game
 			await request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.CONNECTION.full)
+				.post('/' + RouteNames.PAIR_GAME.PAIRS.CONNECTION.full)
 				.set('authorization', 'Bearer ' + userFirstAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 		})

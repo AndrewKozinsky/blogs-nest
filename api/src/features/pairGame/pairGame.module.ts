@@ -17,12 +17,16 @@ import { ConnectToGameUseCase } from './use-cases/connectToGame.useCase'
 import { Question } from '../../db/pg/entities/game/question'
 import { GetCurrentUserGameUseCase } from './use-cases/getCurrentUserGame.useCase'
 import { GetGameUseCase } from './use-cases/getGame.useCase'
+import { GetMyGamesUseCase } from './use-cases/getMyGames.useCase'
+import { GetMyStatisticUseCase } from './use-cases/getMyStatisticUseCase.useCase'
 
 const useCases = [
 	ConnectToGameUseCase,
 	AnswerGameQuestionUseCase,
 	GetGameUseCase,
 	GetCurrentUserGameUseCase,
+	GetMyStatisticUseCase,
+	GetMyGamesUseCase,
 ]
 
 @Module({
