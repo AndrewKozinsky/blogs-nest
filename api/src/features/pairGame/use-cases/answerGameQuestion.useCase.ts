@@ -33,7 +33,7 @@ export class AnswerGameQuestionUseCase {
 			}
 		}
 
-		const getPlayerRes = await this.gamePlayerRepository.getPlayerByUserId(userId)
+		const getPlayerRes = await this.gamePlayerRepository.getUnfinishedGamePlayerByUserId(userId)
 
 		if (getPlayerRes.code !== LayerSuccessCode.Success || !getPlayerRes.data) {
 			return {

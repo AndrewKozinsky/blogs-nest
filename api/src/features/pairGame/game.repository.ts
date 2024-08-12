@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
-import { DataSource, FindOptionsWhere, Not } from 'typeorm'
+import { DataSource, FindOneOptions, FindOptionsWhere, Not } from 'typeorm'
 import { Game, GameStatus } from '../../db/pg/entities/game/game'
 import { GameAnswer } from '../../db/pg/entities/game/gameAnswer'
 import { GamePlayer } from '../../db/pg/entities/game/gamePlayer'
@@ -14,22 +14,69 @@ import { GameServiceModel } from './models/game.service.model'
 export class GameRepository {
 	constructor(@InjectDataSource() private dataSource: DataSource) {}
 
+	async getPendingGames(): Promise<LayerResult<null | GameServiceModel.Main[]>> {
+		return this.getGamesWhere({ status: GameStatus.Pending })
+	}
+
+	async getUnfinishedGames(): Promise<LayerResult<null | GameServiceModel.Main[]>> {
+		return this.getGamesWhere({ status: Not(GameStatus.Finished) })
+	}
+
 	async getPendingGame(): Promise<LayerResult<null | GameServiceModel.Main>> {
-		return this.getGameWhere({ status: GameStatus.Pending })
+		const getGamesRes = await this.getGamesWhere({ status: GameStatus.Pending })
+
+		if (getGamesRes.code !== LayerSuccessCode.Success || !getGamesRes.data.length) {
+			return {
+				code: LayerSuccessCode.Success,
+				data: null,
+			}
+		}
+
+		return {
+			code: LayerSuccessCode.Success,
+			data: getGamesRes.data[0],
+		}
 	}
 
 	async getGameById(gameId: string): Promise<LayerResult<null | GameServiceModel.Main>> {
-		return this.getGameWhere({ id: gameId })
+		const getGamesRes = await this.getGamesWhere({ id: gameId })
+
+		if (getGamesRes.code !== LayerSuccessCode.Success || !getGamesRes.data.length) {
+			return {
+				code: LayerSuccessCode.Success,
+				data: null,
+			}
+		}
+
+		return {
+			code: LayerSuccessCode.Success,
+			data: getGamesRes.data[0],
+		}
 	}
 
 	async getGameByPlayerId(playerId: string): Promise<LayerResult<null | GameServiceModel.Main>> {
-		return this.getGameWhere([{ firstPlayerId: playerId }, { secondPlayerId: playerId }])
+		const getGamesRes = await this.getGamesWhere([
+			{ firstPlayerId: playerId },
+			{ secondPlayerId: playerId },
+		])
+
+		if (getGamesRes.code !== LayerSuccessCode.Success || !getGamesRes.data.length) {
+			return {
+				code: LayerSuccessCode.Success,
+				data: null,
+			}
+		}
+
+		return {
+			code: LayerSuccessCode.Success,
+			data: getGamesRes.data[0],
+		}
 	}
 
 	async getUnfinishedGameByUserId(
 		userId: string,
 	): Promise<LayerResult<null | GameServiceModel.Main>> {
-		return this.getGameWhere([
+		const getGamesRes = await this.getGamesWhere([
 			{
 				firstPlayer: {
 					user: {
@@ -47,12 +94,24 @@ export class GameRepository {
 				status: Not(GameStatus.Finished),
 			},
 		])
+
+		if (getGamesRes.code !== LayerSuccessCode.Success || !getGamesRes.data.length) {
+			return {
+				code: LayerSuccessCode.Success,
+				data: null,
+			}
+		}
+
+		return {
+			code: LayerSuccessCode.Success,
+			data: getGamesRes.data[0],
+		}
 	}
 
-	private async getGameWhere(
+	private async getGamesWhere(
 		whereCondition: FindOptionsWhere<Game> | FindOptionsWhere<Game>[] | undefined,
-	): Promise<LayerResult<null | GameServiceModel.Main>> {
-		const getGameRes = await this.dataSource.getRepository(Game).findOne({
+	): Promise<LayerResult<GameServiceModel.Main[]>> {
+		const getGameRes = await this.dataSource.getRepository(Game).find({
 			where: whereCondition,
 			relations: {
 				firstPlayer: {
@@ -70,21 +129,16 @@ export class GameRepository {
 			order: { gameQuestions: { index: 'ASC' } },
 		})
 
-		if (!getGameRes) {
-			return {
-				code: LayerSuccessCode.Success,
-				data: null,
+		for (const game of getGameRes) {
+			game.firstPlayer.answers = sortAnswers(game.firstPlayer.answers)
+			if (game.secondPlayer) {
+				game.secondPlayer.answers = sortAnswers(game.secondPlayer.answers)
 			}
-		}
-
-		getGameRes.firstPlayer.answers = sortAnswers(getGameRes.firstPlayer.answers)
-		if (getGameRes.secondPlayer) {
-			getGameRes.secondPlayer.answers = sortAnswers(getGameRes.secondPlayer.answers)
 		}
 
 		return {
 			code: LayerSuccessCode.Success,
-			data: this.mapDbGameToServiceGame(getGameRes),
+			data: getGameRes.map(this.mapDbGameToServiceGame),
 		}
 
 		function sortAnswers(answers: GameAnswer[]) {
