@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
-import { DataSource, FindOptionsWhere, Not } from 'typeorm'
+import { DataSource, FindOptionsOrder, FindOptionsWhere, Not } from 'typeorm'
 import { Game, GameStatus } from '../../db/pg/entities/game/game'
 import { GameAnswer } from '../../db/pg/entities/game/gameAnswer'
 import { GamePlayer } from '../../db/pg/entities/game/gamePlayer'
 import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../types/resultCodes'
 import { GamePlayerRepository } from './gamePlayer.repository'
 import { GetMyGamesDtoModel } from './models/game.input.model'
-import { GameOutModel } from './models/game.output.model'
+import { GameOutModel, GamesOutModel } from './models/game.output.model'
 
 @Injectable()
 export class GameQueryRepository {
@@ -17,14 +17,55 @@ export class GameQueryRepository {
 	) {}
 
 	async getUserGames(
-		gameId: string,
+		userId: string,
 		queryOptions: GetMyGamesDtoModel,
-	): Promise<LayerResult<GameOutModel.Main[]>> {
-		return this.getGamesWhere({ id: gameId })
+	): Promise<LayerResult<GamesOutModel>> {
+		const sortBy = queryOptions.sortBy ?? 'createdAt'
+		const sortDirection = queryOptions.sortDirection === 'asc' ? 'ASC' : 'DESC'
+
+		const pageNumber = queryOptions.pageNumber ? +queryOptions.pageNumber : 1
+		const pageSize = queryOptions.pageSize ? +queryOptions.pageSize : 10
+
+		const totalGamesCount = await this.dataSource
+			.getRepository(Game)
+			.count({ where: this.getWhereConditionWhereGameHasUserWithId(userId) })
+
+		const pagesCount = Math.ceil(totalGamesCount / pageSize)
+
+		const getGamesRes = await this.getGamesByOptions({
+			where: this.getWhereConditionWhereGameHasUserWithId(userId),
+			order: { [sortBy]: sortDirection, createdAt: sortDirection },
+			skip: (pageNumber - 1) * pageSize,
+			take: pageSize,
+		})
+
+		if (getGamesRes.code !== LayerSuccessCode.Success) {
+			return {
+				code: LayerSuccessCode.Success,
+				data: {
+					pagesCount: 0,
+					page: 0,
+					pageSize: 0,
+					totalCount: 0,
+					items: [],
+				},
+			}
+		}
+
+		return {
+			code: LayerSuccessCode.Success,
+			data: {
+				pagesCount,
+				page: pageNumber,
+				pageSize,
+				totalCount: +totalGamesCount,
+				items: getGamesRes.data,
+			},
+		}
 	}
 
 	async getGameById(gameId: string): Promise<LayerResult<null | GameOutModel.Main>> {
-		const getGamesRes = await this.getGamesWhere({ id: gameId })
+		const getGamesRes = await this.getGamesByOptions({ where: { id: gameId } })
 
 		if (getGamesRes.code !== LayerSuccessCode.Success || !getGamesRes.data.length) {
 			return {
@@ -49,10 +90,9 @@ export class GameQueryRepository {
 
 		const player = getPlayerRes.data
 
-		const getGamesRes = await this.getGamesWhere([
-			{ firstPlayerId: player.id },
-			{ secondPlayerId: player.id },
-		])
+		const getGamesRes = await this.getGamesByOptions({
+			where: [{ firstPlayerId: player.id }, { secondPlayerId: player.id }],
+		})
 
 		if (getGamesRes.code !== LayerSuccessCode.Success || !getGamesRes.data.length) {
 			return {
@@ -67,10 +107,10 @@ export class GameQueryRepository {
 		}
 	}
 
-	async getUnfinishedGameByUserId(
+	private getWhereConditionWhereGameHasUserWithId(
 		userId: string,
-	): Promise<LayerResult<null | GameOutModel.Main>> {
-		const getGamesRes = await this.getGamesWhere([
+	): FindOptionsWhere<Game> | FindOptionsWhere<Game>[] {
+		return [
 			{
 				firstPlayer: {
 					user: {
@@ -87,7 +127,15 @@ export class GameQueryRepository {
 				},
 				status: Not(GameStatus.Finished),
 			},
-		])
+		]
+	}
+
+	async getUnfinishedGameByUserId(
+		userId: string,
+	): Promise<LayerResult<null | GameOutModel.Main>> {
+		const getGamesRes = await this.getGamesByOptions({
+			where: this.getWhereConditionWhereGameHasUserWithId(userId),
+		})
 
 		if (getGamesRes.code !== LayerSuccessCode.Success || !getGamesRes.data.length) {
 			return {
@@ -102,11 +150,14 @@ export class GameQueryRepository {
 		}
 	}
 
-	private async getGamesWhere(
-		whereCondition: FindOptionsWhere<Game> | FindOptionsWhere<Game>[] | undefined,
-	): Promise<LayerResult<GameOutModel.Main[]>> {
+	private async getGamesByOptions(options: {
+		where: FindOptionsWhere<Game> | FindOptionsWhere<Game>[] | undefined
+		order?: FindOptionsOrder<Game>
+		skip?: number
+		take?: number
+	}): Promise<LayerResult<GameOutModel.Main[]>> {
 		const getGameRes = await this.dataSource.getRepository(Game).find({
-			where: whereCondition,
+			where: options.where,
 			relations: {
 				firstPlayer: {
 					user: true,
@@ -120,6 +171,9 @@ export class GameQueryRepository {
 					question: true,
 				},
 			},
+			order: options.order,
+			skip: options.skip,
+			take: options.take,
 		})
 
 		for (const game of getGameRes) {

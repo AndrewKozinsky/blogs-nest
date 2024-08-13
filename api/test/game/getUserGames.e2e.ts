@@ -9,7 +9,7 @@ import { addUserByAdminRequest, loginRequest, userEmail, userPassword } from '..
 import { agent as request } from 'supertest'
 import { createGameWithPlayers } from './common'
 
-it.only('123', async () => {
+it('123', async () => {
 	expect(2).toBe(2)
 })
 
@@ -24,97 +24,30 @@ describe('ROOT', () => {
 		await clearAllDB(app)
 	})
 
-	describe('Answer game question', () => {
+	describe('Returns all my games (closed games and current)', () => {
 		it('should forbid a request from an unauthorized user', async () => {
 			await request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
+				.get('/' + RouteNames.PAIR_GAME.PAIRS.MY_GAMES.full)
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
-		it('should return 403 if current user pass wrong body', async () => {
-			const createdUserRes = await addUserByAdminRequest(app)
-			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserRes = await loginRequest(app, userEmail, userPassword)
-			const userAccessToken = loginUserRes.body.accessToken
+		it.only('should return empty array is an user have not games', async () => {
+			const createdFirstUserRes = await addUserByAdminRequest(app, {
+				email: 'user@email.com',
+				login: 'user-login',
+				password: 'user-password',
+			})
+			expect(createdFirstUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			const loginUserFirstRes = await loginRequest(app, 'user@email.com', 'user-password')
+			const userFirstAccessToken = loginUserFirstRes.body.accessToken
 
 			await request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
-				.set('authorization', 'Bearer ' + userAccessToken)
-				.expect(HTTP_STATUSES.BAD_REQUEST_400)
-		})
-
-		it('should return 403 if to try 6-th answer', async () => {
-			const [userFirstAccessToken, userSecondAccessToken, game] =
-				await createGameWithPlayers(app)
-
-			// Give 5 answers by second user
-			for (let i = 0; i < gameConfig.questionsNumber; i++) {
-				const res = await request(app.getHttpServer())
-					.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
-					.send({ answer: 'My wrong answer' })
-					.set('authorization', 'Bearer ' + userSecondAccessToken)
-					.expect(HTTP_STATUSES.OK_200)
-			}
-
-			// Try to answer one more time to check for Unauthorized status
-			await request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
-				.send({ answer: 'My wrong answer' })
-				.set('authorization', 'Bearer ' + userSecondAccessToken)
-				.expect(HTTP_STATUSES.FORBIDDEN_403)
-		})
-
-		it('first and second players gave a few answers', async () => {
-			const [userFirstAccessToken, userSecondAccessToken, game] =
-				await createGameWithPlayers(app)
-
-			// First player gave correct answer
-			const answer1Req = request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
-				.send({ answer: 'Answer 1' })
+				.get('/' + RouteNames.PAIR_GAME.PAIRS.MY_GAMES.full)
 				.set('authorization', 'Bearer ' + userFirstAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
-
-			// Second player gave incorrect answer
-			const answer2Req = request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
-				.send({ answer: 'Wrong answer' })
-				.set('authorization', 'Bearer ' + userSecondAccessToken)
-				.expect(HTTP_STATUSES.OK_200)
-
-			// Second player gave correct answer
-			const answer3Req = request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
-				.send({ answer: 'Answer 1' })
-				.set('authorization', 'Bearer ' + userSecondAccessToken)
-				.expect(HTTP_STATUSES.OK_200)
-
-			await Promise.all([answer1Req, answer2Req, answer3Req])
-
-			const getFirstPlayerGameRes = await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.full)
-				.set('authorization', 'Bearer ' + userFirstAccessToken)
-				.expect(HTTP_STATUSES.OK_200)
-
-			const getSecondPlayerGameRes = await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.full)
-				.set('authorization', 'Bearer ' + userSecondAccessToken)
-				.expect(HTTP_STATUSES.OK_200)
-
-			// Check user 1 has score 1 and user 2 has score 2
-			const updatedGame = getFirstPlayerGameRes.body
-			expect(updatedGame.status).toBe(GameStatus.Active)
-			expect(updatedGame.firstPlayerProgress.score).toBe(1)
-			expect(updatedGame.firstPlayerProgress.answers.length).toBe(1)
-
-			expect(updatedGame.secondPlayerProgress.score).toBe(1)
-			expect(updatedGame.secondPlayerProgress.answers.length).toBe(2)
-
-			expect(typeof updatedGame.startGameDate).toBe('string')
-			expect(updatedGame.finishGameDate).toBe(null)
 		})
 
-		it('first player has finished game, but second not', async () => {
+		/*it('first player has finished game, but second not', async () => {
 			const [userFirstAccessToken, userSecondAccessToken, game] =
 				await createGameWithPlayers(app)
 
@@ -160,9 +93,9 @@ describe('ROOT', () => {
 
 			expect(typeof updatedGame.startGameDate).toBe('string')
 			expect(updatedGame.finishGameDate).toBe(null)
-		})
+		})*/
 
-		it('players have finished game and started another', async () => {
+		/*it('players have finished game and started another', async () => {
 			const [userFirstAccessToken, userSecondAccessToken, game] =
 				await createGameWithPlayers(app)
 
@@ -234,9 +167,9 @@ describe('ROOT', () => {
 				.get('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.full)
 				.set('authorization', 'Bearer ' + userThirdAccessToken)
 				.expect(HTTP_STATUSES.NOT_FOUNT_404)
-		})
+		})*/
 
-		it('players does not finished game and another started a new one', async () => {
+		/*it('players does not finished game and another started a new one', async () => {
 			const [userFirstAccessToken, userSecondAccessToken, game] =
 				await createGameWithPlayers(app)
 
@@ -285,9 +218,9 @@ describe('ROOT', () => {
 				.send({ answer: 'Wrong answer' })
 				.set('authorization', 'Bearer ' + userSecondAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
-		})
+		})*/
 
-		it('players finished one game and another', async () => {
+		/*it('players finished one game and another', async () => {
 			const [userFirstAccessToken, userSecondAccessToken, game] =
 				await createGameWithPlayers(app)
 
@@ -334,6 +267,6 @@ describe('ROOT', () => {
 					.set('authorization', 'Bearer ' + userSecondAccessToken)
 					.expect(HTTP_STATUSES.OK_200)
 			}
-		})
+		})*/
 	})
 })

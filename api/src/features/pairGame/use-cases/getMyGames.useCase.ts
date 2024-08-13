@@ -8,7 +8,8 @@ export class GetMyGamesUseCase {
 	constructor(private gameQueryRepository: GameQueryRepository) {}
 
 	async execute(userId: string, body: GetMyGamesDtoModel): Promise<LayerResult<null>> {
-		// Поле avgScore округляем до 2-х знаков после запятой (например 2.43, 5.55, но не 2.00, а 2).
+		// Особенности сортировки списка:
+		// если по первому критерию (например status) одинаковые значения - сортируем по pairCreatedDate desc;
 		const gerAllUserGamesRes = await this.gameQueryRepository.getUserGames(userId, body)
 
 		if (gerAllUserGamesRes.code !== LayerSuccessCode.Success) {

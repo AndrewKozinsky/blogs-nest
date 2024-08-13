@@ -39,7 +39,7 @@ describe('ROOT', () => {
 		})
 
 		it('should return 403 if current user is not a player', async () => {
-			const { userFirstAccessToken, userSecondAccessToken, game } =
+			const [userFirstAccessToken, userSecondAccessToken, game] =
 				await createGameWithPlayers(app)
 
 			const createdUserRes = await addUserByAdminRequest(app)
@@ -100,7 +100,7 @@ describe('ROOT', () => {
 		})
 
 		it('two players have joined to the game', async () => {
-			const { userFirstAccessToken, userSecondAccessToken, game } =
+			const [userFirstAccessToken, userSecondAccessToken, game] =
 				await createGameWithPlayers(app)
 
 			const getGameRes = await request(app.getHttpServer())

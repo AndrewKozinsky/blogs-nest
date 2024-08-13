@@ -18,7 +18,6 @@ import {
 	checkPostObj,
 	createDtoAddBlogPost,
 	loginRequest,
-	setPostLikeStatus,
 } from './utils/utils'
 
 it.only('123', async () => {

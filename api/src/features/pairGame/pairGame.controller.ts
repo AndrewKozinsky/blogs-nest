@@ -59,7 +59,7 @@ export class PairGameController {
 
 	// Returns all my games (closed games and current)
 	@UseGuards(CheckAccessTokenGuard)
-	@Get(RouteNames.PAIR_GAME.PAIRS.MY_GAMES.value)
+	@Get(RouteNames.PAIR_GAME.PAIRS.value + '/' + RouteNames.PAIR_GAME.PAIRS.MY_GAMES.value)
 	@HttpCode(HttpStatus.OK)
 	async getMyGames(@Req() req: Request, @Body() body: GetMyGamesDtoModel) {
 		if (!req.user) return
@@ -73,7 +73,7 @@ export class PairGameController {
 
 	// Get current user statistic
 	@UseGuards(CheckAccessTokenGuard)
-	@Get(RouteNames.PAIR_GAME.USERS.MY_STATISTIC.value)
+	@Get(RouteNames.PAIR_GAME.USERS.value + '/' + RouteNames.PAIR_GAME.USERS.MY_STATISTIC.value)
 	@HttpCode(HttpStatus.OK)
 	async getMyStatistic(@Req() req: Request) {
 		if (!req.user) return

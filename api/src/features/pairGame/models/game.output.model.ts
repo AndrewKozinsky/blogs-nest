@@ -1,5 +1,19 @@
 import { GameAnswerStatus } from '../../../db/pg/entities/game/gameAnswer'
 import { GameStatus } from '../../../db/pg/entities/game/game'
+import { BlogOutModel } from '../../blogs/blogs/model/blogs.output.model'
+
+export type GamesOutModel = {
+	// Общее количество страниц
+	pagesCount: number
+	// Номер текущей страницы
+	page: number
+	// Сколько игр на странице
+	pageSize: number
+	// Общее количество игр
+	totalCount: number
+	// Игры на указанной странице
+	items: GameOutModel.Main[]
+}
 
 export namespace GameOutModel {
 	export type Main = {

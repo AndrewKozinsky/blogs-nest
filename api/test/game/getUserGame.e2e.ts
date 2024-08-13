@@ -16,7 +16,7 @@ import {
 import { agent as request } from 'supertest'
 import { checkGameObj, createGameQuestions, createGameWithPlayers } from './common'
 
-it('123', async () => {
+it.only('123', async () => {
 	expect(2).toBe(2)
 })
 
@@ -79,7 +79,7 @@ describe('ROOT', () => {
 		})
 
 		it('two players have joined to the game', async () => {
-			const { userFirstAccessToken, userSecondAccessToken } = await createGameWithPlayers(app)
+			const [userFirstAccessToken, userSecondAccessToken] = await createGameWithPlayers(app)
 
 			const getGameRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.full)
@@ -94,7 +94,7 @@ describe('ROOT', () => {
 		})
 
 		it('should return 404 if players have finished game', async () => {
-			const { userFirstAccessToken, userSecondAccessToken } = await createGameWithPlayers(app)
+			const [userFirstAccessToken, userSecondAccessToken] = await createGameWithPlayers(app)
 
 			for (let i = 0; i < 2; i++) {
 				await request(app.getHttpServer())
@@ -121,8 +121,8 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.OK_200)
 		})
 
-		it.only('should return 404 if players have finished game', async () => {
-			const { userFirstAccessToken, userSecondAccessToken } = await createGameWithPlayers(app)
+		it('should return 404 if players have finished game', async () => {
+			const [userFirstAccessToken, userSecondAccessToken] = await createGameWithPlayers(app)
 
 			for (let i = 0; i < gameConfig.questionsNumber; i++) {
 				await request(app.getHttpServer())
