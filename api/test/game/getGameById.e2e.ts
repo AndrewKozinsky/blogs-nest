@@ -4,10 +4,9 @@ import { HTTP_STATUSES } from '../../src/settings/config'
 import RouteNames from '../../src/settings/routeNames'
 import { createTestApp } from '../utils/common'
 import { clearAllDB } from '../utils/db'
+import { checkGameUtils, gameUtils } from '../utils/gameUtils'
 import { userUtils } from '../utils/userUtils'
-import { userEmail, userPassword } from '../utils/utils'
 import { agent as request } from 'supertest'
-import { checkGameObj, createGameWithPlayers } from './common'
 
 it.only('123', async () => {
 	expect(2).toBe(2)
@@ -33,7 +32,7 @@ describe('ROOT', () => {
 
 		it('should return 403 if current user is not a player', async () => {
 			const [userFirstAccessToken, userSecondAccessToken, game] =
-				await createGameWithPlayers(app)
+				await gameUtils.createGameWithPlayers(app)
 
 			const [userAccessToken] = await userUtils.createUniqueUserAndLogin(app)
 
@@ -72,7 +71,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.OK_200)
 
 			const game2 = getGameRes.body
-			checkGameObj(game2)
+			checkGameUtils.checkGameObj(game2)
 
 			expect(game2.firstPlayerProgress.answers.length).toBe(0)
 			expect(game2.firstPlayerProgress.score).toBe(0)
@@ -85,7 +84,7 @@ describe('ROOT', () => {
 
 		it('two players have joined to the game', async () => {
 			const [userFirstAccessToken, userSecondAccessToken, game] =
-				await createGameWithPlayers(app)
+				await gameUtils.createGameWithPlayers(app)
 
 			const getGameRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.PAIR_GAME.PAIRS.GAME_ID(game.id).full)
@@ -93,7 +92,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.OK_200)
 
 			const game2 = getGameRes.body
-			checkGameObj(game2)
+			checkGameUtils.checkGameObj(game2)
 			expect(game2.secondPlayerProgress).not.toBe(null)
 			expect(game2.status).toBe(GameStatus.Active)
 			expect(game2.questions.length).toBe(5)

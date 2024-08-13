@@ -55,7 +55,7 @@ export class UsersQueryRepository {
 		const email = query.searchEmailTerm ?? ''
 
 		const sortBy = query.sortBy ?? 'createdat'
-		const sortDirection = query.sortDirection === 'asc' ? 'ASC' : 'DESC'
+		const sortDirection = query.sortDirection.toLowerCase() === 'asc' ? 'ASC' : 'DESC'
 
 		const pageNumber = query.pageNumber ? +query.pageNumber : 1
 		const pageSize = query.pageSize ? +query.pageSize : 10
@@ -87,10 +87,7 @@ export class UsersQueryRepository {
 
 	async getUser(userId: string): Promise<null | GetUserOutModel> {
 		const user = await this.dataSource.getRepository(User).findOneBy({ id: userId })
-
-		if (!user) {
-			return null
-		}
+		if (!user) return null
 
 		return this.mapDbUserToOutputUser(user)
 	}

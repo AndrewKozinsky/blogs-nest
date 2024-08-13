@@ -6,11 +6,8 @@ import { HTTP_STATUSES, config } from '../src/settings/config'
 import { DBTypes } from '../src/db/mongo/dbTypes'
 import { createUniqString, parseCookieStringToObj } from '../src/utils/stringUtils'
 import { userUtils } from './utils/userUtils'
-import { checkUserDeviceObj, userLogin, userPassword } from './utils/utils'
-// import * as jwt from 'jsonwebtoken'
-import { describe } from 'node:test'
 import RouteNames from '../src/settings/routeNames'
-import { createTestApp } from './utils/common'
+import { createTestApp, userLogin, userPassword } from './utils/common'
 import { clearAllDB } from './utils/db'
 
 it('123', () => {
@@ -64,7 +61,7 @@ describe('ROOT', () => {
 				.set('Cookie', config.refreshToken.name + '=' + refreshToken)
 				.expect(HTTP_STATUSES.OK_200)
 
-			checkUserDeviceObj(getUserDevicesRes.body[0])
+			userUtils.checkUserDeviceObj(getUserDevicesRes.body[0])
 		})
 	})
 

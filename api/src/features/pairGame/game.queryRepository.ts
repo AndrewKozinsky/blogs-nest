@@ -6,7 +6,7 @@ import { GameAnswer } from '../../db/pg/entities/game/gameAnswer'
 import { GamePlayer } from '../../db/pg/entities/game/gamePlayer'
 import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../types/resultCodes'
 import { GamePlayerRepository } from './gamePlayer.repository'
-import { GetMyGamesDtoModel } from './models/game.input.model'
+import { GetMyGamesQueries } from './models/game.input.model'
 import { GameOutModel, GamesOutModel } from './models/game.output.model'
 
 @Injectable()
@@ -18,13 +18,13 @@ export class GameQueryRepository {
 
 	async getUserGames(
 		userId: string,
-		queryOptions: GetMyGamesDtoModel,
+		queries: GetMyGamesQueries,
 	): Promise<LayerResult<GamesOutModel>> {
-		const sortBy = queryOptions.sortBy ?? 'createdAt'
-		const sortDirection = queryOptions.sortDirection === 'asc' ? 'ASC' : 'DESC'
+		const sortBy = queries.sortBy ?? 'createdAt'
+		const sortDirection = queries.sortDirection?.toLowerCase() === 'asc' ? 'ASC' : 'DESC'
 
-		const pageNumber = queryOptions.pageNumber ? +queryOptions.pageNumber : 1
-		const pageSize = queryOptions.pageSize ? +queryOptions.pageSize : 10
+		const pageNumber = queries.pageNumber ? +queries.pageNumber : 1
+		const pageSize = queries.pageSize ? +queries.pageSize : 10
 
 		const totalGamesCount = await this.dataSource
 			.getRepository(Game)
@@ -34,7 +34,7 @@ export class GameQueryRepository {
 
 		const getGamesRes = await this.getGamesByOptions({
 			where: this.getWhereConditionWhereGameHasUserWithId(userId),
-			order: { [sortBy]: sortDirection, createdAt: sortDirection },
+			order: { [sortBy]: sortDirection, createdAt: 'desc' },
 			skip: (pageNumber - 1) * pageSize,
 			take: pageSize,
 		})
@@ -117,6 +117,27 @@ export class GameQueryRepository {
 						id: userId,
 					},
 				},
+			},
+			{
+				secondPlayer: {
+					user: {
+						id: userId,
+					},
+				},
+			},
+		]
+	}
+
+	private getWhereConditionWhereUnfinishedGameHasUserWithId(
+		userId: string,
+	): FindOptionsWhere<Game> | FindOptionsWhere<Game>[] {
+		return [
+			{
+				firstPlayer: {
+					user: {
+						id: userId,
+					},
+				},
 				status: Not(GameStatus.Finished),
 			},
 			{
@@ -134,7 +155,7 @@ export class GameQueryRepository {
 		userId: string,
 	): Promise<LayerResult<null | GameOutModel.Main>> {
 		const getGamesRes = await this.getGamesByOptions({
-			where: this.getWhereConditionWhereGameHasUserWithId(userId),
+			where: this.getWhereConditionWhereUnfinishedGameHasUserWithId(userId),
 		})
 
 		if (getGamesRes.code !== LayerSuccessCode.Success || !getGamesRes.data.length) {

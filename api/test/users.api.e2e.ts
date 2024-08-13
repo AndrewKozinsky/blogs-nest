@@ -3,10 +3,9 @@ import { HTTP_STATUSES } from '../src/settings/config'
 import RouteNames from '../src/settings/routeNames'
 import { agent as request } from 'supertest'
 import { GetUsersOutModel } from '../src/features/users/models/users.output.model'
-import { createTestApp } from './utils/common'
+import { adminAuthorizationValue, createTestApp } from './utils/common'
 import { clearAllDB } from './utils/db'
 import { userUtils } from './utils/userUtils'
-import { adminAuthorizationValue, checkUserObj } from './utils/utils'
 
 it.only('123', () => {
 	expect(2).toBe(2)
@@ -64,8 +63,8 @@ describe('ROOT', () => {
 			expect(getUsersRes.body.totalCount).toBe(2)
 			expect(getUsersRes.body.items.length).toBe(2)
 
-			checkUserObj(getUsersRes.body.items[0])
-			checkUserObj(getUsersRes.body.items[1])
+			userUtils.checkUserObj(getUsersRes.body.items[0])
+			userUtils.checkUserObj(getUsersRes.body.items[1])
 		})
 
 		it('should return an array of objects matching the queries scheme', async () => {
@@ -225,7 +224,7 @@ describe('ROOT', () => {
 			const createdUserRes = await userUtils.createUniqueUser(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
-			checkUserObj(createdUserRes.body)
+			userUtils.checkUserObj(createdUserRes.body)
 
 			// Check if there are 2 users after adding another one
 			const createdUser2Res = await userUtils.createUniqueUser(app, {

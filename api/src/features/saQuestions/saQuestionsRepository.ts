@@ -7,9 +7,9 @@ import {
 	CreateQuestionDtoModel,
 	PublishQuestionDtoModel,
 	UpdateQuestionDtoModel,
-} from './models/quizQuestions.input.model'
-import { QuizQuestionOutModel } from './models/quizQuestions.output.model'
-import { QuizQuestionServiceModel } from './models/quizQuestions.service.model'
+} from './models/questions.input.model'
+import { QuestionOutModel } from './models/questions.output.model'
+import { QuizQuestionServiceModel } from './models/questions.service.model'
 
 @Injectable()
 export class SaQuestionsRepository {
@@ -118,7 +118,7 @@ export class SaQuestionsRepository {
 		}
 	}
 
-	mapDbQuestionToServiceQuestion(DbQuizQuestion: Question): QuizQuestionOutModel {
+	mapDbQuestionToServiceQuestion(DbQuizQuestion: Question): QuestionOutModel {
 		return {
 			id: DbQuizQuestion.id.toString(),
 			body: DbQuizQuestion.body,

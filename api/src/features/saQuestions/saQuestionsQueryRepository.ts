@@ -3,14 +3,14 @@ import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource, ILike } from 'typeorm'
 import { Question } from '../../db/pg/entities/game/question'
 import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../types/resultCodes'
-import { GetQuestionsQueries } from './models/quizQuestions.input.model'
-import { GetQuizQuestionsOutModel, QuizQuestionOutModel } from './models/quizQuestions.output.model'
+import { GetQuestionsQueries } from './models/questions.input.model'
+import { GetQuestionsOutModel, QuestionOutModel } from './models/questions.output.model'
 
 @Injectable()
 export class SaQuestionsQueryRepository {
 	constructor(@InjectDataSource() private dataSource: DataSource) {}
 
-	async getQuizQuestionById(quizQuestionId: string): Promise<LayerResult<QuizQuestionOutModel>> {
+	async getQuizQuestionById(quizQuestionId: string): Promise<LayerResult<QuestionOutModel>> {
 		const quizQuestion = await this.dataSource
 			.getRepository(Question)
 			.findOneBy({ id: quizQuestionId })
@@ -27,9 +27,7 @@ export class SaQuestionsQueryRepository {
 		}
 	}
 
-	async getQuizQuestions(
-		query: GetQuestionsQueries,
-	): Promise<LayerResult<GetQuizQuestionsOutModel>> {
+	async getQuizQuestions(query: GetQuestionsQueries): Promise<LayerResult<GetQuestionsOutModel>> {
 		const bodySearchTerm = query.bodySearchTerm ?? ''
 		const publishedStatus = query.publishedStatus ?? 'all'
 
@@ -70,7 +68,7 @@ export class SaQuestionsQueryRepository {
 		}
 	}
 
-	mapDbQuestionToOutQuestion(dbQuizQuestion: Question): QuizQuestionOutModel {
+	mapDbQuestionToOutQuestion(dbQuizQuestion: Question): QuestionOutModel {
 		return {
 			id: dbQuizQuestion.id.toString(),
 			body: dbQuizQuestion.body,

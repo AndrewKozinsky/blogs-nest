@@ -6,21 +6,12 @@ import { HTTP_STATUSES } from '../src/settings/config'
 import RouteNames from '../src/settings/routeNames'
 import { DBTypes } from '../src/db/mongo/dbTypes'
 import { GetPostCommentsOutModel } from '../src/features/blogs/comments/model/comments.output.model'
-import { createTestApp } from './utils/common'
+import { blogUtils } from './utils/blogUtils'
+import { commentUtils } from './utils/commentUtils'
+import { adminAuthorizationValue, createTestApp, userEmail, userPassword } from './utils/common'
 import { clearAllDB } from './utils/db'
+import { postUtils } from './utils/postUtils'
 import { userUtils } from './utils/userUtils'
-import {
-	addBlogPostRequest,
-	addBlogRequest,
-	addPostCommentRequest,
-	addPostRequest,
-	adminAuthorizationValue,
-	checkCommentObj,
-	checkPostObj,
-	setPostLikeStatus,
-	userEmail,
-	userPassword,
-} from './utils/utils'
 
 it.only('123', async () => {
 	expect(2).toBe(2)
@@ -39,11 +30,11 @@ describe('ROOT', () => {
 
 	describe('Getting post comments', () => {
 		it('should return an object with property items contains an empty array', async () => {
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
-			const createdPostRes = await addPostRequest(app, blogId)
+			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const postId = createdPostRes.body.id
 
@@ -62,12 +53,12 @@ describe('ROOT', () => {
 
 		it('should return an object with property items contains array with 2 items after creating 2 comments', async () => {
 			// Create a blog
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
 			// Create a post
-			const createdPostRes = await addPostRequest(app, blogId)
+			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const postId = createdPostRes.body.id
 
@@ -75,8 +66,8 @@ describe('ROOT', () => {
 			const [userAccessToken, userId, userLogin] =
 				await userUtils.createUniqueUserAndLogin(app)
 
-			await addPostCommentRequest(app, userAccessToken, postId)
-			await addPostCommentRequest(app, userAccessToken, postId)
+			await postUtils.addPostCommentRequest(app, userAccessToken, postId)
+			await postUtils.addPostCommentRequest(app, userAccessToken, postId)
 
 			const getPostCommentsRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.POSTS.POST_ID(postId).COMMENTS.full())
@@ -90,7 +81,7 @@ describe('ROOT', () => {
 				items: expect.any(Array),
 			})
 
-			checkCommentObj(
+			commentUtils.checkCommentObj(
 				getPostCommentsRes.body.items[0],
 				userId,
 				userLogin,
@@ -98,7 +89,7 @@ describe('ROOT', () => {
 				0,
 				DBTypes.LikeStatuses.None,
 			)
-			checkCommentObj(
+			commentUtils.checkCommentObj(
 				getPostCommentsRes.body.items[1],
 				userId,
 				userLogin,
@@ -110,24 +101,24 @@ describe('ROOT', () => {
 
 		it('should return an array of objects matching the queries scheme', async () => {
 			// Create a blog
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
 			// Create a post
-			const createdPostRes = await addPostRequest(app, blogId)
+			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const postId = createdPostRes.body.id
 
 			const [userAccessToken] = await userUtils.createUniqueUserAndLogin(app)
 
-			await addPostCommentRequest(app, userAccessToken, postId)
-			await addPostCommentRequest(app, userAccessToken, postId)
-			await addPostCommentRequest(app, userAccessToken, postId)
-			await addPostCommentRequest(app, userAccessToken, postId)
-			await addPostCommentRequest(app, userAccessToken, postId)
-			await addPostCommentRequest(app, userAccessToken, postId)
-			await addPostCommentRequest(app, userAccessToken, postId)
+			await postUtils.addPostCommentRequest(app, userAccessToken, postId)
+			await postUtils.addPostCommentRequest(app, userAccessToken, postId)
+			await postUtils.addPostCommentRequest(app, userAccessToken, postId)
+			await postUtils.addPostCommentRequest(app, userAccessToken, postId)
+			await postUtils.addPostCommentRequest(app, userAccessToken, postId)
+			await postUtils.addPostCommentRequest(app, userAccessToken, postId)
+			await postUtils.addPostCommentRequest(app, userAccessToken, postId)
 
 			const getPostCommentsRes = await request(app.getHttpServer())
 				.get(
@@ -149,12 +140,12 @@ describe('ROOT', () => {
 
 		it('create 6 comments then: like comment 1 by user 1, user 2; like comment 2 by user 2, user 3; dislike comment 3 by user 1; like comment 4 by user 1, user 4, user 2, user 3; like comment 5 by user 2, dislike by user 3; like comment 6 by user 1, dislike by user 2.', async () => {
 			// Create a blog
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
 			// Create a post
-			const createdPostRes = await addPostRequest(app, blogId)
+			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const postId = createdPostRes.body.id
 
@@ -190,27 +181,27 @@ describe('ROOT', () => {
 			}
 
 			// Create post comments
-			const comment1Res = await addPostCommentRequest(app, user1Token, postId, {
+			const comment1Res = await postUtils.addPostCommentRequest(app, user1Token, postId, {
 				content: 'new content min 20 characters 1',
 			})
 			const comment1Id = comment1Res.body.id
-			const comment2Res = await addPostCommentRequest(app, user1Token, postId, {
+			const comment2Res = await postUtils.addPostCommentRequest(app, user1Token, postId, {
 				content: 'new content min 20 characters 2',
 			})
 			const comment2Id = comment2Res.body.id
-			const comment3Res = await addPostCommentRequest(app, user1Token, postId, {
+			const comment3Res = await postUtils.addPostCommentRequest(app, user1Token, postId, {
 				content: 'new content min 20 characters 3',
 			})
 			const comment3Id = comment3Res.body.id
-			const comment4Res = await addPostCommentRequest(app, user1Token, postId, {
+			const comment4Res = await postUtils.addPostCommentRequest(app, user1Token, postId, {
 				content: 'new content min 20 characters 4',
 			})
 			const comment4Id = comment4Res.body.id
-			const comment5Res = await addPostCommentRequest(app, user1Token, postId, {
+			const comment5Res = await postUtils.addPostCommentRequest(app, user1Token, postId, {
 				content: 'new content min 20 characters 5',
 			})
 			const comment5Id = comment5Res.body.id
-			const comment6Res = await addPostCommentRequest(app, user1Token, postId, {
+			const comment6Res = await postUtils.addPostCommentRequest(app, user1Token, postId, {
 				content: 'new content min 20 characters 6',
 			})
 			const comment6Id = comment6Res.body.id
@@ -257,7 +248,7 @@ describe('ROOT', () => {
 				items: expect.any(Array),
 			})
 
-			checkCommentObj(
+			commentUtils.checkCommentObj(
 				getPostCommentsRes.body.items[0],
 				user1Id,
 				user1Login,
@@ -265,7 +256,7 @@ describe('ROOT', () => {
 				0,
 				DBTypes.LikeStatuses.Like,
 			)
-			checkCommentObj(
+			commentUtils.checkCommentObj(
 				getPostCommentsRes.body.items[1],
 				user1Id,
 				user1Login,
@@ -273,7 +264,7 @@ describe('ROOT', () => {
 				0,
 				DBTypes.LikeStatuses.None,
 			)
-			checkCommentObj(
+			commentUtils.checkCommentObj(
 				getPostCommentsRes.body.items[2],
 				user1Id,
 				user1Login,
@@ -281,7 +272,7 @@ describe('ROOT', () => {
 				1,
 				DBTypes.LikeStatuses.Dislike,
 			)
-			checkCommentObj(
+			commentUtils.checkCommentObj(
 				getPostCommentsRes.body.items[3],
 				user1Id,
 				user1Login,
@@ -289,7 +280,7 @@ describe('ROOT', () => {
 				0,
 				DBTypes.LikeStatuses.Like,
 			)
-			checkCommentObj(
+			commentUtils.checkCommentObj(
 				getPostCommentsRes.body.items[4],
 				user1Id,
 				user1Login,
@@ -297,7 +288,7 @@ describe('ROOT', () => {
 				1,
 				DBTypes.LikeStatuses.None,
 			)
-			checkCommentObj(
+			commentUtils.checkCommentObj(
 				getPostCommentsRes.body.items[5],
 				user1Id,
 				user1Login,
@@ -317,21 +308,26 @@ describe('ROOT', () => {
 
 		it('should not create a comment by wrong dto', async () => {
 			// Create a blog
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
 			// Create a post
-			const createdPostRes = await addPostRequest(app, blogId)
+			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const postId = createdPostRes.body.id
 
 			// User on whose behalf comments will be created
 			const [userAccessToken] = await userUtils.createUniqueUserAndLogin(app)
 
-			const createdCommentOneRes = await addPostCommentRequest(app, userAccessToken, postId, {
-				content: 'WRONG',
-			})
+			const createdCommentOneRes = await postUtils.addPostCommentRequest(
+				app,
+				userAccessToken,
+				postId,
+				{
+					content: 'WRONG',
+				},
+			)
 
 			expect(createdCommentOneRes.status).toBe(HTTP_STATUSES.BAD_REQUEST_400)
 			expect(createdCommentOneRes.body).toMatchObject({
@@ -343,12 +339,12 @@ describe('ROOT', () => {
 
 		it('should create a comment by correct dto', async () => {
 			// Create a blog
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
 			// Create a post
-			const createdPostRes = await addPostRequest(app, blogId)
+			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const postId = createdPostRes.body.id
 
@@ -356,11 +352,16 @@ describe('ROOT', () => {
 			const [userAccessToken, userId, userLogin] =
 				await userUtils.createUniqueUserAndLogin(app)
 
-			const createdCommentOneRes = await addPostCommentRequest(app, userAccessToken, postId, {
-				content: 'Content min 20 characters',
-			})
+			const createdCommentOneRes = await postUtils.addPostCommentRequest(
+				app,
+				userAccessToken,
+				postId,
+				{
+					content: 'Content min 20 characters',
+				},
+			)
 
-			checkCommentObj(
+			commentUtils.checkCommentObj(
 				createdCommentOneRes.body,
 				userId,
 				userLogin,
@@ -370,9 +371,14 @@ describe('ROOT', () => {
 			)
 
 			// Check if there are 2 posts after adding another one
-			const createdCommentTwoRes = await addPostCommentRequest(app, userAccessToken, postId, {
-				content: 'Content min 22 characters',
-			})
+			const createdCommentTwoRes = await postUtils.addPostCommentRequest(
+				app,
+				userAccessToken,
+				postId,
+				{
+					content: 'Content min 22 characters',
+				},
+			)
 			expect(createdCommentTwoRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
 			const getPostCommentsRes = await request(app.getHttpServer())
@@ -398,11 +404,11 @@ describe('ROOT', () => {
 		})
 
 		it('should return an object with property items contains array with 2 items after creating 2 posts', async () => {
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
-			await addPostRequest(app, blogId)
-			await addPostRequest(app, blogId)
+			await postUtils.addPostRequest(app, blogId)
+			await postUtils.addPostRequest(app, blogId)
 
 			const getPostsRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.POSTS.value)
@@ -414,21 +420,21 @@ describe('ROOT', () => {
 			expect(getPostsRes.body.totalCount).toBe(2)
 			expect(getPostsRes.body.items.length).toBe(2)
 
-			checkPostObj(getPostsRes.body.items[0], 0, 0, DBTypes.LikeStatuses.None)
-			checkPostObj(getPostsRes.body.items[1], 0, 0, DBTypes.LikeStatuses.None)
+			postUtils.checkPostObj(getPostsRes.body.items[0], 0, 0, DBTypes.LikeStatuses.None)
+			postUtils.checkPostObj(getPostsRes.body.items[1], 0, 0, DBTypes.LikeStatuses.None)
 		})
 
 		it('should return an array of objects matching the queries scheme', async () => {
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
-			await addPostRequest(app, blogId)
-			await addPostRequest(app, blogId)
-			await addPostRequest(app, blogId)
-			await addPostRequest(app, blogId)
-			await addPostRequest(app, blogId)
-			await addPostRequest(app, blogId)
-			await addPostRequest(app, blogId)
+			await postUtils.addPostRequest(app, blogId)
+			await postUtils.addPostRequest(app, blogId)
+			await postUtils.addPostRequest(app, blogId)
+			await postUtils.addPostRequest(app, blogId)
+			await postUtils.addPostRequest(app, blogId)
+			await postUtils.addPostRequest(app, blogId)
+			await postUtils.addPostRequest(app, blogId)
 
 			const getPostsRes = await request(app.getHttpServer()).get(
 				'/' + RouteNames.POSTS.value + '?pageNumber=2&pageSize=2',
@@ -441,14 +447,14 @@ describe('ROOT', () => {
 		})
 
 		it('should return an array of objects matching the queries scheme', async () => {
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
-			await addPostRequest(app, blogId, { title: '3' })
-			await addPostRequest(app, blogId, { title: '5' })
-			await addPostRequest(app, blogId, { title: '1' })
-			await addPostRequest(app, blogId, { title: '12' })
-			await addPostRequest(app, blogId, { title: '4' })
+			await postUtils.addPostRequest(app, blogId, { title: '3' })
+			await postUtils.addPostRequest(app, blogId, { title: '5' })
+			await postUtils.addPostRequest(app, blogId, { title: '1' })
+			await postUtils.addPostRequest(app, blogId, { title: '12' })
+			await postUtils.addPostRequest(app, blogId, { title: '4' })
 
 			const getPostsRes = await request(app.getHttpServer()).get('/' + RouteNames.POSTS.value)
 
@@ -487,10 +493,10 @@ describe('ROOT', () => {
 		})
 
 		it('should return posts with newest post likes', async () => {
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
-			const post1 = await addBlogPostRequest(app, blogId, { title: '1' })
+			const post1 = await blogUtils.addBlogPostRequest(app, blogId, { title: '1' })
 			const post1Id = post1.body.id
 
 			// Users and their tokens
@@ -514,10 +520,10 @@ describe('ROOT', () => {
 				}
 			}
 
-			await setPostLikeStatus(app, post1Id, user1Token, DBTypes.LikeStatuses.Like)
-			await setPostLikeStatus(app, post1Id, user2Token, DBTypes.LikeStatuses.Like)
-			await setPostLikeStatus(app, post1Id, user3Token, DBTypes.LikeStatuses.Like)
-			await setPostLikeStatus(app, post1Id, user4Token, DBTypes.LikeStatuses.Like)
+			await postUtils.setPostLikeStatus(app, post1Id, user1Token, DBTypes.LikeStatuses.Like)
+			await postUtils.setPostLikeStatus(app, post1Id, user2Token, DBTypes.LikeStatuses.Like)
+			await postUtils.setPostLikeStatus(app, post1Id, user3Token, DBTypes.LikeStatuses.Like)
+			await postUtils.setPostLikeStatus(app, post1Id, user4Token, DBTypes.LikeStatuses.Like)
 
 			const getPostsRes = await request(app.getHttpServer()).get('/' + RouteNames.POSTS.value)
 
@@ -541,10 +547,10 @@ describe('ROOT', () => {
 		})
 
 		it('should not create a post by wrong dto', async () => {
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
-			const createdPostRes = await addPostRequest(app, blogId, { title: '' })
+			const createdPostRes = await postUtils.addPostRequest(app, blogId, { title: '' })
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.BAD_REQUEST_400)
 
 			expect({}.toString.call(createdPostRes.body.errorsMessages)).toBe('[object Array]')
@@ -553,16 +559,16 @@ describe('ROOT', () => {
 		})
 
 		it('should create a post by correct dto', async () => {
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
-			const createdPostRes = await addPostRequest(app, blogId)
+			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
-			checkPostObj(createdPostRes.body, 0, 0, DBTypes.LikeStatuses.None)
+			postUtils.checkPostObj(createdPostRes.body, 0, 0, DBTypes.LikeStatuses.None)
 
 			// Check if there are 2 posts after adding another one
-			const createdPost2Res = await addPostRequest(app, blogId)
+			const createdPost2Res = await postUtils.addPostRequest(app, blogId)
 			expect(createdPost2Res.status).toBe(HTTP_STATUSES.CREATED_201)
 
 			const allPostsRes = await request(app.getHttpServer()).get('/' + RouteNames.POSTS.value)
@@ -579,10 +585,10 @@ describe('ROOT', () => {
 		})
 
 		it('should return an existing post', async () => {
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
-			const createdPostRes = await addPostRequest(app, blogId)
+			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const createdPostId = createdPostRes.body.id
 
@@ -591,7 +597,7 @@ describe('ROOT', () => {
 			)
 			expect(getPostRes.status).toBe(HTTP_STATUSES.OK_200)
 
-			checkPostObj(getPostRes.body, 0, 0, DBTypes.LikeStatuses.None)
+			postUtils.checkPostObj(getPostRes.body, 0, 0, DBTypes.LikeStatuses.None)
 		})
 	})
 
@@ -610,10 +616,10 @@ describe('ROOT', () => {
 		})
 
 		it('should not update a post by wrong dto', async () => {
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
-			const createdPostRes = await addPostRequest(app, blogId)
+			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			const createdPostId = createdPostRes.body.id
 
 			await request(app.getHttpServer())
@@ -626,10 +632,10 @@ describe('ROOT', () => {
 		})
 
 		it('should not update a post with wrong blog id', async () => {
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
-			const createdPostRes = await addPostRequest(app, blogId)
+			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const createdPostId = createdPostRes.body.id
 
@@ -650,10 +656,10 @@ describe('ROOT', () => {
 		})
 
 		it('should update a post by correct dto', async () => {
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
-			const createdPostRes = await addPostRequest(app, blogId)
+			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const createdPostId = createdPostRes.body.id
 
@@ -696,10 +702,10 @@ describe('ROOT', () => {
 		})
 
 		it('should delete a post', async () => {
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			const blogId = createdBlogRes.body.id
 
-			const createdPostRes = await addPostRequest(app, blogId)
+			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const createdPostId = createdPostRes.body.id
 
@@ -748,12 +754,12 @@ describe('ROOT', () => {
 
 		it('should return 204 if pass right body data to right address', async () => {
 			// Create a blog
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
 			// Create a post in the blog
-			const createdPostRes = await addPostRequest(app, blogId)
+			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const postId = createdPostRes.body.id
 
@@ -785,17 +791,17 @@ describe('ROOT', () => {
 				.get('/' + RouteNames.POSTS.POST_ID(postId).full)
 				.expect(HTTP_STATUSES.OK_200)
 
-			checkPostObj(getPostRes.body, 1, 0, DBTypes.LikeStatuses.None)
+			postUtils.checkPostObj(getPostRes.body, 1, 0, DBTypes.LikeStatuses.None)
 		})
 
 		it('create post and make a few likes from different users', async () => {
 			// Create a blog
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
 			// Create a post
-			const createdPostRes = await addPostRequest(app, blogId)
+			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const postId = createdPostRes.body.id
 
@@ -831,14 +837,14 @@ describe('ROOT', () => {
 			}
 
 			// Set a like statuses to the post
-			await setPostLikeStatus(app, postId, user1Token, DBTypes.LikeStatuses.Like)
+			await postUtils.setPostLikeStatus(app, postId, user1Token, DBTypes.LikeStatuses.Like)
 
 			// Get the post again by an unauthorized user to check a returned object
 			let getPostRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.POSTS.POST_ID(postId).full)
 				.expect(HTTP_STATUSES.OK_200)
 
-			checkPostObj(getPostRes.body, 1, 0, DBTypes.LikeStatuses.None)
+			postUtils.checkPostObj(getPostRes.body, 1, 0, DBTypes.LikeStatuses.None)
 
 			// Get the post again by an authorized user to check a returned object
 			getPostRes = await request(app.getHttpServer())
@@ -848,12 +854,12 @@ describe('ROOT', () => {
 				.set('Accept', 'application/json')
 				.expect(HTTP_STATUSES.OK_200)
 
-			checkPostObj(getPostRes.body, 1, 0, DBTypes.LikeStatuses.Like)
+			postUtils.checkPostObj(getPostRes.body, 1, 0, DBTypes.LikeStatuses.Like)
 
 			// Set a like statuses to the post
-			await setPostLikeStatus(app, postId, user2Token, DBTypes.LikeStatuses.Like)
-			await setPostLikeStatus(app, postId, user3Token, DBTypes.LikeStatuses.Like)
-			await setPostLikeStatus(app, postId, user4Token, DBTypes.LikeStatuses.Like)
+			await postUtils.setPostLikeStatus(app, postId, user2Token, DBTypes.LikeStatuses.Like)
+			await postUtils.setPostLikeStatus(app, postId, user3Token, DBTypes.LikeStatuses.Like)
+			await postUtils.setPostLikeStatus(app, postId, user4Token, DBTypes.LikeStatuses.Like)
 
 			// Get the post again by an authorized user to check a returned object
 			getPostRes = await request(app.getHttpServer())
@@ -863,7 +869,7 @@ describe('ROOT', () => {
 				.set('Accept', 'application/json')
 				.expect(HTTP_STATUSES.OK_200)
 
-			checkPostObj(getPostRes.body, 4, 0, DBTypes.LikeStatuses.Like)
+			postUtils.checkPostObj(getPostRes.body, 4, 0, DBTypes.LikeStatuses.Like)
 			expect(getPostRes.body.extendedLikesInfo.newestLikes.length).toBe(3)
 
 			// Check extendedLikesInfo order
@@ -874,17 +880,17 @@ describe('ROOT', () => {
 
 		it('create 6 posts then: like post 1 by user 1, user 2; like post 2 by user 2, user 3; dislike post 3 by user 1; like post 4 by user 1, user 4, user 2, user 3; like post 5 by user 2, dislike by user 3; like post 6 by user 1, dislike by user 2. Get the posts by user 1 after all likes NewestLikes should be sorted in descending', async () => {
 			// Create a blog
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
 			// Create posts
-			const createdPost1Res = await addPostRequest(app, blogId, { title: 'post-1' })
-			const createdPost2Res = await addPostRequest(app, blogId, { title: 'post-2' })
-			const createdPost3Res = await addPostRequest(app, blogId, { title: 'post-3' })
-			const createdPost4Res = await addPostRequest(app, blogId, { title: 'post-4' })
-			const createdPost5Res = await addPostRequest(app, blogId, { title: 'post-5' })
-			const createdPost6Res = await addPostRequest(app, blogId, { title: 'post-6' })
+			const createdPost1Res = await postUtils.addPostRequest(app, blogId, { title: 'post-1' })
+			const createdPost2Res = await postUtils.addPostRequest(app, blogId, { title: 'post-2' })
+			const createdPost3Res = await postUtils.addPostRequest(app, blogId, { title: 'post-3' })
+			const createdPost4Res = await postUtils.addPostRequest(app, blogId, { title: 'post-4' })
+			const createdPost5Res = await postUtils.addPostRequest(app, blogId, { title: 'post-5' })
+			const createdPost6Res = await postUtils.addPostRequest(app, blogId, { title: 'post-6' })
 			const postId1 = createdPost1Res.body.id
 			const postId2 = createdPost2Res.body.id
 			const postId3 = createdPost3Res.body.id

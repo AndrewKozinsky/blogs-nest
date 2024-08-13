@@ -1,13 +1,13 @@
 import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
 import { describe } from 'node:test'
-import { CreateQuestionDtoModel } from '../../src/features/saQuestions/models/quizQuestions.input.model'
-import { GetQuizQuestionsOutModel } from '../../src/features/saQuestions/models/quizQuestions.output.model'
+import { CreateQuestionDtoModel } from '../../src/features/saQuestions/models/questions.input.model'
+import { GetQuestionsOutModel } from '../../src/features/saQuestions/models/questions.output.model'
 import { HTTP_STATUSES } from '../../src/settings/config'
 import RouteNames from '../../src/settings/routeNames'
-import { createTestApp } from '../utils/common'
+import { adminAuthorizationValue, createTestApp } from '../utils/common'
 import { clearAllDB } from '../utils/db'
-import { addQuestionRequest, adminAuthorizationValue } from '../utils/utils'
+import { questionUtils } from '../utils/questionUtils'
 
 it('123', async () => {
 	expect(2).toBe(2)
@@ -32,7 +32,7 @@ describe('ROOT', () => {
 		})
 
 		it('should return an object with property items contains an empty array', async () => {
-			const successAnswer: GetQuizQuestionsOutModel = {
+			const successAnswer: GetQuestionsOutModel = {
 				pagesCount: 0,
 				page: 1,
 				pageSize: 10,
@@ -47,53 +47,53 @@ describe('ROOT', () => {
 		})
 
 		it('should return an object with property items contains array with 2 items after creating 2 query questions', async () => {
-			await addQuestionRequest(app)
-			await addQuestionRequest(app)
+			await questionUtils.addQuestionRequest(app)
+			await questionUtils.addQuestionRequest(app)
 
-			const getQuizQuestionsRes = await request(app.getHttpServer())
+			const getQuestionsRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.SA_QUESTIONS.value)
 				.set('authorization', adminAuthorizationValue)
 				.expect(HTTP_STATUSES.OK_200)
 
-			expect(getQuizQuestionsRes.body.pagesCount).toBe(1)
-			expect(getQuizQuestionsRes.body.page).toBe(1)
-			expect(getQuizQuestionsRes.body.pageSize).toBe(10)
-			expect(getQuizQuestionsRes.body.totalCount).toBe(2)
-			expect(getQuizQuestionsRes.body.items.length).toBe(2)
+			expect(getQuestionsRes.body.pagesCount).toBe(1)
+			expect(getQuestionsRes.body.page).toBe(1)
+			expect(getQuestionsRes.body.pageSize).toBe(10)
+			expect(getQuestionsRes.body.totalCount).toBe(2)
+			expect(getQuestionsRes.body.items.length).toBe(2)
 
-			checkQuizQuestionObj(getQuizQuestionsRes.body.items[0])
-			checkQuizQuestionObj(getQuizQuestionsRes.body.items[1])
+			checkQuestionObj(getQuestionsRes.body.items[0])
+			checkQuestionObj(getQuestionsRes.body.items[1])
 		})
 
 		it('should return an object with properties with specific values after creating 7 questions', async () => {
-			await addQuestionRequest(app)
-			await addQuestionRequest(app)
-			await addQuestionRequest(app)
-			await addQuestionRequest(app)
-			await addQuestionRequest(app)
-			await addQuestionRequest(app)
-			await addQuestionRequest(app)
+			await questionUtils.addQuestionRequest(app)
+			await questionUtils.addQuestionRequest(app)
+			await questionUtils.addQuestionRequest(app)
+			await questionUtils.addQuestionRequest(app)
+			await questionUtils.addQuestionRequest(app)
+			await questionUtils.addQuestionRequest(app)
+			await questionUtils.addQuestionRequest(app)
 
-			const getQuizQuestionsRes = await request(app.getHttpServer())
+			const getQuestionsRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.SA_QUESTIONS.value + '?pageNumber=2&pageSize=2')
 				.set('authorization', adminAuthorizationValue)
 
-			expect(getQuizQuestionsRes.body.page).toBe(2)
-			expect(getQuizQuestionsRes.body.pagesCount).toBe(4)
-			expect(getQuizQuestionsRes.body.totalCount).toBe(7)
-			expect(getQuizQuestionsRes.body.items.length).toBe(2)
+			expect(getQuestionsRes.body.page).toBe(2)
+			expect(getQuestionsRes.body.pagesCount).toBe(4)
+			expect(getQuestionsRes.body.totalCount).toBe(7)
+			expect(getQuestionsRes.body.items.length).toBe(2)
 		})
 
-		it('should return questions with body contains "this" after creating 7 quiz questions', async () => {
-			const test = await addQuestionRequest(app, { body: 'abcdefg__1 this' })
-			await addQuestionRequest(app, { body: 'abcdefg__2' })
-			await addQuestionRequest(app, { body: 'abcdefg__3 this' })
-			await addQuestionRequest(app, { body: 'abcdefg__4' })
-			await addQuestionRequest(app, { body: 'abcdefg__5 this' })
-			await addQuestionRequest(app, { body: 'abcdefg__6 this' })
-			await addQuestionRequest(app, { body: 'abcdefg__this' })
+		it('should return questions with body contains "this" after creating 7 questions', async () => {
+			const test = await questionUtils.addQuestionRequest(app, { body: 'abcdefg__1 this' })
+			await questionUtils.addQuestionRequest(app, { body: 'abcdefg__2' })
+			await questionUtils.addQuestionRequest(app, { body: 'abcdefg__3 this' })
+			await questionUtils.addQuestionRequest(app, { body: 'abcdefg__4' })
+			await questionUtils.addQuestionRequest(app, { body: 'abcdefg__5 this' })
+			await questionUtils.addQuestionRequest(app, { body: 'abcdefg__6 this' })
+			await questionUtils.addQuestionRequest(app, { body: 'abcdefg__this' })
 
-			const getQuizQuestionsRes = await request(app.getHttpServer())
+			const getQuestionsRes = await request(app.getHttpServer())
 				.get(
 					'/' +
 						RouteNames.SA_QUESTIONS.value +
@@ -101,54 +101,54 @@ describe('ROOT', () => {
 				)
 				.set('authorization', adminAuthorizationValue)
 
-			expect(getQuizQuestionsRes.body.page).toBe(2)
-			expect(getQuizQuestionsRes.body.pagesCount).toBe(3)
-			expect(getQuizQuestionsRes.body.totalCount).toBe(5)
-			expect(getQuizQuestionsRes.body.items.length).toBe(2)
+			expect(getQuestionsRes.body.page).toBe(2)
+			expect(getQuestionsRes.body.pagesCount).toBe(3)
+			expect(getQuestionsRes.body.totalCount).toBe(5)
+			expect(getQuestionsRes.body.items.length).toBe(2)
 		})
 
-		it('should return quiz questions sorted by body and asc and desc order', async () => {
-			await addQuestionRequest(app, { body: 'question___3' })
-			await addQuestionRequest(app, { body: 'question___5' })
-			await addQuestionRequest(app, { body: 'question___1' })
-			await addQuestionRequest(app, { body: 'question___12' })
-			await addQuestionRequest(app, { body: 'question___4' })
+		it('should return questions sorted by body and asc and desc order', async () => {
+			await questionUtils.addQuestionRequest(app, { body: 'question___3' })
+			await questionUtils.addQuestionRequest(app, { body: 'question___5' })
+			await questionUtils.addQuestionRequest(app, { body: 'question___1' })
+			await questionUtils.addQuestionRequest(app, { body: 'question___12' })
+			await questionUtils.addQuestionRequest(app, { body: 'question___4' })
 
-			// Get quiz questions sorted by createdat field (by default)
-			const getQuizQuestionsRes = await request(app.getHttpServer())
+			// Get questions sorted by createdat field (by default)
+			const questionsRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.SA_QUESTIONS.value)
 				.set('authorization', adminAuthorizationValue)
 
-			const quizQuestions = getQuizQuestionsRes.body.items
-			expect(quizQuestions[0].body).toBe('question___4')
-			expect(quizQuestions[1].body).toBe('question___12')
-			expect(quizQuestions[2].body).toBe('question___1')
-			expect(quizQuestions[3].body).toBe('question___5')
-			expect(quizQuestions[4].body).toBe('question___3')
+			const questions = questionsRes.body.items
+			expect(questions[0].body).toBe('question___4')
+			expect(questions[1].body).toBe('question___12')
+			expect(questions[2].body).toBe('question___1')
+			expect(questions[3].body).toBe('question___5')
+			expect(questions[4].body).toBe('question___3')
 
-			// Get quiz questions sorted by name field with asc order
-			const getQuizQuestionsAscRes = await request(app.getHttpServer())
+			// Get questions sorted by name field with asc order
+			const getQuestionsAscRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.SA_QUESTIONS.value + '?sortDirection=asc&sortBy=body')
 				.set('authorization', adminAuthorizationValue)
 
-			const QuizQuestionsAsc = getQuizQuestionsAscRes.body.items
-			expect(QuizQuestionsAsc[0].body).toBe('question___1')
-			expect(QuizQuestionsAsc[1].body).toBe('question___12')
-			expect(QuizQuestionsAsc[2].body).toBe('question___3')
-			expect(QuizQuestionsAsc[3].body).toBe('question___4')
-			expect(QuizQuestionsAsc[4].body).toBe('question___5')
+			const questionsAsc = getQuestionsAscRes.body.items
+			expect(questionsAsc[0].body).toBe('question___1')
+			expect(questionsAsc[1].body).toBe('question___12')
+			expect(questionsAsc[2].body).toBe('question___3')
+			expect(questionsAsc[3].body).toBe('question___4')
+			expect(questionsAsc[4].body).toBe('question___5')
 
-			// Get quiz questions sorted by name field with desc order
-			const getQuizQuestionsDescRes = await request(app.getHttpServer())
+			// Get questions sorted by name field with desc order
+			const getQuestionsDescRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.SA_QUESTIONS.value + '?sortDirection=desc&sortBy=body')
 				.set('authorization', adminAuthorizationValue)
 
-			const quizQuestionsDesc = getQuizQuestionsDescRes.body.items
-			expect(quizQuestionsDesc[0].body).toBe('question___5')
-			expect(quizQuestionsDesc[1].body).toBe('question___4')
-			expect(quizQuestionsDesc[2].body).toBe('question___3')
-			expect(quizQuestionsDesc[3].body).toBe('question___12')
-			expect(quizQuestionsDesc[4].body).toBe('question___1')
+			const questionsDesc = getQuestionsDescRes.body.items
+			expect(questionsDesc[0].body).toBe('question___5')
+			expect(questionsDesc[1].body).toBe('question___4')
+			expect(questionsDesc[2].body).toBe('question___3')
+			expect(questionsDesc[3].body).toBe('question___12')
+			expect(questionsDesc[4].body).toBe('question___1')
 		})
 	})
 
@@ -159,31 +159,29 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
-		it('should not create a quiz question by wrong dto', async () => {
-			const createdQuizQuestionRes = await addQuestionRequest(app, {
+		it('should not create a question by wrong dto', async () => {
+			const createdQuestionRes = await questionUtils.addQuestionRequest(app, {
 				body: 'so',
 			})
 
-			expect(createdQuizQuestionRes.status).toBe(HTTP_STATUSES.BAD_REQUEST_400)
+			expect(createdQuestionRes.status).toBe(HTTP_STATUSES.BAD_REQUEST_400)
 
-			expect({}.toString.call(createdQuizQuestionRes.body.errorsMessages)).toBe(
-				'[object Array]',
-			)
-			expect(createdQuizQuestionRes.body.errorsMessages.length).toBe(1)
-			expect(createdQuizQuestionRes.body.errorsMessages[0].field).toBe('body')
+			expect({}.toString.call(createdQuestionRes.body.errorsMessages)).toBe('[object Array]')
+			expect(createdQuestionRes.body.errorsMessages.length).toBe(1)
+			expect(createdQuestionRes.body.errorsMessages[0].field).toBe('body')
 		})
 
-		it('should create a quiz question by correct dto', async () => {
-			const createdQuizQuestionRes = await addQuestionRequest(app)
-			expect(createdQuizQuestionRes.status).toBe(HTTP_STATUSES.CREATED_201)
+		it('should create a question by correct dto', async () => {
+			const createdQuestionRes = await questionUtils.addQuestionRequest(app)
+			expect(createdQuestionRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
-			const question = createdQuizQuestionRes.body
-			checkQuizQuestionObj(createdQuizQuestionRes.body)
+			const question = createdQuestionRes.body
+			checkQuestionObj(createdQuestionRes.body)
 			expect(question.updatedAt).toBe(null)
 
-			// Check if there are 2 quiz questions after adding another one
-			const createdSecondQuizQuestionRes = await addQuestionRequest(app)
-			expect(createdSecondQuizQuestionRes.status).toBe(HTTP_STATUSES.CREATED_201)
+			// Check if there are 2 questions after adding another one
+			const createdSecondQuestionRes = await questionUtils.addQuestionRequest(app)
+			expect(createdSecondQuestionRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
 			const allQuestionsRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.SA_QUESTIONS.value)
@@ -215,7 +213,7 @@ describe('ROOT', () => {
 		})
 
 		it('should not update a question by wrong dto', async () => {
-			const createdQuizQuestionRes = await addQuestionRequest(app)
+			const createdQuizQuestionRes = await questionUtils.addQuestionRequest(app)
 			const createdQuizQuestionId = createdQuizQuestionRes.body.id
 
 			await request(app.getHttpServer())
@@ -236,7 +234,7 @@ describe('ROOT', () => {
 		})
 
 		it.only('should update a quiz question by correct dto', async () => {
-			const createdQuizQuestionRes = await addQuestionRequest(app)
+			const createdQuizQuestionRes = await questionUtils.addQuestionRequest(app)
 			expect(createdQuizQuestionRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const createdQuizQuestionId = createdQuizQuestionRes.body.id
 
@@ -280,7 +278,7 @@ describe('ROOT', () => {
 		})
 
 		it('should return 400 if to pass request body', async () => {
-			const createdQuestionRes = await addQuestionRequest(app)
+			const createdQuestionRes = await questionUtils.addQuestionRequest(app)
 			expect(createdQuestionRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const questionId = createdQuestionRes.body.id
 
@@ -294,7 +292,7 @@ describe('ROOT', () => {
 		})
 
 		it('should set publish/unpublish status for a question', async () => {
-			const createdQuizQuestionRes = await addQuestionRequest(app)
+			const createdQuizQuestionRes = await questionUtils.addQuestionRequest(app)
 			expect(createdQuizQuestionRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const createdQuizQuestionId = createdQuizQuestionRes.body.id
 
@@ -350,7 +348,7 @@ describe('ROOT', () => {
 		})
 
 		it('should delete a question', async () => {
-			const createdQuizQuestionRes = await addQuestionRequest(app)
+			const createdQuizQuestionRes = await questionUtils.addQuestionRequest(app)
 			expect(createdQuizQuestionRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const createdQuizQuestionId = createdQuizQuestionRes.body.id
 
@@ -367,7 +365,7 @@ describe('ROOT', () => {
 	})
 })
 
-function checkQuizQuestionObj(quizQuestionObj: any) {
+function checkQuestionObj(quizQuestionObj: any) {
 	expect(typeof quizQuestionObj.id).toBe('string')
 	expect(typeof quizQuestionObj.body).toBe('string')
 	expect({}.toString.call(quizQuestionObj.correctAnswers)).toBe('[object Array]')

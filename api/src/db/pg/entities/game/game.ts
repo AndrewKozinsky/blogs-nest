@@ -42,9 +42,9 @@ export class Game {
 	@CreateDateColumn()
 	createdAt: Date
 
-	@Column({ type: 'date', nullable: true })
+	@Column({ type: 'timestamp', nullable: true })
 	startGameDate: Date
 
-	@Column({ type: 'date', nullable: true })
+	@Column({ type: 'timestamp', nullable: true })
 	finishGameDate: Date
 }

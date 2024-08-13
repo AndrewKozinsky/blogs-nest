@@ -4,10 +4,10 @@ import { HTTP_STATUSES } from '../../src/settings/config'
 import RouteNames from '../../src/settings/routeNames'
 import { createTestApp } from '../utils/common'
 import { clearAllDB } from '../utils/db'
+import { checkGameUtils, gameUtils } from '../utils/gameUtils'
+import { questionUtils } from '../utils/questionUtils'
 import { userUtils } from '../utils/userUtils'
-import { userEmail, userPassword } from '../utils/utils'
 import { agent as request } from 'supertest'
-import { checkGameObj, createGameQuestions, createGameWithPlayers } from './common'
 
 it.only('123', async () => {
 	expect(2).toBe(2)
@@ -46,7 +46,7 @@ describe('ROOT', () => {
 		})
 
 		it('should return an object without questions if a single user connected to the empty game', async () => {
-			await createGameQuestions(app, 10)
+			await questionUtils.createGameQuestions(app, 10)
 
 			const [userAccessToken] = await userUtils.createUniqueUserAndLogin(app)
 
@@ -56,7 +56,7 @@ describe('ROOT', () => {
 				.expect(HTTP_STATUSES.OK_200)
 
 			const game = connectToGameRes.body
-			checkGameObj(connectToGameRes.body)
+			checkGameUtils.checkGameObj(connectToGameRes.body)
 
 			expect(game.firstPlayerProgress.answers.length).toBe(0)
 			expect(game.firstPlayerProgress.score).toBe(0)
@@ -69,7 +69,7 @@ describe('ROOT', () => {
 
 		it('should return an object if the second user connected to the game', async () => {
 			const [userFirstAccessToken, userSecondAccessToken, game] =
-				await createGameWithPlayers(app)
+				await gameUtils.createGameWithPlayers(app)
 
 			const updatedGameRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.PAIR_GAME.PAIRS.GAME_ID(game.id).full)
@@ -78,7 +78,7 @@ describe('ROOT', () => {
 
 			const updatedGame = updatedGameRes.body
 
-			checkGameObj(updatedGame)
+			checkGameUtils.checkGameObj(updatedGame)
 			expect(updatedGame.secondPlayerProgress).not.toBe(null)
 			expect(updatedGame.status).toBe(GameStatus.Active)
 			expect(updatedGame.questions.length).toBe(5)

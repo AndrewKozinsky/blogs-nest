@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../../types/resultCodes'
-import { CreateQuestionDtoModel } from '../models/quizQuestions.input.model'
-import { QuizQuestionOutModel } from '../models/quizQuestions.output.model'
+import { CreateQuestionDtoModel } from '../models/questions.input.model'
+import { QuestionOutModel } from '../models/questions.output.model'
 import { SaQuestionsQueryRepository } from '../saQuestionsQueryRepository'
 import { SaQuestionsRepository } from '../saQuestionsRepository'
 
@@ -12,7 +12,7 @@ export class CreateQuestionUseCase {
 		private saQuizQuestionsQueryRepository: SaQuestionsQueryRepository,
 	) {}
 
-	async execute(dto: CreateQuestionDtoModel): Promise<LayerResult<QuizQuestionOutModel>> {
+	async execute(dto: CreateQuestionDtoModel): Promise<LayerResult<QuestionOutModel>> {
 		const createdQuizQuestionRes = await this.saQuizQuestionsRepository.createQuestion(dto)
 
 		if (createdQuizQuestionRes.code !== LayerSuccessCode.Success) {

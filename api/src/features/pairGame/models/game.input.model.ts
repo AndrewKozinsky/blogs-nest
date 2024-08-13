@@ -1,6 +1,8 @@
-import { Type } from 'class-transformer'
+import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common'
+import { plainToInstance, Type } from 'class-transformer'
 import { IsIn, IsNumber, IsOptional, IsString, MinLength } from 'class-validator'
 import { Trim } from '../../../infrastructure/pipes/Trim.decorator'
+import { GetBlogsQueries } from '../../blogs/blogs/model/blogs.input.model'
 
 export class AnswerGameQuestionDtoModel {
 	@IsString({ message: 'Answer must be a string' })
@@ -9,7 +11,7 @@ export class AnswerGameQuestionDtoModel {
 	answer: string
 }
 
-export class GetMyGamesDtoModel {
+export class GetMyGamesQueries {
 	@IsOptional()
 	@IsString({ message: 'SortBy must be a string' })
 	// Default value : pairCreatedDate
@@ -31,4 +33,15 @@ export class GetMyGamesDtoModel {
 	@IsNumber()
 	// pageSize is portions size that should be returned. Default value : 10
 	pageSize?: number
+}
+
+@Injectable()
+export class GetMyGamesQueriesPipe implements PipeTransform {
+	async transform(dto: GetBlogsQueries, { metatype }: ArgumentMetadata) {
+		if (!metatype) {
+			return dto
+		}
+
+		return plainToInstance(metatype, dto)
+	}
 }

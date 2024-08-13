@@ -4,8 +4,8 @@ import {
 	CreateQuestionDtoModel,
 	PublishQuestionDtoModel,
 	UpdateQuestionDtoModel,
-} from '../models/quizQuestions.input.model'
-import { QuizQuestionOutModel } from '../models/quizQuestions.output.model'
+} from '../models/questions.input.model'
+import { QuestionOutModel } from '../models/questions.output.model'
 import { SaQuestionsQueryRepository } from '../saQuestionsQueryRepository'
 import { SaQuestionsRepository } from '../saQuestionsRepository'
 

@@ -23,7 +23,7 @@ import {
 	GetQuestionsQueriesPipe,
 	PublishQuestionDtoModel,
 	UpdateQuestionDtoModel,
-} from './models/quizQuestions.input.model'
+} from './models/questions.input.model'
 import { CreateQuestionUseCase } from './use-cases/createQuestion.useCase'
 import { DeleteQuestionUseCase } from './use-cases/deleteQuestion.useCase'
 import { GetQuestionUseCase } from './use-cases/getQuestion.useCase'

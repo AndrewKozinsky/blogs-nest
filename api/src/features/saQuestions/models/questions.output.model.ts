@@ -1,6 +1,6 @@
 import { ItemsOutModel } from '../../common/models/common'
 
-export type QuizQuestionOutModel = {
+export type QuestionOutModel = {
 	id: string
 	body: string
 	correctAnswers: string[]
@@ -9,6 +9,6 @@ export type QuizQuestionOutModel = {
 	updatedAt: null | string // "2024-07-21T08:59:26.931Z"
 }
 
-export type GetQuizQuestionsOutModel = ItemsOutModel<QuizQuestionOutModel>
+export type GetQuestionsOutModel = ItemsOutModel<QuestionOutModel>
 
-export type GetQuizQuestionOutModel = QuizQuestionOutModel
+export type GetQuestionOutModel = QuestionOutModel

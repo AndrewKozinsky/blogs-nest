@@ -3,18 +3,12 @@ import { agent as request } from 'supertest'
 import { HTTP_STATUSES } from '../src/settings/config'
 import RouteNames from '../src/settings/routeNames'
 import { DBTypes } from '../src/db/mongo/dbTypes'
+import { blogUtils } from './utils/blogUtils'
+import { commentUtils } from './utils/commentUtils'
+import { postUtils } from './utils/postUtils'
 import { userUtils } from './utils/userUtils'
-import {
-	addBlogRequest,
-	addPostCommentRequest,
-	addPostRequest,
-	checkCommentObj,
-	userEmail,
-	userPassword,
-} from './utils/utils'
-
 import { describe } from 'node:test'
-import { createTestApp } from './utils/common'
+import { createTestApp, userEmail, userPassword } from './utils/common'
 import { clearAllDB } from './utils/db'
 
 it.only('123', async () => {
@@ -42,11 +36,11 @@ describe('ROOT', () => {
 		})
 
 		it('should return an existing comment taken by unauthorized user', async () => {
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
-			const createdPostRes = await addPostRequest(app, blogId)
+			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const postId = createdPostRes.body.id
 
@@ -55,7 +49,7 @@ describe('ROOT', () => {
 			const loginUserRes = await userUtils.loginUser(app, userEmail, userPassword)
 			const userToken = loginUserRes.body.accessToken
 
-			const createdCommentRes = await addPostCommentRequest(app, userToken, postId)
+			const createdCommentRes = await postUtils.addPostCommentRequest(app, userToken, postId)
 			const commentId = createdCommentRes.body.id
 
 			await request(app.getHttpServer())
@@ -70,7 +64,7 @@ describe('ROOT', () => {
 				.get('/' + RouteNames.COMMENTS.COMMENT_ID(commentId).full)
 				.expect(HTTP_STATUSES.OK_200)
 
-			checkCommentObj(
+			commentUtils.checkCommentObj(
 				getCommentRes.body,
 				createdUserRes.body.id,
 				createdUserRes.body.login,
@@ -81,11 +75,11 @@ describe('ROOT', () => {
 		})
 
 		it('should return an existing comment', async () => {
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
-			const createdPostRes = await addPostRequest(app, blogId)
+			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const postId = createdPostRes.body.id
 
@@ -94,7 +88,7 @@ describe('ROOT', () => {
 			const loginUserRes = await userUtils.loginUser(app, userEmail, userPassword)
 			const userToken = loginUserRes.body.accessToken
 
-			const createdCommentRes = await addPostCommentRequest(app, userToken, postId)
+			const createdCommentRes = await postUtils.addPostCommentRequest(app, userToken, postId)
 			const commentId = createdCommentRes.body.id
 
 			const getCommentRes = await request(app.getHttpServer())
@@ -102,7 +96,7 @@ describe('ROOT', () => {
 				.set('authorization', 'Bearer ' + userToken)
 				.expect(HTTP_STATUSES.OK_200)
 
-			checkCommentObj(
+			commentUtils.checkCommentObj(
 				getCommentRes.body,
 				createdUserRes.body.id,
 				createdUserRes.body.login,
@@ -144,15 +138,19 @@ describe('ROOT', () => {
 				}
 			}
 
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
-			const createdPostRes = await addPostRequest(app, blogId)
+			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const postId = createdPostRes.body.id
 
-			const createdComment1Res = await addPostCommentRequest(app, user1Token, postId)
+			const createdComment1Res = await postUtils.addPostCommentRequest(
+				app,
+				user1Token,
+				postId,
+			)
 			const comment1Id = createdComment1Res.body.id
 
 			// 3 users set like status to the comment 2
@@ -236,18 +234,26 @@ describe('ROOT', () => {
 				}
 			}
 
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
-			const createdPostRes = await addPostRequest(app, blogId)
+			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const postId = createdPostRes.body.id
 
-			const createdComment1Res = await addPostCommentRequest(app, user1Token, postId)
+			const createdComment1Res = await postUtils.addPostCommentRequest(
+				app,
+				user1Token,
+				postId,
+			)
 			const comment1Id = createdComment1Res.body.id
 
-			const createdComment2Res = await addPostCommentRequest(app, user1Token, postId)
+			const createdComment2Res = await postUtils.addPostCommentRequest(
+				app,
+				user1Token,
+				postId,
+			)
 			const comment2Id = createdComment2Res.body.id
 
 			// Dislike the comment 2 by user 1
@@ -317,11 +323,11 @@ describe('ROOT', () => {
 		})
 
 		it('should not update a comment if the user is not owner', async () => {
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
-			const createdPostRes = await addPostRequest(app, blogId)
+			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const postId = createdPostRes.body.id
 
@@ -342,7 +348,11 @@ describe('ROOT', () => {
 			const userTwoToken = loginUserTwoRes.body.accessToken
 
 			// User one will create a comment
-			const createdCommentRes = await addPostCommentRequest(app, userOneToken, postId)
+			const createdCommentRes = await postUtils.addPostCommentRequest(
+				app,
+				userOneToken,
+				postId,
+			)
 			const commentId = createdCommentRes.body.id
 
 			// User two will try to update the comment
@@ -356,11 +366,11 @@ describe('ROOT', () => {
 		})
 
 		it('should not update a comment by wrong dto', async () => {
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
-			const createdPostRes = await addPostRequest(app, blogId)
+			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const postId = createdPostRes.body.id
 
@@ -371,7 +381,7 @@ describe('ROOT', () => {
 			const userToken = loginUserRes.body.accessToken
 
 			// User one will create a comment
-			const createdCommentRes = await addPostCommentRequest(app, userToken, postId)
+			const createdCommentRes = await postUtils.addPostCommentRequest(app, userToken, postId)
 			const commentId = createdCommentRes.body.id
 
 			const updateCommentRes = await request(app.getHttpServer())
@@ -384,11 +394,11 @@ describe('ROOT', () => {
 		})
 
 		it('should update a comment by correct dto', async () => {
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
-			const createdPostRes = await addPostRequest(app, blogId)
+			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const postId = createdPostRes.body.id
 
@@ -399,7 +409,7 @@ describe('ROOT', () => {
 			const userToken = loginUserRes.body.accessToken
 
 			// User one will create a comment
-			const createdCommentRes = await addPostCommentRequest(app, userToken, postId)
+			const createdCommentRes = await postUtils.addPostCommentRequest(app, userToken, postId)
 			const commentId = createdCommentRes.body.id
 
 			const updateCommentRes = await request(app.getHttpServer())
@@ -431,11 +441,11 @@ describe('ROOT', () => {
 		})
 
 		it('should not delete a comment if the user is not owner', async () => {
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
-			const createdPostRes = await addPostRequest(app, blogId)
+			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const postId = createdPostRes.body.id
 
@@ -456,7 +466,11 @@ describe('ROOT', () => {
 			const userTwoToken = loginUserTwoRes.body.accessToken
 
 			// User one will delete a comment
-			const createdCommentRes = await addPostCommentRequest(app, userOneToken, postId)
+			const createdCommentRes = await postUtils.addPostCommentRequest(
+				app,
+				userOneToken,
+				postId,
+			)
 			const commentId = createdCommentRes.body.id
 
 			// User two will try to delete the comment
@@ -467,11 +481,11 @@ describe('ROOT', () => {
 		})
 
 		it('should delete an existing comment', async () => {
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
-			const createdPostRes = await addPostRequest(app, blogId)
+			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const postId = createdPostRes.body.id
 
@@ -482,7 +496,7 @@ describe('ROOT', () => {
 			const userToken = loginUserRes.body.accessToken
 
 			// User one will create a comment
-			const createdCommentRes = await addPostCommentRequest(app, userToken, postId)
+			const createdCommentRes = await postUtils.addPostCommentRequest(app, userToken, postId)
 			const commentId = createdCommentRes.body.id
 
 			await request(app.getHttpServer())
@@ -530,12 +544,12 @@ describe('ROOT', () => {
 
 		it('should return 204 if pass right body data to right address', async () => {
 			// Create a blog
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
 			// Create a post in the blog
-			const createdPostRes = await addPostRequest(app, blogId)
+			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const postId = createdPostRes.body.id
 
@@ -546,7 +560,7 @@ describe('ROOT', () => {
 			const userToken = loginUserRes.body.accessToken
 
 			// Create a comment
-			const createdCommentRes = await addPostCommentRequest(app, userToken, postId)
+			const createdCommentRes = await postUtils.addPostCommentRequest(app, userToken, postId)
 			const commentId = createdCommentRes.body.id
 
 			// Set a like status to the comment
@@ -563,7 +577,7 @@ describe('ROOT', () => {
 				.get('/' + RouteNames.COMMENTS.COMMENT_ID(commentId).full)
 				.expect(HTTP_STATUSES.OK_200)
 
-			checkCommentObj(
+			commentUtils.checkCommentObj(
 				getCommentRes.body,
 				createdUserRes.body.id,
 				createdUserRes.body.login,
@@ -579,7 +593,7 @@ describe('ROOT', () => {
 				.send(JSON.stringify({ likeStatus: DBTypes.LikeStatuses.Like }))
 				.expect(HTTP_STATUSES.OK_200)
 
-			checkCommentObj(
+			commentUtils.checkCommentObj(
 				getComment2Res.body,
 				createdUserRes.body.id,
 				createdUserRes.body.login,
@@ -591,12 +605,12 @@ describe('ROOT', () => {
 
 		it('create comment then: like the comment by user 1, user 2, user 3, user 4. get the comment after each like by user 1', async () => {
 			// Create a blog
-			const createdBlogRes = await addBlogRequest(app)
+			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const blogId = createdBlogRes.body.id
 
 			// Create a post in the blog
-			const createdPostRes = await addPostRequest(app, blogId)
+			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const postId = createdPostRes.body.id
 
@@ -607,7 +621,7 @@ describe('ROOT', () => {
 			const userToken = loginUserRes.body.accessToken
 
 			// Create a comment
-			const createdCommentRes = await addPostCommentRequest(app, userToken, postId)
+			const createdCommentRes = await postUtils.addPostCommentRequest(app, userToken, postId)
 			const commentId = createdCommentRes.body.id
 		})
 	})

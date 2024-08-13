@@ -10,6 +10,7 @@ import {
 	Param,
 	ParseIntPipe,
 	Post,
+	Query,
 	Req,
 	UnauthorizedException,
 	UseGuards,
@@ -18,7 +19,11 @@ import { Request } from 'express'
 import { CheckAccessTokenGuard } from '../../infrastructure/guards/checkAccessToken.guard'
 import RouteNames from '../../settings/routeNames'
 import { LayerErrorCode, LayerSuccessCode } from '../../types/resultCodes'
-import { AnswerGameQuestionDtoModel, GetMyGamesDtoModel } from './models/game.input.model'
+import {
+	AnswerGameQuestionDtoModel,
+	GetMyGamesQueries,
+	GetMyGamesQueriesPipe,
+} from './models/game.input.model'
 import { AnswerGameQuestionUseCase } from './use-cases/answerGameQuestion.useCase'
 import { ConnectToGameUseCase } from './use-cases/connectToGame.useCase'
 import { GetCurrentUserGameUseCase } from './use-cases/getCurrentUserGame.useCase'
@@ -39,7 +44,7 @@ export class PairGameController {
 
 	// Connect current user to existing random pending pair or create new pair which will be waiting second player
 	@UseGuards(CheckAccessTokenGuard)
-	@Post(RouteNames.PAIR_GAME.PAIRS.CONNECTION.value)
+	@Post(RouteNames.PAIR_GAME.PAIRS.value + '/' + RouteNames.PAIR_GAME.PAIRS.CONNECTION.value)
 	@HttpCode(HttpStatus.OK)
 	async connectToGame(@Req() req: Request) {
 		if (!req.user) return
@@ -61,14 +66,21 @@ export class PairGameController {
 	@UseGuards(CheckAccessTokenGuard)
 	@Get(RouteNames.PAIR_GAME.PAIRS.value + '/' + RouteNames.PAIR_GAME.PAIRS.MY_GAMES.value)
 	@HttpCode(HttpStatus.OK)
-	async getMyGames(@Req() req: Request, @Body() body: GetMyGamesDtoModel) {
+	async getMyGames(
+		@Req() req: Request,
+		@Query(new GetMyGamesQueriesPipe()) queries: GetMyGamesQueries,
+	) {
 		if (!req.user) return
 
-		const getMyGamesStatus = await this.getMyGamesUseCase.execute(req.user.id, body)
+		const getMyGamesStatus = await this.getMyGamesUseCase.execute(req.user.id, queries)
+
+		if (getMyGamesStatus.code !== LayerSuccessCode.Success) {
+			throw new BadRequestException()
+		}
 
 		//  Добавлена история (список завешенных и текущих) игр текущего пользователя.
 		//  Особенности сортировки списка: если по первому критерию (например status) одинаковые значения - сортируем по pairCreatedDate desc;
-		return null
+		return getMyGamesStatus.data
 	}
 
 	// Get current user statistic
@@ -86,7 +98,9 @@ export class PairGameController {
 	// Send an answer for the next not answered question in an active pair
 	@UseGuards(CheckAccessTokenGuard)
 	@Post(
-		RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.value +
+		RouteNames.PAIR_GAME.PAIRS.value +
+			'/' +
+			RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.value +
 			'/' +
 			RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.value,
 	)

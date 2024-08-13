@@ -9,11 +9,16 @@ import { wait } from '../src/utils/promise'
 import { createUniqString, parseCookieStringToObj } from '../src/utils/stringUtils'
 import { DBTypes } from '../src/db/mongo/dbTypes'
 import { userUtils } from './utils/userUtils'
-import { adminAuthorizationValue, userEmail, userLogin, userPassword } from './utils/utils'
 import { describe } from 'node:test'
 import { HTTP_STATUSES, config } from '../src/settings/config'
 import RouteNames from '../src/settings/routeNames'
-import { createTestApp } from './utils/common'
+import {
+	adminAuthorizationValue,
+	createTestApp,
+	userEmail,
+	userLogin,
+	userPassword,
+} from './utils/common'
 import { clearAllDB } from './utils/db'
 
 it('123', async () => {

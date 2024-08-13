@@ -31,7 +31,7 @@ export class PostsQueryRepository {
 		blogId?: string,
 	): Promise<GetPostsOutModel> {
 		const sortBy = query.sortBy ?? 'createdAt'
-		const sortDirection = query.sortDirection === 'asc' ? 'ASC' : 'DESC'
+		const sortDirection = query.sortDirection?.toLowerCase() === 'asc' ? 'ASC' : 'DESC'
 
 		const pageNumber = query.pageNumber ? +query.pageNumber : 1
 		const pageSize = query.pageSize ? +query.pageSize : 10
@@ -111,7 +111,7 @@ export class PostsQueryRepository {
 		blogId?: string,
 	): Promise<GetPostsOutModel> {
 		const sortBy = query.sortBy ?? 'createdat'
-		const sortDirection = query.sortDirection === 'asc' ? 'ASC' : 'DESC'
+		const sortDirection = query.sortDirection?.toLowerCase() === 'asc' ? 'ASC' : 'DESC'
 
 		const pageNumber = query.pageNumber ? +query.pageNumber : 1
 		const pageSize = query.pageSize ? +query.pageSize : 10
