@@ -2,7 +2,8 @@ import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
 import { HTTP_STATUSES } from '../../src/settings/config'
 import RouteNames from '../../src/settings/routeNames'
-import { addQuestionRequest, addUserByAdminRequest, loginRequest } from '../utils/utils'
+import { userUtils } from '../utils/userUtils'
+import { addQuestionRequest } from '../utils/utils'
 
 export function checkGameObj(gameObj: any) {
 	expect(typeof gameObj.id).toBe('string')
@@ -73,46 +74,11 @@ export async function createGameQuestions(app: INestApplication, questionsNumber
 	}
 }
 
-async function createTwoRandomUsers(app: INestApplication) {
-	// Create a first user
-	const firstUserName = createRandomUserPrefix()
-
-	const createdFirstUserRes = await addUserByAdminRequest(app, {
-		email: firstUserName + '@email.com',
-		login: firstUserName,
-		password: firstUserName,
-	})
-	expect(createdFirstUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-	const loginUserFirstRes = await loginRequest(app, firstUserName + '@email.com', firstUserName)
-	const userFirstAccessToken = loginUserFirstRes.body.accessToken
-
-	// Create a second user
-	const secondUserName = createRandomUserPrefix()
-
-	const createdSecondUserRes = await addUserByAdminRequest(app, {
-		email: secondUserName + '@email.com',
-		login: secondUserName,
-		password: secondUserName,
-	})
-	expect(createdSecondUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-	const loginUserSecondRes = await loginRequest(
-		app,
-		secondUserName + '@email.com',
-		secondUserName,
-	)
-	const userSecondAccessToken = loginUserSecondRes.body.accessToken
-
-	return [userFirstAccessToken, userSecondAccessToken]
-
-	function createRandomUserPrefix() {
-		return Math.random().toString(36).substr(2, 5) // 'd4jgn'
-	}
-}
-
 export async function createGameWithPlayers(app: INestApplication) {
 	await createGameQuestions(app, 10)
 
-	const [userFirstAccessToken, userSecondAccessToken] = await createTwoRandomUsers(app)
+	const [userFirstAccessToken] = await userUtils.createUniqueUserAndLogin(app)
+	const [userSecondAccessToken] = await userUtils.createUniqueUserAndLogin(app)
 
 	// First user connects to the game
 	const firstConnectToGameRes = await request(app.getHttpServer())

@@ -5,13 +5,8 @@ import { AuthRepository } from '../src/features/auth/authRepository'
 import { HTTP_STATUSES, config } from '../src/settings/config'
 import { DBTypes } from '../src/db/mongo/dbTypes'
 import { createUniqString, parseCookieStringToObj } from '../src/utils/stringUtils'
-import {
-	addUserByAdminRequest,
-	checkUserDeviceObj,
-	loginRequest,
-	userLogin,
-	userPassword,
-} from './utils/utils'
+import { userUtils } from './utils/userUtils'
+import { checkUserDeviceObj, userLogin, userPassword } from './utils/utils'
 // import * as jwt from 'jsonwebtoken'
 import { describe } from 'node:test'
 import RouteNames from '../src/settings/routeNames'
@@ -49,10 +44,18 @@ describe('ROOT', () => {
 			const password = 'password'
 			const email = 'email@email.ru'
 
-			const createdUserRes = await addUserByAdminRequest(app, { login, password, email })
+			const createdUserRes = await userUtils.createUniqueUser(app, {
+				login,
+				password,
+				email,
+			})
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
-			const loginRes = await loginRequest(app, login, password).expect(HTTP_STATUSES.OK_200)
+			const loginRes = await request(app.getHttpServer())
+				.post('/' + RouteNames.AUTH.LOGIN.full)
+				.send({ login, password })
+				.expect(HTTP_STATUSES.OK_200)
+
 			const refreshTokenStr = loginRes.headers['set-cookie'][0]
 			const refreshToken = refreshTokenStr.split('=')[1]
 
@@ -73,7 +76,7 @@ describe('ROOT', () => {
 		})
 
 		it('should forbid a request from a user with an expired device refresh token', async () => {
-			const createdUserRes = await addUserByAdminRequest(app)
+			const createdUserRes = await userUtils.createUniqueUser(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const userId = createdUserRes.body.id
 
@@ -101,12 +104,14 @@ describe('ROOT', () => {
 		})
 
 		it('should return 404 if client tries to terminate a non existed device', async () => {
-			const createdUserRes = await addUserByAdminRequest(app)
+			const createdUserRes = await userUtils.createUniqueUser(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
-			const loginRes = await loginRequest(app, userLogin, userPassword).expect(
-				HTTP_STATUSES.OK_200,
-			)
+			const loginRes = await request(app.getHttpServer())
+				.post('/' + RouteNames.AUTH.LOGIN.full)
+				.send({ loginOrEmail: userLogin, password: userPassword })
+				.expect(HTTP_STATUSES.OK_200)
+
 			const refreshTokenStr = loginRes.headers['set-cookie'][0]
 			const refreshTokenValue = parseCookieStringToObj(refreshTokenStr).cookieValue
 
@@ -118,12 +123,13 @@ describe('ROOT', () => {
 
 		it('should return 403 if a client tries to terminate a device which does not belong to him', async () => {
 			// Create a user 1
-			const createdUser_1_Res = await addUserByAdminRequest(app)
+			const createdUser_1_Res = await userUtils.createUniqueUser(app)
 			expect(createdUser_1_Res.status).toBe(HTTP_STATUSES.CREATED_201)
 
-			const login_1_Res = await loginRequest(app, userLogin, userPassword).expect(
-				HTTP_STATUSES.OK_200,
-			)
+			const login_1_Res = await request(app.getHttpServer())
+				.post('/' + RouteNames.AUTH.LOGIN.full)
+				.send({ loginOrEmail: userLogin, password: userPassword })
+				.expect(HTTP_STATUSES.OK_200)
 
 			const deviceRefreshTokenUser_1_Str = login_1_Res.headers['set-cookie'][0]
 			const deviceRefreshTokenUser_1_Value = parseCookieStringToObj(
@@ -139,12 +145,17 @@ describe('ROOT', () => {
 			const password = 'password-2'
 			const email = 'email-2@email.ru'
 
-			const createdUser_2_Res = await addUserByAdminRequest(app, { login, password, email })
+			const createdUser_2_Res = await userUtils.createUniqueUser(app, {
+				login,
+				password,
+				email,
+			})
 			expect(createdUser_2_Res.status).toBe(HTTP_STATUSES.CREATED_201)
 
-			const login_2_Res = await loginRequest(app, login, password).expect(
-				HTTP_STATUSES.OK_200,
-			)
+			const login_2_Res = await request(app.getHttpServer())
+				.post('/' + RouteNames.AUTH.LOGIN.full)
+				.send({ loginOrEmail: login, password: password })
+				.expect(HTTP_STATUSES.OK_200)
 
 			const deviceRefreshTokenUser_2_Str = login_2_Res.headers['set-cookie'][0]
 			const deviceRefreshTokenUser_2_Value = parseCookieStringToObj(
@@ -158,12 +169,13 @@ describe('ROOT', () => {
 		})
 
 		it('should return 204 if a client tries to terminate his device', async () => {
-			const createdUserRes = await addUserByAdminRequest(app)
+			const createdUserRes = await userUtils.createUniqueUser(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
-			const loginRes = await loginRequest(app, userLogin, userPassword).expect(
-				HTTP_STATUSES.OK_200,
-			)
+			const loginRes = await request(app.getHttpServer())
+				.post('/' + RouteNames.AUTH.LOGIN.full)
+				.send({ loginOrEmail: userLogin, password: userPassword })
+				.expect(HTTP_STATUSES.OK_200)
 
 			const deviceRefreshTokenStr = loginRes.headers['set-cookie'][0]
 			const deviceRefreshTokenValue =
@@ -187,7 +199,7 @@ describe('ROOT', () => {
 		})
 
 		it('should forbid a request from a user with an expired device refresh token', async () => {
-			const createdUserRes = await addUserByAdminRequest(app)
+			const createdUserRes = await userUtils.createUniqueUser(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const userId = createdUserRes.body.id
 
@@ -215,12 +227,13 @@ describe('ROOT', () => {
 		})
 
 		it('should return 204 if a client tries to terminate current device', async () => {
-			const createdUserRes = await addUserByAdminRequest(app)
+			const createdUserRes = await userUtils.createUniqueUser(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
-			const loginRes = await loginRequest(app, userLogin, userPassword).expect(
-				HTTP_STATUSES.OK_200,
-			)
+			const loginRes = await request(app.getHttpServer())
+				.post('/' + RouteNames.AUTH.LOGIN.full)
+				.send({ loginOrEmail: userLogin, password: userPassword })
+				.expect(HTTP_STATUSES.OK_200)
 
 			const deviceRefreshTokenStr = loginRes.headers['set-cookie'][0]
 			const deviceRefreshTokenValue =

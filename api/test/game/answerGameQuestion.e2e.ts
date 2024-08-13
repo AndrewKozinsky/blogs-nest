@@ -5,7 +5,7 @@ import { HTTP_STATUSES } from '../../src/settings/config'
 import RouteNames from '../../src/settings/routeNames'
 import { createTestApp } from '../utils/common'
 import { clearAllDB } from '../utils/db'
-import { addUserByAdminRequest, loginRequest, userEmail, userPassword } from '../utils/utils'
+import { userUtils } from '../utils/userUtils'
 import { agent as request } from 'supertest'
 import { createGameWithPlayers } from './common'
 
@@ -32,10 +32,7 @@ describe('ROOT', () => {
 		})
 
 		it('should return 403 if current user pass wrong body', async () => {
-			const createdUserRes = await addUserByAdminRequest(app)
-			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserRes = await loginRequest(app, userEmail, userPassword)
-			const userAccessToken = loginUserRes.body.accessToken
+			const [userAccessToken] = await userUtils.createUniqueUserAndLogin(app)
 
 			await request(app.getHttpServer())
 				.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
@@ -214,13 +211,17 @@ describe('ROOT', () => {
 			// RUN A NEW GAME
 
 			// Create a third user
-			const createdThirdUserRes = await addUserByAdminRequest(app, {
+			const createdThirdUserRes = await userUtils.createUniqueUser(app, {
 				email: 'email-3@email.com',
 				login: 'login-3',
 				password: 'password-3',
 			})
 			expect(createdThirdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserFirstRes = await loginRequest(app, 'email-3@email.com', 'password-3')
+			const loginUserFirstRes = await userUtils.loginUser(
+				app,
+				'email-3@email.com',
+				'password-3',
+			)
 			const userThirdAccessToken = loginUserFirstRes.body.accessToken
 
 			// Get the game by first user

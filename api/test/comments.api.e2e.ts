@@ -3,13 +3,12 @@ import { agent as request } from 'supertest'
 import { HTTP_STATUSES } from '../src/settings/config'
 import RouteNames from '../src/settings/routeNames'
 import { DBTypes } from '../src/db/mongo/dbTypes'
+import { userUtils } from './utils/userUtils'
 import {
 	addBlogRequest,
 	addPostCommentRequest,
 	addPostRequest,
-	addUserByAdminRequest,
 	checkCommentObj,
-	loginRequest,
 	userEmail,
 	userPassword,
 } from './utils/utils'
@@ -18,7 +17,7 @@ import { describe } from 'node:test'
 import { createTestApp } from './utils/common'
 import { clearAllDB } from './utils/db'
 
-it('123', async () => {
+it.only('123', async () => {
 	expect(2).toBe(2)
 })
 
@@ -51,9 +50,9 @@ describe('ROOT', () => {
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const postId = createdPostRes.body.id
 
-			const createdUserRes = await addUserByAdminRequest(app)
+			const createdUserRes = await userUtils.createUniqueUser(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserRes = await loginRequest(app, userEmail, userPassword)
+			const loginUserRes = await userUtils.loginUser(app, userEmail, userPassword)
 			const userToken = loginUserRes.body.accessToken
 
 			const createdCommentRes = await addPostCommentRequest(app, userToken, postId)
@@ -90,9 +89,9 @@ describe('ROOT', () => {
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const postId = createdPostRes.body.id
 
-			const createdUserRes = await addUserByAdminRequest(app)
+			const createdUserRes = await userUtils.createUniqueUser(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserRes = await loginRequest(app, userEmail, userPassword)
+			const loginUserRes = await userUtils.loginUser(app, userEmail, userPassword)
 			const userToken = loginUserRes.body.accessToken
 
 			const createdCommentRes = await addPostCommentRequest(app, userToken, postId)
@@ -125,13 +124,13 @@ describe('ROOT', () => {
 				const password = 'password-' + i
 				const email = `email-${i}@mail.com`
 
-				const createdUserRes = await addUserByAdminRequest(app, {
+				const createdUserRes = await userUtils.createUniqueUser(app, {
 					login,
 					password,
 					email,
 				})
 				expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-				const loginUserRes = await loginRequest(app, email, password)
+				const loginUserRes = await userUtils.loginUser(app, email, password)
 				const token = loginUserRes.body.accessToken
 
 				if (i == 1) {
@@ -208,7 +207,7 @@ describe('ROOT', () => {
 			expect(getCommentByUser4Res.body.likesInfo.myStatus).toBe(DBTypes.LikeStatuses.None)
 		})
 
-		it.only(' create comment then: like the comment by user 1, user 2, user 3, user 4. Dislike by user 3. Get the comment by user 1.', async () => {
+		it(' create comment then: like the comment by user 1, user 2, user 3, user 4. Dislike by user 3. Get the comment by user 1.', async () => {
 			// Users and their tokens
 			let user1Token = ''
 			let user2Token = ''
@@ -219,13 +218,13 @@ describe('ROOT', () => {
 				const password = 'password-' + i
 				const email = `email-${i}@mail.com`
 
-				const createdUserRes = await addUserByAdminRequest(app, {
+				const createdUserRes = await userUtils.createUniqueUser(app, {
 					login,
 					password,
 					email,
 				})
 				expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-				const loginUserRes = await loginRequest(app, email, password)
+				const loginUserRes = await userUtils.loginUser(app, email, password)
 				const token = loginUserRes.body.accessToken
 
 				if (i == 1) {
@@ -306,9 +305,9 @@ describe('ROOT', () => {
 		})
 
 		it('should not update a non existing comment', async () => {
-			const createdUserRes = await addUserByAdminRequest(app)
+			const createdUserRes = await userUtils.createUniqueUser(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserRes = await loginRequest(app, userEmail, userPassword)
+			const loginUserRes = await userUtils.loginUser(app, userEmail, userPassword)
 			const userToken = loginUserRes.body.accessToken
 
 			await request(app.getHttpServer())
@@ -327,19 +326,19 @@ describe('ROOT', () => {
 			const postId = createdPostRes.body.id
 
 			// User one will create a comment
-			const createdUserOneRes = await addUserByAdminRequest(app)
+			const createdUserOneRes = await userUtils.createUniqueUser(app)
 			expect(createdUserOneRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserOneRes = await loginRequest(app, userEmail, userPassword)
+			const loginUserOneRes = await userUtils.loginUser(app, userEmail, userPassword)
 			const userOneToken = loginUserOneRes.body.accessToken
 
 			// User two will try to update the comment
-			const createdUserTwoRes = await addUserByAdminRequest(app, {
+			const createdUserTwoRes = await userUtils.createUniqueUser(app, {
 				login: 'login-2',
 				password: 'password-2',
 				email: 'email-2@mail.com',
 			})
 			expect(createdUserTwoRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserTwoRes = await loginRequest(app, 'email-2@mail.com', 'password-2')
+			const loginUserTwoRes = await userUtils.loginUser(app, 'email-2@mail.com', 'password-2')
 			const userTwoToken = loginUserTwoRes.body.accessToken
 
 			// User one will create a comment
@@ -366,9 +365,9 @@ describe('ROOT', () => {
 			const postId = createdPostRes.body.id
 
 			// User will create a comment
-			const createdUserRes = await addUserByAdminRequest(app)
+			const createdUserRes = await userUtils.createUniqueUser(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserRes = await loginRequest(app, userEmail, userPassword)
+			const loginUserRes = await userUtils.loginUser(app, userEmail, userPassword)
 			const userToken = loginUserRes.body.accessToken
 
 			// User one will create a comment
@@ -394,9 +393,9 @@ describe('ROOT', () => {
 			const postId = createdPostRes.body.id
 
 			// User will create a comment
-			const createdUserRes = await addUserByAdminRequest(app)
+			const createdUserRes = await userUtils.createUniqueUser(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserRes = await loginRequest(app, userEmail, userPassword)
+			const loginUserRes = await userUtils.loginUser(app, userEmail, userPassword)
 			const userToken = loginUserRes.body.accessToken
 
 			// User one will create a comment
@@ -420,9 +419,9 @@ describe('ROOT', () => {
 
 		it('should not delete a non existing comment', async () => {
 			// User will create a comment
-			const createdUserRes = await addUserByAdminRequest(app)
+			const createdUserRes = await userUtils.createUniqueUser(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserRes = await loginRequest(app, userEmail, userPassword)
+			const loginUserRes = await userUtils.loginUser(app, userEmail, userPassword)
 			const userToken = loginUserRes.body.accessToken
 
 			await request(app.getHttpServer())
@@ -441,19 +440,19 @@ describe('ROOT', () => {
 			const postId = createdPostRes.body.id
 
 			// User one will create a comment
-			const createdUserOneRes = await addUserByAdminRequest(app)
+			const createdUserOneRes = await userUtils.createUniqueUser(app)
 			expect(createdUserOneRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserOneRes = await loginRequest(app, userEmail, userPassword)
+			const loginUserOneRes = await userUtils.loginUser(app, userEmail, userPassword)
 			const userOneToken = loginUserOneRes.body.accessToken
 
 			// User two will try to delete the comment
-			const createdUserTwoRes = await addUserByAdminRequest(app, {
+			const createdUserTwoRes = await userUtils.createUniqueUser(app, {
 				login: 'login-2',
 				password: 'password-2',
 				email: 'email-2@mail.com',
 			})
 			expect(createdUserTwoRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserTwoRes = await loginRequest(app, 'email-2@mail.com', 'password-2')
+			const loginUserTwoRes = await userUtils.loginUser(app, 'email-2@mail.com', 'password-2')
 			const userTwoToken = loginUserTwoRes.body.accessToken
 
 			// User one will delete a comment
@@ -477,9 +476,9 @@ describe('ROOT', () => {
 			const postId = createdPostRes.body.id
 
 			// User will create a comment
-			const createdUserRes = await addUserByAdminRequest(app)
+			const createdUserRes = await userUtils.createUniqueUser(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserRes = await loginRequest(app, userEmail, userPassword)
+			const loginUserRes = await userUtils.loginUser(app, userEmail, userPassword)
 			const userToken = loginUserRes.body.accessToken
 
 			// User one will create a comment
@@ -502,9 +501,9 @@ describe('ROOT', () => {
 
 		it('should return 404 if a comment does not exists', async () => {
 			// User will create a comment
-			const createdUserRes = await addUserByAdminRequest(app)
+			const createdUserRes = await userUtils.createUniqueUser(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserRes = await loginRequest(app, userEmail, userPassword)
+			const loginUserRes = await userUtils.loginUser(app, userEmail, userPassword)
 			const userToken = loginUserRes.body.accessToken
 
 			await request(app.getHttpServer())
@@ -518,9 +517,9 @@ describe('ROOT', () => {
 
 		it('should return 400 if requst body does not exist', async () => {
 			// User will create a comment
-			const createdUserRes = await addUserByAdminRequest(app)
+			const createdUserRes = await userUtils.createUniqueUser(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserRes = await loginRequest(app, userEmail, userPassword)
+			const loginUserRes = await userUtils.loginUser(app, userEmail, userPassword)
 			const userToken = loginUserRes.body.accessToken
 
 			await request(app.getHttpServer())
@@ -541,9 +540,9 @@ describe('ROOT', () => {
 			const postId = createdPostRes.body.id
 
 			// Create a user on behalf of which requests will be made
-			const createdUserRes = await addUserByAdminRequest(app)
+			const createdUserRes = await userUtils.createUniqueUser(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserRes = await loginRequest(app, userEmail, userPassword)
+			const loginUserRes = await userUtils.loginUser(app, userEmail, userPassword)
 			const userToken = loginUserRes.body.accessToken
 
 			// Create a comment
@@ -602,9 +601,9 @@ describe('ROOT', () => {
 			const postId = createdPostRes.body.id
 
 			// Create a user on behalf of which requests will be made
-			const createdUserRes = await addUserByAdminRequest(app)
+			const createdUserRes = await userUtils.createUniqueUser(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserRes = await loginRequest(app, userEmail, userPassword)
+			const loginUserRes = await userUtils.loginUser(app, userEmail, userPassword)
 			const userToken = loginUserRes.body.accessToken
 
 			// Create a comment

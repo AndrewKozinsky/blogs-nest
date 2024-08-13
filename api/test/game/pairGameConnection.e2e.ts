@@ -4,7 +4,8 @@ import { HTTP_STATUSES } from '../../src/settings/config'
 import RouteNames from '../../src/settings/routeNames'
 import { createTestApp } from '../utils/common'
 import { clearAllDB } from '../utils/db'
-import { addUserByAdminRequest, loginRequest, userEmail, userPassword } from '../utils/utils'
+import { userUtils } from '../utils/userUtils'
+import { userEmail, userPassword } from '../utils/utils'
 import { agent as request } from 'supertest'
 import { checkGameObj, createGameQuestions, createGameWithPlayers } from './common'
 
@@ -31,10 +32,7 @@ describe('ROOT', () => {
 		})
 
 		it('should return 403 if current user is already participating in active pair', async () => {
-			const createdUserRes = await addUserByAdminRequest(app)
-			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserRes = await loginRequest(app, userEmail, userPassword)
-			const userAccessToken = loginUserRes.body.accessToken
+			const [userAccessToken] = await userUtils.createUniqueUserAndLogin(app)
 
 			await request(app.getHttpServer())
 				.post('/' + RouteNames.PAIR_GAME.PAIRS.CONNECTION.full)
@@ -50,10 +48,7 @@ describe('ROOT', () => {
 		it('should return an object without questions if a single user connected to the empty game', async () => {
 			await createGameQuestions(app, 10)
 
-			const createdUserRes = await addUserByAdminRequest(app)
-			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserRes = await loginRequest(app, userEmail, userPassword)
-			const userAccessToken = loginUserRes.body.accessToken
+			const [userAccessToken] = await userUtils.createUniqueUserAndLogin(app)
 
 			const connectToGameRes = await request(app.getHttpServer())
 				.post('/' + RouteNames.PAIR_GAME.PAIRS.CONNECTION.full)

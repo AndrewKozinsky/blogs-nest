@@ -8,12 +8,8 @@ import { UsersRepository } from '../src/features/users/usersRepository'
 import { wait } from '../src/utils/promise'
 import { createUniqString, parseCookieStringToObj } from '../src/utils/stringUtils'
 import { DBTypes } from '../src/db/mongo/dbTypes'
-import {
-	addUserByAdminRequest,
-	adminAuthorizationValue,
-	loginRequest,
-	userEmail,
-} from './utils/utils'
+import { userUtils } from './utils/userUtils'
+import { adminAuthorizationValue, userEmail, userLogin, userPassword } from './utils/utils'
 import { describe } from 'node:test'
 import { HTTP_STATUSES, config } from '../src/settings/config'
 import RouteNames from '../src/settings/routeNames'
@@ -58,7 +54,11 @@ describe('ROOT', () => {
 			const password = 'password'
 			const email = 'email@email.ru'
 
-			const createdUserRes = await addUserByAdminRequest(app, { login, password, email })
+			const createdUserRes = await userUtils.createUniqueUser(app, {
+				login,
+				password,
+				email,
+			})
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
 			await request(app.getHttpServer())
@@ -72,7 +72,11 @@ describe('ROOT', () => {
 			const password = 'password'
 			const email = 'email@email.ru'
 
-			const createdUserRes = await addUserByAdminRequest(app, { login, password, email })
+			const createdUserRes = await userUtils.createUniqueUser(app, {
+				login,
+				password,
+				email,
+			})
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
 			await request(app.getHttpServer())
@@ -91,7 +95,10 @@ describe('ROOT', () => {
 				.send({ login, password, email })
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
 
-			await loginRequest(app, login, password).expect(HTTP_STATUSES.UNAUTHORIZED_401)
+			await request(app.getHttpServer())
+				.post('/' + RouteNames.AUTH.LOGIN.full)
+				.send({ loginOrEmail: userLogin, password: userPassword })
+				.expect(HTTP_STATUSES.UNAUTHORIZED_401)
 		})
 
 		it('should return 200 and object with token and JWT refreshToken in cookie if the DTO is correct and user has verified email', async () => {
@@ -99,10 +106,17 @@ describe('ROOT', () => {
 			const password = 'password'
 			const email = 'email@email.ru'
 
-			const createdUserRes = await addUserByAdminRequest(app, { login, password, email })
+			const createdUserRes = await userUtils.createUniqueUser(app, {
+				login,
+				password,
+				email,
+			})
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
-			const loginRes = await loginRequest(app, login, password).expect(HTTP_STATUSES.OK_200)
+			const loginRes = await request(app.getHttpServer())
+				.post('/' + RouteNames.AUTH.LOGIN.full)
+				.send({ loginOrEmail: userLogin, password: userPassword })
+				.expect(HTTP_STATUSES.OK_200)
 
 			// --- Create similar AccessToken
 			const rightAccessToken = jwt.sign(
@@ -152,7 +166,11 @@ describe('ROOT', () => {
 			const password = 'password'
 			const email = 'email@email.ru'
 
-			const createdUserRes = await addUserByAdminRequest(app, { login, password, email })
+			const createdUserRes = await userUtils.createUniqueUser(app, {
+				login,
+				password,
+				email,
+			})
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const userId = createdUserRes.body.id
 
@@ -188,10 +206,18 @@ describe('ROOT', () => {
 			const password = 'password'
 			const email = 'email@email.ru'
 
-			const createdUserRes = await addUserByAdminRequest(app, { login, password, email })
+			const createdUserRes = await userUtils.createUniqueUser(app, {
+				login,
+				password,
+				email,
+			})
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
-			const loginRes = await loginRequest(app, login, password).expect(HTTP_STATUSES.OK_200)
+			const loginRes = await request(app.getHttpServer())
+				.post('/' + RouteNames.AUTH.LOGIN.full)
+				.send({ loginOrEmail: userLogin, password: userPassword })
+				.expect(HTTP_STATUSES.OK_200)
+
 			const refreshTokenStr = loginRes.headers['set-cookie'][0]
 			const refreshTokenValue = parseCookieStringToObj(refreshTokenStr).cookieValue
 
@@ -222,7 +248,11 @@ describe('ROOT', () => {
 		it('should return 400 if the user with the given email already exists', async () => {
 			const email = 'email@email.com'
 
-			await addUserByAdminRequest(app, { login: 'login', password: 'password', email })
+			await userUtils.createUniqueUser(app, {
+				login: 'login',
+				password: 'password',
+				email,
+			})
 
 			const registrationRes = await request(app.getHttpServer())
 				.post('/' + RouteNames.AUTH.REGISTRATION.full)
@@ -250,7 +280,7 @@ describe('ROOT', () => {
 			expect(allUsers.body.items.length).toBe(1)
 		})
 
-		it.only('should return 429 if too many requests were made', async () => {
+		it('should return 429 if too many requests were made', async () => {
 			for (let i = 1; i <= config.reqLimit.max; i++) {
 				await request(app.getHttpServer())
 					.post('/' + RouteNames.AUTH.REGISTRATION.full)
@@ -397,10 +427,17 @@ describe('ROOT', () => {
 			const password = 'password'
 			const email = 'email@email.ru'
 
-			const createdUserRes = await addUserByAdminRequest(app, { login, password, email })
+			const createdUserRes = await userUtils.createUniqueUser(app, {
+				login,
+				password,
+				email,
+			})
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
-			const loginRes = await loginRequest(app, login, password).expect(HTTP_STATUSES.OK_200)
+			const loginRes = await request(app.getHttpServer())
+				.post('/' + RouteNames.AUTH.LOGIN.full)
+				.send({ loginOrEmail: userLogin, password: userPassword })
+				.expect(HTTP_STATUSES.OK_200)
 
 			const authMeRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.AUTH.ME.full)
@@ -419,7 +456,11 @@ describe('ROOT', () => {
 			const password = 'password'
 			const email = 'email@email.ru'
 
-			const createdUserRes = await addUserByAdminRequest(app, { login, password, email })
+			const createdUserRes = await userUtils.createUniqueUser(app, {
+				login,
+				password,
+				email,
+			})
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const userId = createdUserRes.body.id
 
@@ -455,10 +496,18 @@ describe('ROOT', () => {
 			const password = 'password'
 			const email = 'email@email.ru'
 
-			const createdUserRes = await addUserByAdminRequest(app, { login, password, email })
+			const createdUserRes = await userUtils.createUniqueUser(app, {
+				login,
+				password,
+				email,
+			})
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
-			const loginRes = await loginRequest(app, login, password).expect(HTTP_STATUSES.OK_200)
+			const loginRes = await request(app.getHttpServer())
+				.post('/' + RouteNames.AUTH.LOGIN.full)
+				.send({ loginOrEmail: userLogin, password: userPassword })
+				.expect(HTTP_STATUSES.OK_200)
+
 			const refreshTokenStr = loginRes.headers['set-cookie'][0]
 			const refreshTokenValue = parseCookieStringToObj(refreshTokenStr).cookieValue
 
@@ -471,7 +520,7 @@ describe('ROOT', () => {
 
 	describe('Password recovery', () => {
 		it('should return 400 if the request body has incorrect data', async () => {
-			const createdUserRes = await addUserByAdminRequest(app)
+			const createdUserRes = await userUtils.createUniqueUser(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
 			await request(app.getHttpServer())
@@ -481,7 +530,7 @@ describe('ROOT', () => {
 		})
 
 		it('should return 204 if the request body has correct data', async () => {
-			const createdUserRes = await addUserByAdminRequest(app)
+			const createdUserRes = await userUtils.createUniqueUser(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
 			await request(app.getHttpServer())
@@ -493,7 +542,7 @@ describe('ROOT', () => {
 
 	describe('New password setting', () => {
 		it('should return 400 if the new password is short in request body', async () => {
-			const createdUserRes = await addUserByAdminRequest(app)
+			const createdUserRes = await userUtils.createUniqueUser(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
 			const authPasswordRecoveryRes = await request(app.getHttpServer())
@@ -515,7 +564,7 @@ describe('ROOT', () => {
 		})
 
 		it('should return 400 if the password recovery code is incorrect in request body', async () => {
-			const createdUserRes = await addUserByAdminRequest(app)
+			const createdUserRes = await userUtils.createUniqueUser(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
 			const authPasswordRecoveryRes = await request(app.getHttpServer())
@@ -530,7 +579,7 @@ describe('ROOT', () => {
 		})
 
 		it('should return 204 if the data is correct in request body', async () => {
-			const createdUserRes = await addUserByAdminRequest(app)
+			const createdUserRes = await userUtils.createUniqueUser(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
 			await request(app.getHttpServer())

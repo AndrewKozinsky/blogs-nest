@@ -9,15 +9,14 @@ import { GetBlogsOutModel } from '../src/features/blogs/blogs/model/blogs.output
 import { GetPostsOutModel } from '../src/features/blogs/posts/model/posts.output.model'
 import { createTestApp } from './utils/common'
 import { clearAllDB } from './utils/db'
+import { userUtils } from './utils/userUtils'
 import {
 	addBlogPostRequest,
 	addBlogRequest,
 	addPostRequest,
-	addUserByAdminRequest,
 	adminAuthorizationValue,
 	checkPostObj,
 	createDtoAddBlogPost,
-	loginRequest,
 } from './utils/utils'
 
 it.only('123', async () => {
@@ -308,13 +307,13 @@ describe('ROOT', () => {
 				const password = 'password-' + i
 				const email = `email-${i}@mail.com`
 
-				const createdUserRes = await addUserByAdminRequest(app, {
+				const createdUserRes = await userUtils.createUniqueUser(app, {
 					login,
 					password,
 					email,
 				})
 				expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-				const loginUserRes = await loginRequest(app, email, password)
+				const loginUserRes = await userUtils.loginUser(app, email, password)
 				const token = loginUserRes.body.accessToken
 
 				if (i == 1) {

@@ -1,4 +1,3 @@
-// import dotenv from 'dotenv'
 import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
 import { CreateQuestionDtoModel } from '../../src/features/saQuestions/models/quizQuestions.input.model'
@@ -14,9 +13,6 @@ import {
 	CreatePostDtoModel,
 } from '../../src/features/blogs/posts/model/posts.input.model'
 import { CreateUserDtoModel } from '../../src/features/users/models/users.input.model'
-// import { HTTP_STATUSES } from '../../../src/config/config'
-
-// dotenv.config()
 
 export const adminAuthorizationValue = 'Basic YWRtaW46cXdlcnR5'
 export const userLogin = 'my-login'
@@ -135,30 +131,6 @@ export function checkPostObj(
 	}
 }
 
-export async function addUserByAdminRequest(
-	app: INestApplication,
-	userDto: Partial<CreateUserDtoModel> = {},
-) {
-	// Register user
-	return await request(app.getHttpServer())
-		.post('/' + RouteNames.USERS.value)
-		.send(createDtoAddUser(userDto))
-		.set('Content-Type', 'application/json')
-		.set('Accept', 'application/json')
-		.set('authorization', adminAuthorizationValue)
-}
-
-export function createDtoAddUser(newUserObj: Partial<CreateUserDtoModel> = {}): CreateUserDtoModel {
-	return Object.assign(
-		{
-			login: userLogin,
-			password: userPassword,
-			email: userEmail,
-		},
-		newUserObj,
-	)
-}
-
 export function checkUserObj(userObj: any) {
 	expect(userObj._id).toBe(undefined)
 	expect(typeof userObj.id).toBe('string')
@@ -181,12 +153,6 @@ export function checkUserDeviceObj(userDeviceObj: any) {
 	expect(userDeviceObj.lastActiveDate).toMatch(
 		/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/,
 	)
-}
-
-export function loginRequest(app: INestApplication, loginOrEmail: string, password: string) {
-	return request(app.getHttpServer())
-		.post('/' + RouteNames.AUTH.LOGIN.full)
-		.send({ loginOrEmail, password })
 }
 
 export async function addPostCommentRequest(

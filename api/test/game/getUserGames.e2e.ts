@@ -5,7 +5,8 @@ import { HTTP_STATUSES } from '../../src/settings/config'
 import RouteNames from '../../src/settings/routeNames'
 import { createTestApp } from '../utils/common'
 import { clearAllDB } from '../utils/db'
-import { addUserByAdminRequest, loginRequest, userEmail, userPassword } from '../utils/utils'
+import { userUtils } from '../utils/userUtils'
+import { userEmail, userPassword } from '../utils/utils'
 import { agent as request } from 'supertest'
 import { createGameWithPlayers } from './common'
 
@@ -32,18 +33,11 @@ describe('ROOT', () => {
 		})
 
 		it.only('should return empty array is an user have not games', async () => {
-			const createdFirstUserRes = await addUserByAdminRequest(app, {
-				email: 'user@email.com',
-				login: 'user-login',
-				password: 'user-password',
-			})
-			expect(createdFirstUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserFirstRes = await loginRequest(app, 'user@email.com', 'user-password')
-			const userFirstAccessToken = loginUserFirstRes.body.accessToken
+			const [userAccessToken] = await userUtils.createUniqueUserAndLogin(app)
 
 			await request(app.getHttpServer())
 				.get('/' + RouteNames.PAIR_GAME.PAIRS.MY_GAMES.full)
-				.set('authorization', 'Bearer ' + userFirstAccessToken)
+				.set('authorization', 'Bearer ' + userAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 		})
 
@@ -147,13 +141,13 @@ describe('ROOT', () => {
 			// RUN A NEW GAME
 
 			// Create a third user
-			const createdThirdUserRes = await addUserByAdminRequest(app, {
+			const createdThirdUserRes = await userUtils.addUserByAdminReq(app, {
 				email: 'email-3@email.com',
 				login: 'login-3',
 				password: 'password-3',
 			})
 			expect(createdThirdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserFirstRes = await loginRequest(app, 'email-3@email.com', 'password-3')
+			const loginUserFirstRes = await userUtils.loginReq(app, 'email-3@email.com', 'password-3')
 			const userThirdAccessToken = loginUserFirstRes.body.accessToken
 
 			// Get the game by first user

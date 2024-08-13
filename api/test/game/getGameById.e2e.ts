@@ -1,20 +1,13 @@
 import { INestApplication } from '@nestjs/common'
-import { DBTypes } from '../../src/db/mongo/dbTypes'
 import { GameStatus } from '../../src/db/pg/entities/game/game'
-import { gameConfig } from '../../src/features/pairGame/config'
 import { HTTP_STATUSES } from '../../src/settings/config'
 import RouteNames from '../../src/settings/routeNames'
 import { createTestApp } from '../utils/common'
 import { clearAllDB } from '../utils/db'
-import {
-	addQuestionRequest,
-	addUserByAdminRequest,
-	loginRequest,
-	userEmail,
-	userPassword,
-} from '../utils/utils'
+import { userUtils } from '../utils/userUtils'
+import { userEmail, userPassword } from '../utils/utils'
 import { agent as request } from 'supertest'
-import { checkGameObj, createGameQuestions, createGameWithPlayers } from './common'
+import { checkGameObj, createGameWithPlayers } from './common'
 
 it.only('123', async () => {
 	expect(2).toBe(2)
@@ -42,10 +35,7 @@ describe('ROOT', () => {
 			const [userFirstAccessToken, userSecondAccessToken, game] =
 				await createGameWithPlayers(app)
 
-			const createdUserRes = await addUserByAdminRequest(app)
-			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserRes = await loginRequest(app, userEmail, userPassword)
-			const userAccessToken = loginUserRes.body.accessToken
+			const [userAccessToken] = await userUtils.createUniqueUserAndLogin(app)
 
 			await request(app.getHttpServer())
 				.get('/' + RouteNames.PAIR_GAME.PAIRS.GAME_ID(game.id).full)
@@ -54,10 +44,7 @@ describe('ROOT', () => {
 		})
 
 		it('should return 400 if game not exists', async () => {
-			const createdUserRes = await addUserByAdminRequest(app)
-			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserRes = await loginRequest(app, userEmail, userPassword)
-			const userAccessToken = loginUserRes.body.accessToken
+			const [userAccessToken] = await userUtils.createUniqueUserAndLogin(app)
 
 			const connectToGameRes = await request(app.getHttpServer())
 				.post('/' + RouteNames.PAIR_GAME.PAIRS.CONNECTION.full)
@@ -71,10 +58,7 @@ describe('ROOT', () => {
 		})
 
 		it('only one player has joined to the game', async () => {
-			const createdUserRes = await addUserByAdminRequest(app)
-			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserRes = await loginRequest(app, userEmail, userPassword)
-			const userAccessToken = loginUserRes.body.accessToken
+			const [userAccessToken] = await userUtils.createUniqueUserAndLogin(app)
 
 			const connectToGameRes = await request(app.getHttpServer())
 				.post('/' + RouteNames.PAIR_GAME.PAIRS.CONNECTION.full)

@@ -5,7 +5,8 @@ import { agent as request } from 'supertest'
 import { GetUsersOutModel } from '../src/features/users/models/users.output.model'
 import { createTestApp } from './utils/common'
 import { clearAllDB } from './utils/db'
-import { addUserByAdminRequest, adminAuthorizationValue, checkUserObj } from './utils/utils'
+import { userUtils } from './utils/userUtils'
+import { adminAuthorizationValue, checkUserObj } from './utils/utils'
 
 it.only('123', () => {
 	expect(2).toBe(2)
@@ -45,8 +46,8 @@ describe('ROOT', () => {
 		})
 
 		it('should return an object with property items contains array with 2 items after creating 2 users', async () => {
-			await addUserByAdminRequest(app)
-			await addUserByAdminRequest(app, {
+			await userUtils.createUniqueUser(app)
+			await userUtils.createUniqueUser(app, {
 				login: 'my-login-2',
 				email: 'mail-2@email.com',
 				password: 'password-2',
@@ -68,33 +69,33 @@ describe('ROOT', () => {
 		})
 
 		it('should return an array of objects matching the queries scheme', async () => {
-			await addUserByAdminRequest(app)
-			await addUserByAdminRequest(app, {
+			await userUtils.createUniqueUser(app)
+			await userUtils.createUniqueUser(app, {
 				login: 'my-login-2',
 				email: 'mail-2@email.com',
 				password: 'password-2',
 			})
-			await addUserByAdminRequest(app, {
+			await userUtils.createUniqueUser(app, {
 				login: 'my-login3',
 				email: 'mail-3@email.com',
 				password: 'password-4',
 			})
-			await addUserByAdminRequest(app, {
+			await userUtils.createUniqueUser(app, {
 				login: 'my-login-4',
 				email: 'mail-4@email.com',
 				password: 'password-4',
 			})
-			await addUserByAdminRequest(app, {
+			await userUtils.createUniqueUser(app, {
 				login: 'my-login-5',
 				email: 'mail-5@email.com',
 				password: 'password-5',
 			})
-			await addUserByAdminRequest(app, {
+			await userUtils.createUniqueUser(app, {
 				login: 'my-login-6',
 				email: 'mail-6@email.com',
 				password: 'password-6',
 			})
-			await addUserByAdminRequest(app, {
+			await userUtils.createUniqueUser(app, {
 				login: 'my-login-7',
 				email: 'mail-7@email.com',
 				password: 'password-7',
@@ -111,16 +112,46 @@ describe('ROOT', () => {
 		})
 
 		it('should return filtered an array of objects', async () => {
-			await addUserByAdminRequest(app, { login: 'in-one-1', email: 'email-1@email.com' }) // +
-			await addUserByAdminRequest(app, { login: 'in-two-1', email: 'email-2@email.com' }) // +
-			await addUserByAdminRequest(app, { login: 'in-one-1', email: 'email-3@email.com' }) // +
-			await addUserByAdminRequest(app, { login: 'in-two-1', email: 'email-4@email.com' }) // +
-			await addUserByAdminRequest(app, { login: 'in-one-1', email: 'email-5@email.jp' }) // +
-			await addUserByAdminRequest(app, { login: 'in-three-1', email: 'email-6@email.us' })
-			await addUserByAdminRequest(app, { login: 'in-one-1', email: 'email-7@email.ru' }) // +
-			await addUserByAdminRequest(app, { login: 'in-one-2', email: 'email-8@email.com' }) // +
-			await addUserByAdminRequest(app, { login: 'in-one-3', email: 'email-9@email.com' }) // +
-			await addUserByAdminRequest(app, { login: 'in-one-4', email: 'email-10@email.com' }) // +
+			await userUtils.createUniqueUser(app, {
+				login: 'in-one-1',
+				email: 'email-1@email.com',
+			}) // +
+			await userUtils.createUniqueUser(app, {
+				login: 'in-two-1',
+				email: 'email-2@email.com',
+			}) // +
+			await userUtils.createUniqueUser(app, {
+				login: 'in-one-1',
+				email: 'email-3@email.com',
+			}) // +
+			await userUtils.createUniqueUser(app, {
+				login: 'in-two-1',
+				email: 'email-4@email.com',
+			}) // +
+			await userUtils.createUniqueUser(app, {
+				login: 'in-one-1',
+				email: 'email-5@email.jp',
+			}) // +
+			await userUtils.createUniqueUser(app, {
+				login: 'in-three-1',
+				email: 'email-6@email.us',
+			})
+			await userUtils.createUniqueUser(app, {
+				login: 'in-one-1',
+				email: 'email-7@email.ru',
+			}) // +
+			await userUtils.createUniqueUser(app, {
+				login: 'in-one-2',
+				email: 'email-8@email.com',
+			}) // +
+			await userUtils.createUniqueUser(app, {
+				login: 'in-one-3',
+				email: 'email-9@email.com',
+			}) // +
+			await userUtils.createUniqueUser(app, {
+				login: 'in-one-4',
+				email: 'email-10@email.com',
+			}) // +
 
 			const getUsersRes = await request(app.getHttpServer())
 				.get(
@@ -143,9 +174,18 @@ describe('ROOT', () => {
 		})
 
 		it('should return filtered an array of objects sorted by login', async () => {
-			await addUserByAdminRequest(app, { login: 'login_1', email: 'email-1@email.com' })
-			await addUserByAdminRequest(app, { login: 'Login_2', email: 'email-2@email.com' })
-			await addUserByAdminRequest(app, { login: 'login_3', email: 'email-3@email.com' })
+			await userUtils.createUniqueUser(app, {
+				login: 'login_1',
+				email: 'email-1@email.com',
+			})
+			await userUtils.createUniqueUser(app, {
+				login: 'Login_2',
+				email: 'email-2@email.com',
+			})
+			await userUtils.createUniqueUser(app, {
+				login: 'login_3',
+				email: 'email-3@email.com',
+			})
 
 			const getUsersRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.USERS.value + '?sortDirection=asc&sortBy=login')
@@ -173,7 +213,7 @@ describe('ROOT', () => {
 		})
 
 		it('should not create an user by wrong dto', async () => {
-			const createdUserRes = await addUserByAdminRequest(app, { login: 'lo' })
+			const createdUserRes = await userUtils.createUniqueUser(app, { login: 'lo' })
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.BAD_REQUEST_400)
 
 			expect({}.toString.call(createdUserRes.body.errorsMessages)).toBe('[object Array]')
@@ -182,13 +222,13 @@ describe('ROOT', () => {
 		})
 
 		it('should create an user by correct dto', async () => {
-			const createdUserRes = await addUserByAdminRequest(app)
+			const createdUserRes = await userUtils.createUniqueUser(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
 			checkUserObj(createdUserRes.body)
 
 			// Check if there are 2 users after adding another one
-			const createdUser2Res = await addUserByAdminRequest(app, {
+			const createdUser2Res = await userUtils.createUniqueUser(app, {
 				login: 'my-login-2',
 				email: 'mail-2@email.com',
 				password: 'password-2',
@@ -217,7 +257,7 @@ describe('ROOT', () => {
 		})
 
 		it('should delete an user', async () => {
-			const createdUserRes = await addUserByAdminRequest(app)
+			const createdUserRes = await userUtils.createUniqueUser(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const createdUserId = createdUserRes.body.id
 

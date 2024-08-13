@@ -1,6 +1,5 @@
 import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
-import { describe } from 'node:test'
 import { CreatePostDtoModel } from '../src/features/blogs/posts/model/posts.input.model'
 import { GetPostsOutModel } from '../src/features/blogs/posts/model/posts.output.model'
 import { HTTP_STATUSES } from '../src/settings/config'
@@ -9,16 +8,15 @@ import { DBTypes } from '../src/db/mongo/dbTypes'
 import { GetPostCommentsOutModel } from '../src/features/blogs/comments/model/comments.output.model'
 import { createTestApp } from './utils/common'
 import { clearAllDB } from './utils/db'
+import { userUtils } from './utils/userUtils'
 import {
 	addBlogPostRequest,
 	addBlogRequest,
 	addPostCommentRequest,
 	addPostRequest,
-	addUserByAdminRequest,
 	adminAuthorizationValue,
 	checkCommentObj,
 	checkPostObj,
-	loginRequest,
 	setPostLikeStatus,
 	userEmail,
 	userPassword,
@@ -74,13 +72,11 @@ describe('ROOT', () => {
 			const postId = createdPostRes.body.id
 
 			// User on whose behalf comments will be created
-			const createdUserRes = await addUserByAdminRequest(app)
-			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserRes = await loginRequest(app, userEmail, userPassword)
-			const userToken = loginUserRes.body.accessToken
+			const [userAccessToken, userId, userLogin] =
+				await userUtils.createUniqueUserAndLogin(app)
 
-			await addPostCommentRequest(app, userToken, postId)
-			await addPostCommentRequest(app, userToken, postId)
+			await addPostCommentRequest(app, userAccessToken, postId)
+			await addPostCommentRequest(app, userAccessToken, postId)
 
 			const getPostCommentsRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.POSTS.POST_ID(postId).COMMENTS.full())
@@ -96,16 +92,16 @@ describe('ROOT', () => {
 
 			checkCommentObj(
 				getPostCommentsRes.body.items[0],
-				createdUserRes.body.id,
-				createdUserRes.body.login,
+				userId,
+				userLogin,
 				0,
 				0,
 				DBTypes.LikeStatuses.None,
 			)
 			checkCommentObj(
 				getPostCommentsRes.body.items[1],
-				createdUserRes.body.id,
-				createdUserRes.body.login,
+				userId,
+				userLogin,
 				0,
 				0,
 				DBTypes.LikeStatuses.None,
@@ -123,19 +119,15 @@ describe('ROOT', () => {
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 			const postId = createdPostRes.body.id
 
-			// User on whose behalf comments will be created
-			const createdUserRes = await addUserByAdminRequest(app)
-			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserRes = await loginRequest(app, userEmail, userPassword)
-			const userToken = loginUserRes.body.accessToken
+			const [userAccessToken] = await userUtils.createUniqueUserAndLogin(app)
 
-			await addPostCommentRequest(app, userToken, postId)
-			await addPostCommentRequest(app, userToken, postId)
-			await addPostCommentRequest(app, userToken, postId)
-			await addPostCommentRequest(app, userToken, postId)
-			await addPostCommentRequest(app, userToken, postId)
-			await addPostCommentRequest(app, userToken, postId)
-			await addPostCommentRequest(app, userToken, postId)
+			await addPostCommentRequest(app, userAccessToken, postId)
+			await addPostCommentRequest(app, userAccessToken, postId)
+			await addPostCommentRequest(app, userAccessToken, postId)
+			await addPostCommentRequest(app, userAccessToken, postId)
+			await addPostCommentRequest(app, userAccessToken, postId)
+			await addPostCommentRequest(app, userAccessToken, postId)
+			await addPostCommentRequest(app, userAccessToken, postId)
 
 			const getPostCommentsRes = await request(app.getHttpServer())
 				.get(
@@ -178,32 +170,22 @@ describe('ROOT', () => {
 			let user4Id = ''
 
 			for (let i = 1; i <= 4; i++) {
-				const login = 'login-' + i
-				const password = 'password-' + i
-				const email = `email-${i}@mail.com`
-
-				const createdUserRes = await addUserByAdminRequest(app, {
-					login,
-					password,
-					email,
-				})
-				expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-				const loginUserRes = await loginRequest(app, email, password)
-				const token = loginUserRes.body.accessToken
+				const [userAccessToken, userId, userLogin] =
+					await userUtils.createUniqueUserAndLogin(app)
 
 				if (i == 1) {
-					user1Token = token
-					user1Id = createdUserRes.body.id
-					user1Login = createdUserRes.body.login
+					user1Token = userAccessToken
+					user1Id = userId
+					user1Login = userLogin
 				} else if (i == 2) {
-					user2Token = token
-					user2Id = createdUserRes.body.id
+					user2Token = userAccessToken
+					user2Id = userId
 				} else if (i == 3) {
-					user3Token = token
-					user3Id = createdUserRes.body.id
+					user3Token = userAccessToken
+					user3Id = userId
 				} else if (i == 4) {
-					user4Token = token
-					user4Id = createdUserRes.body.id
+					user4Token = userAccessToken
+					user4Id = userId
 				}
 			}
 
@@ -345,12 +327,9 @@ describe('ROOT', () => {
 			const postId = createdPostRes.body.id
 
 			// User on whose behalf comments will be created
-			const createdUserRes = await addUserByAdminRequest(app)
-			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserRes = await loginRequest(app, userEmail, userPassword)
-			const userToken = loginUserRes.body.accessToken
+			const [userAccessToken] = await userUtils.createUniqueUserAndLogin(app)
 
-			const createdCommentOneRes = await addPostCommentRequest(app, userToken, postId, {
+			const createdCommentOneRes = await addPostCommentRequest(app, userAccessToken, postId, {
 				content: 'WRONG',
 			})
 
@@ -374,26 +353,24 @@ describe('ROOT', () => {
 			const postId = createdPostRes.body.id
 
 			// User on whose behalf comments will be created
-			const createdUserRes = await addUserByAdminRequest(app)
-			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserRes = await loginRequest(app, userEmail, userPassword)
-			const userToken = loginUserRes.body.accessToken
+			const [userAccessToken, userId, userLogin] =
+				await userUtils.createUniqueUserAndLogin(app)
 
-			const createdCommentOneRes = await addPostCommentRequest(app, userToken, postId, {
+			const createdCommentOneRes = await addPostCommentRequest(app, userAccessToken, postId, {
 				content: 'Content min 20 characters',
 			})
 
 			checkCommentObj(
 				createdCommentOneRes.body,
-				createdUserRes.body.id,
-				createdUserRes.body.login,
+				userId,
+				userLogin,
 				0,
 				0,
 				DBTypes.LikeStatuses.None,
 			)
 
 			// Check if there are 2 posts after adding another one
-			const createdCommentTwoRes = await addPostCommentRequest(app, userToken, postId, {
+			const createdCommentTwoRes = await addPostCommentRequest(app, userAccessToken, postId, {
 				content: 'Content min 22 characters',
 			})
 			expect(createdCommentTwoRes.status).toBe(HTTP_STATUSES.CREATED_201)
@@ -523,28 +500,17 @@ describe('ROOT', () => {
 			let user4Token = ''
 
 			for (let i = 0; i <= 4; i++) {
-				const counter = i + 1
-				const login = 'login-' + counter
-				const password = 'password-' + counter
-				const email = `email-${counter}@mail.com`
-
-				const createdUserRes = await addUserByAdminRequest(app, {
-					login,
-					password,
-					email,
-				})
-				expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-				const loginUserRes = await loginRequest(app, email, password)
-				const token = loginUserRes.body.accessToken
+				const [userAccessToken, userId, userLogin] =
+					await userUtils.createUniqueUserAndLogin(app)
 
 				if (i == 0) {
-					user1Token = token
+					user1Token = userAccessToken
 				} else if (i == 1) {
-					user2Token = token
+					user2Token = userAccessToken
 				} else if (i == 2) {
-					user3Token = token
+					user3Token = userAccessToken
 				} else if (i == 3) {
-					user4Token = token
+					user4Token = userAccessToken
 				}
 			}
 
@@ -757,14 +723,12 @@ describe('ROOT', () => {
 
 		it('should return 404 if a post does not exists', async () => {
 			// User will create a post
-			const createdUserRes = await addUserByAdminRequest(app)
-			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserRes = await loginRequest(app, userEmail, userPassword)
-			const userToken = loginUserRes.body.accessToken
+			const [userAccessToken, userId, userLogin] =
+				await userUtils.createUniqueUserAndLogin(app)
 
 			await request(app.getHttpServer())
 				.put('/' + RouteNames.POSTS.POST_ID('999').LIKE_STATUS.full)
-				.set('authorization', 'Bearer ' + userToken)
+				.set('authorization', 'Bearer ' + userAccessToken)
 				.send(JSON.stringify({ likeStatus: 'None' }))
 				.set('Content-Type', 'application/json')
 				.set('Accept', 'application/json')
@@ -773,14 +737,12 @@ describe('ROOT', () => {
 
 		it('should return 400 if request body does not exist', async () => {
 			// User will create a comment
-			const createdUserRes = await addUserByAdminRequest(app)
-			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserRes = await loginRequest(app, userEmail, userPassword)
-			const userToken = loginUserRes.body.accessToken
+			const [userAccessToken, userId, userLogin] =
+				await userUtils.createUniqueUserAndLogin(app)
 
 			await request(app.getHttpServer())
 				.put('/' + RouteNames.POSTS.POST_ID('999').LIKE_STATUS.full)
-				.set('authorization', 'Bearer ' + userToken)
+				.set('authorization', 'Bearer ' + userAccessToken)
 				.expect(HTTP_STATUSES.BAD_REQUEST_400)
 		})
 
@@ -796,9 +758,9 @@ describe('ROOT', () => {
 			const postId = createdPostRes.body.id
 
 			// Create a user on behalf of which requests will be made
-			const createdUserRes = await addUserByAdminRequest(app)
+			const createdUserRes = await userUtils.createUniqueUser(app)
 			expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-			const loginUserRes = await loginRequest(app, userEmail, userPassword)
+			const loginUserRes = await userUtils.loginUser(app, userEmail, userPassword)
 			const userToken = loginUserRes.body.accessToken
 
 			// Set a like status to the post
@@ -849,32 +811,22 @@ describe('ROOT', () => {
 			let user4Id = ''
 
 			for (let i = 1; i <= 4; i++) {
-				const login = 'login-' + i
-				const password = 'password-' + i
-				const email = `email-${i}@mail.com`
-
-				const createdUserRes = await addUserByAdminRequest(app, {
-					login,
-					password,
-					email,
-				})
-				expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-				const loginUserRes = await loginRequest(app, email, password)
-				const token = loginUserRes.body.accessToken
+				const [userAccessToken, userId, userLogin] =
+					await userUtils.createUniqueUserAndLogin(app)
 
 				if (i == 1) {
-					user1Token = token
-					user1Id = createdUserRes.body.id
-					user1Login = createdUserRes.body.login
+					user1Token = userAccessToken
+					user1Id = userId
+					user1Login = userLogin
 				} else if (i == 2) {
-					user2Token = token
-					user2Id = createdUserRes.body.id
+					user2Token = userAccessToken
+					user2Id = userId
 				} else if (i == 3) {
-					user3Token = token
-					user3Id = createdUserRes.body.id
+					user3Token = userAccessToken
+					user3Id = userId
 				} else if (i == 4) {
-					user4Token = token
-					user4Id = createdUserRes.body.id
+					user4Token = userAccessToken
+					user4Id = userId
 				}
 			}
 
@@ -947,27 +899,17 @@ describe('ROOT', () => {
 			let user4Token = ''
 
 			for (let i = 1; i <= 4; i++) {
-				const login = 'login-' + i
-				const password = 'password-' + i
-				const email = `email-${i}@mail.com`
-
-				const createdUserRes = await addUserByAdminRequest(app, {
-					login,
-					password,
-					email,
-				})
-				expect(createdUserRes.status).toBe(HTTP_STATUSES.CREATED_201)
-				const loginUserRes = await loginRequest(app, email, password)
-				const token = loginUserRes.body.accessToken
+				const [userAccessToken, userId, userLogin] =
+					await userUtils.createUniqueUserAndLogin(app)
 
 				if (i == 1) {
-					user1Token = token
+					user1Token = userAccessToken
 				} else if (i == 2) {
-					user2Token = token
+					user2Token = userAccessToken
 				} else if (i == 3) {
-					user3Token = token
+					user3Token = userAccessToken
 				} else if (i == 4) {
-					user4Token = token
+					user4Token = userAccessToken
 				}
 			}
 

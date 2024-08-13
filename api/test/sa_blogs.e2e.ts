@@ -1,7 +1,6 @@
 import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
 import { describe } from 'node:test'
-import { CreatePostDtoModel } from '../src/features/blogs/posts/model/posts.input.model'
 import { UpdateBlogPostDtoModel } from '../src/features/blogs/saBlogs/model/blogs.input.model'
 import { HTTP_STATUSES } from '../src/settings/config'
 import RouteNames from '../src/settings/routeNames'
