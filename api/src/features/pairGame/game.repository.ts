@@ -13,16 +13,31 @@ import { GameServiceModel } from './models/game.service.model'
 export class GameRepository {
 	constructor(@InjectDataSource() private dataSource: DataSource) {}
 
+	async getUserGames(userId: string): Promise<LayerResult<GameServiceModel.Main[]>> {
+		const getGamesRes = await this.getGamesByOptions({
+			where: this.getWhereConditionWhereGameHasUserWithId(userId),
+		})
+
+		if (getGamesRes.code !== LayerSuccessCode.Success) {
+			return getGamesRes
+		}
+
+		return {
+			code: LayerSuccessCode.Success,
+			data: getGamesRes.data,
+		}
+	}
+
 	async getPendingGames(): Promise<LayerResult<null | GameServiceModel.Main[]>> {
-		return this.getGamesWhere({ status: GameStatus.Pending })
+		return this.getGamesByOptions({ where: { status: GameStatus.Pending } })
 	}
 
 	async getUnfinishedGames(): Promise<LayerResult<null | GameServiceModel.Main[]>> {
-		return this.getGamesWhere({ status: Not(GameStatus.Finished) })
+		return this.getGamesByOptions({ where: { status: Not(GameStatus.Finished) } })
 	}
 
 	async getPendingGame(): Promise<LayerResult<null | GameServiceModel.Main>> {
-		const getGamesRes = await this.getGamesWhere({ status: GameStatus.Pending })
+		const getGamesRes = await this.getGamesByOptions({ where: { status: GameStatus.Pending } })
 
 		if (getGamesRes.code !== LayerSuccessCode.Success || !getGamesRes.data.length) {
 			return {
@@ -38,7 +53,7 @@ export class GameRepository {
 	}
 
 	async getGameById(gameId: string): Promise<LayerResult<null | GameServiceModel.Main>> {
-		const getGamesRes = await this.getGamesWhere({ id: gameId })
+		const getGamesRes = await this.getGamesByOptions({ where: { id: gameId } })
 
 		if (getGamesRes.code !== LayerSuccessCode.Success || !getGamesRes.data.length) {
 			return {
@@ -54,10 +69,9 @@ export class GameRepository {
 	}
 
 	async getGameByPlayerId(playerId: string): Promise<LayerResult<null | GameServiceModel.Main>> {
-		const getGamesRes = await this.getGamesWhere([
-			{ firstPlayerId: playerId },
-			{ secondPlayerId: playerId },
-		])
+		const getGamesRes = await this.getGamesByOptions({
+			where: [{ firstPlayerId: playerId }, { secondPlayerId: playerId }],
+		})
 
 		if (getGamesRes.code !== LayerSuccessCode.Success || !getGamesRes.data.length) {
 			return {
@@ -75,24 +89,9 @@ export class GameRepository {
 	async getUnfinishedGameByUserId(
 		userId: string,
 	): Promise<LayerResult<null | GameServiceModel.Main>> {
-		const getGamesRes = await this.getGamesWhere([
-			{
-				firstPlayer: {
-					user: {
-						id: userId,
-					},
-				},
-				status: Not(GameStatus.Finished),
-			},
-			{
-				secondPlayer: {
-					user: {
-						id: userId,
-					},
-				},
-				status: Not(GameStatus.Finished),
-			},
-		])
+		const getGamesRes = await this.getGamesByOptions({
+			where: this.getWhereConditionWhereUnfinishedGameHasUserWithId(userId),
+		})
 
 		if (getGamesRes.code !== LayerSuccessCode.Success || !getGamesRes.data.length) {
 			return {
@@ -107,11 +106,11 @@ export class GameRepository {
 		}
 	}
 
-	private async getGamesWhere(
-		whereCondition: FindOptionsWhere<Game> | FindOptionsWhere<Game>[] | undefined,
-	): Promise<LayerResult<GameServiceModel.Main[]>> {
+	private async getGamesByOptions(options: {
+		where: FindOptionsWhere<Game> | FindOptionsWhere<Game>[] | undefined
+	}): Promise<LayerResult<GameServiceModel.Main[]>> {
 		const getGameRes = await this.dataSource.getRepository(Game).find({
-			where: whereCondition,
+			where: options.where,
 			relations: {
 				firstPlayer: {
 					user: true,
@@ -145,6 +144,50 @@ export class GameRepository {
 				return a.createdAt < b.createdAt ? -1 : 1
 			})
 		}
+	}
+
+	private getWhereConditionWhereGameHasUserWithId(
+		userId: string,
+	): FindOptionsWhere<Game> | FindOptionsWhere<Game>[] {
+		return [
+			{
+				firstPlayer: {
+					user: {
+						id: userId,
+					},
+				},
+			},
+			{
+				secondPlayer: {
+					user: {
+						id: userId,
+					},
+				},
+			},
+		]
+	}
+
+	private getWhereConditionWhereUnfinishedGameHasUserWithId(
+		userId: string,
+	): FindOptionsWhere<Game> | FindOptionsWhere<Game>[] {
+		return [
+			{
+				firstPlayer: {
+					user: {
+						id: userId,
+					},
+				},
+				status: Not(GameStatus.Finished),
+			},
+			{
+				secondPlayer: {
+					user: {
+						id: userId,
+					},
+				},
+				status: Not(GameStatus.Finished),
+			},
+		]
 	}
 
 	async createGame(firstPlayerId: string): Promise<LayerResult<string>> {

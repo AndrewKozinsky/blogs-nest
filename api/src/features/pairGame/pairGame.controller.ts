@@ -44,6 +44,7 @@ export class PairGameController {
 
 	// Connect current user to existing random pending pair or create new pair which will be waiting second player
 	@UseGuards(CheckAccessTokenGuard)
+	// @Post(RouteNames.PAIR_GAME.PAIRS.value + '/connection')
 	@Post(RouteNames.PAIR_GAME.PAIRS.value + '/' + RouteNames.PAIR_GAME.PAIRS.CONNECTION.value)
 	@HttpCode(HttpStatus.OK)
 	async connectToGame(@Req() req: Request) {
@@ -78,8 +79,6 @@ export class PairGameController {
 			throw new BadRequestException()
 		}
 
-		//  Добавлена история (список завешенных и текущих) игр текущего пользователя.
-		//  Особенности сортировки списка: если по первому критерию (например status) одинаковые значения - сортируем по pairCreatedDate desc;
 		return getMyGamesStatus.data
 	}
 
@@ -92,7 +91,11 @@ export class PairGameController {
 
 		const getMyStatisticStatus = await this.getMyStatisticUseCase.execute(req.user.id)
 
-		return null
+		if (getMyStatisticStatus.code !== LayerSuccessCode.Success) {
+			throw new BadRequestException()
+		}
+
+		return getMyStatisticStatus.data
 	}
 
 	// Send an answer for the next not answered question in an active pair

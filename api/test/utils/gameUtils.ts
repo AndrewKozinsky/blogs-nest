@@ -1,6 +1,5 @@
 import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
-import { gameConfig } from '../../src/features/pairGame/config'
 import { HTTP_STATUSES } from '../../src/settings/config'
 import RouteNames from '../../src/settings/routeNames'
 import { questionUtils } from './questionUtils'
@@ -58,51 +57,42 @@ export const gameUtils = {
 			.set('authorization', 'Bearer ' + secondUserAccessToken)
 			.expect(HTTP_STATUSES.OK_200)
 	},
-	async createGameAndFinish(
+	async createGameAndGaveAnswers(
 		app: INestApplication,
-		firstUserAccessToken: string,
-		secondUserAccessToken: string,
+		config: {
+			firstPlayer: {
+				accessToken: string
+				correctAnswers: number
+				wrongAnswers: number
+			}
+			secondPlayer: {
+				accessToken: string
+				correctAnswers: number
+				wrongAnswers: number
+			}
+		},
 	) {
 		await questionUtils.createGameQuestions(app, 10)
 
-		await this.usersConnectToGame(app, firstUserAccessToken, secondUserAccessToken)
+		const { firstPlayer, secondPlayer } = config
+		await this.usersConnectToGame(app, firstPlayer.accessToken, secondPlayer.accessToken)
 
-		for (let i = 0; i < gameConfig.questionsNumber; i++) {
-			await this.giveCorrectAnswer(app, firstUserAccessToken)
-			await this.giveCorrectAnswer(app, secondUserAccessToken)
+		// Give correct answers by first player
+		for (let i = 0; i < firstPlayer.correctAnswers; i++) {
+			await this.giveCorrectAnswer(app, firstPlayer.accessToken)
 		}
-	},
-	async createGameAndEveryPlayerFinishGiveWithTwoCorrectAnswers(
-		app: INestApplication,
-		firstUserAccessToken: string,
-		secondUserAccessToken: string,
-	) {
-		await questionUtils.createGameQuestions(app, 10)
-
-		await this.usersConnectToGame(app, firstUserAccessToken, secondUserAccessToken)
-
-		for (let i = 0; i < 2; i++) {
-			await this.giveCorrectAnswer(app, firstUserAccessToken)
-			await this.giveCorrectAnswer(app, secondUserAccessToken)
+		// Give wrong answers by first player
+		for (let i = 0; i < firstPlayer.wrongAnswers; i++) {
+			await this.giveWrongAnswer(app, firstPlayer.accessToken)
 		}
 
-		for (let i = 0; i < gameConfig.questionsNumber - 2; i++) {
-			await this.giveWrongAnswer(app, firstUserAccessToken)
-			await this.giveWrongAnswer(app, secondUserAccessToken)
+		// Give correct answers by second player
+		for (let i = 0; i < secondPlayer.correctAnswers; i++) {
+			await this.giveCorrectAnswer(app, secondPlayer.accessToken)
 		}
-	},
-	async createGameAndGiveTwoAnswers(
-		app: INestApplication,
-		firstUserAccessToken: string,
-		secondUserAccessToken: string,
-	) {
-		await questionUtils.createGameQuestions(app, 10)
-
-		await this.usersConnectToGame(app, firstUserAccessToken, secondUserAccessToken)
-
-		for (let i = 0; i < 2; i++) {
-			await this.giveCorrectAnswer(app, firstUserAccessToken)
-			await this.giveCorrectAnswer(app, secondUserAccessToken)
+		// Give wrong answers by second player
+		for (let i = 0; i < secondPlayer.wrongAnswers; i++) {
+			await this.giveWrongAnswer(app, secondPlayer.accessToken)
 		}
 	},
 }

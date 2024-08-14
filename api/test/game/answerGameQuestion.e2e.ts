@@ -50,11 +50,7 @@ describe('ROOT', () => {
 			}
 
 			// Try to answer one more time to check for Unauthorized status
-			await request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
-				.send({ answer: 'My wrong answer' })
-				.set('authorization', 'Bearer ' + userSecondAccessToken)
-				.expect(HTTP_STATUSES.FORBIDDEN_403)
+			await gameUtils.giveCorrectAnswer(app, userSecondAccessToken)
 		})
 
 		it('first and second players gave a few answers', async () => {
@@ -62,11 +58,7 @@ describe('ROOT', () => {
 				await gameUtils.createGameWithPlayers(app)
 
 			// First player gave correct answer
-			const answer1Req = request(app.getHttpServer())
-				.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
-				.send({ answer: 'Answer 1' })
-				.set('authorization', 'Bearer ' + userFirstAccessToken)
-				.expect(HTTP_STATUSES.OK_200)
+			const answer1Req = await gameUtils.giveCorrectAnswer(app, userFirstAccessToken)
 
 			// Second player gave incorrect answer
 			const answer2Req = await gameUtils.giveWrongAnswer(app, userSecondAccessToken)
@@ -153,11 +145,7 @@ describe('ROOT', () => {
 			await gameUtils.giveCorrectAnswer(app, userSecondAccessToken)
 
 			// Get the game
-			const getGameRes = await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.PAIRS.GAME_ID(game.id).full)
-				.send({ answer: 'Answer 1' })
-				.set('authorization', 'Bearer ' + userSecondAccessToken)
-				.expect(HTTP_STATUSES.OK_200)
+			const getGameRes = await gameUtils.giveWrongAnswer(app, userSecondAccessToken)
 
 			// Check user 1 has score 2 and user 2 has score 5
 			const updatedGame = getGameRes.body

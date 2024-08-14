@@ -39,7 +39,7 @@ export namespace GameServiceModel {
 		}
 	}
 
-	type Answer = {
+	export type Answer = {
 		questionId: string
 		answerStatus: GameAnswerStatus
 		addedAt: string // '2024-07-28T07:45:51.040Z'

@@ -1,6 +1,5 @@
 import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
-import { describe } from 'node:test'
 import { CreateQuestionDtoModel } from '../../src/features/saQuestions/models/questions.input.model'
 import { GetQuestionsOutModel } from '../../src/features/saQuestions/models/questions.output.model'
 import { HTTP_STATUSES } from '../../src/settings/config'

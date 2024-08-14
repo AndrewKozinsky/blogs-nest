@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common'
 import { GameStatus } from '../../src/db/pg/entities/game/game'
+import { gameConfig } from '../../src/features/pairGame/config'
 import { HTTP_STATUSES } from '../../src/settings/config'
 import RouteNames from '../../src/settings/routeNames'
 import { createTestApp } from '../utils/common'
@@ -49,10 +50,32 @@ describe('ROOT', () => {
 			const [firstAccessToken, firstUserId] = await userUtils.createUniqueUserAndLogin(app)
 			const [secondAccessToken, secondUserId] = await userUtils.createUniqueUserAndLogin(app)
 
-			await gameUtils.createGameAndFinish(app, firstAccessToken, secondAccessToken)
-			await gameUtils.createGameAndFinish(app, firstAccessToken, secondAccessToken)
-			await gameUtils.createGameAndFinish(app, firstAccessToken, secondAccessToken)
-			await gameUtils.createGameAndGiveTwoAnswers(app, firstAccessToken, secondAccessToken)
+			for (let i = 0; i < 3; i++) {
+				await gameUtils.createGameAndGaveAnswers(app, {
+					firstPlayer: {
+						accessToken: firstAccessToken,
+						correctAnswers: gameConfig.questionsNumber,
+						wrongAnswers: 0,
+					},
+					secondPlayer: {
+						accessToken: secondAccessToken,
+						correctAnswers: gameConfig.questionsNumber,
+						wrongAnswers: 0,
+					},
+				})
+			}
+			await gameUtils.createGameAndGaveAnswers(app, {
+				firstPlayer: {
+					accessToken: firstAccessToken,
+					correctAnswers: 2,
+					wrongAnswers: 0,
+				},
+				secondPlayer: {
+					accessToken: secondAccessToken,
+					correctAnswers: 2,
+					wrongAnswers: 0,
+				},
+			})
 
 			const getUserGamesRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.PAIR_GAME.PAIRS.MY_GAMES.full)
@@ -71,20 +94,33 @@ describe('ROOT', () => {
 				await userUtils.createUniqueUserAndLogin(app)
 			const [userSecondAccessToken, secondUserId] =
 				await userUtils.createUniqueUserAndLogin(app)
-			const [userThirdAccessToken, thirdUserId] =
-				await userUtils.createUniqueUserAndLogin(app)
-			const [userFourthAccessToken, fourthUserId] =
-				await userUtils.createUniqueUserAndLogin(app)
 
-			await gameUtils.createGameAndFinish(app, userFirstAccessToken, userSecondAccessToken)
-			await gameUtils.createGameAndFinish(app, userThirdAccessToken, userFourthAccessToken)
-			await gameUtils.createGameAndFinish(app, userFirstAccessToken, userSecondAccessToken)
-			await gameUtils.createGameAndFinish(app, userThirdAccessToken, userFourthAccessToken)
-			await gameUtils.createGameAndGiveTwoAnswers(
-				app,
-				userFirstAccessToken,
-				userSecondAccessToken,
-			)
+			for (let i = 0; i < 4; i++) {
+				await gameUtils.createGameAndGaveAnswers(app, {
+					firstPlayer: {
+						accessToken: userFirstAccessToken,
+						correctAnswers: gameConfig.questionsNumber,
+						wrongAnswers: 0,
+					},
+					secondPlayer: {
+						accessToken: userSecondAccessToken,
+						correctAnswers: gameConfig.questionsNumber,
+						wrongAnswers: 0,
+					},
+				})
+			}
+			await gameUtils.createGameAndGaveAnswers(app, {
+				firstPlayer: {
+					accessToken: userFirstAccessToken,
+					correctAnswers: 2,
+					wrongAnswers: 0,
+				},
+				secondPlayer: {
+					accessToken: userSecondAccessToken,
+					correctAnswers: 2,
+					wrongAnswers: 0,
+				},
+			})
 
 			const getUserGamesRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.PAIR_GAME.PAIRS.MY_GAMES.full)
@@ -105,11 +141,18 @@ describe('ROOT', () => {
 				await userUtils.createUniqueUserAndLogin(app)
 
 			for (let i = 0; i < 10; i++) {
-				await gameUtils.createGameAndFinish(
-					app,
-					userFirstAccessToken,
-					userSecondAccessToken,
-				)
+				await gameUtils.createGameAndGaveAnswers(app, {
+					firstPlayer: {
+						accessToken: userFirstAccessToken,
+						correctAnswers: gameConfig.questionsNumber,
+						wrongAnswers: 0,
+					},
+					secondPlayer: {
+						accessToken: userSecondAccessToken,
+						correctAnswers: gameConfig.questionsNumber,
+						wrongAnswers: 0,
+					},
+				})
 			}
 
 			const getUserGamesRes = await request(app.getHttpServer())
@@ -131,11 +174,18 @@ describe('ROOT', () => {
 				await userUtils.createUniqueUserAndLogin(app)
 
 			for (let i = 0; i < 10; i++) {
-				await gameUtils.createGameAndFinish(
-					app,
-					userFirstAccessToken,
-					userSecondAccessToken,
-				)
+				await gameUtils.createGameAndGaveAnswers(app, {
+					firstPlayer: {
+						accessToken: userFirstAccessToken,
+						correctAnswers: gameConfig.questionsNumber,
+						wrongAnswers: 0,
+					},
+					secondPlayer: {
+						accessToken: userSecondAccessToken,
+						correctAnswers: gameConfig.questionsNumber,
+						wrongAnswers: 0,
+					},
+				})
 			}
 
 			const getUserGamesRes = await request(app.getHttpServer())
@@ -161,18 +211,32 @@ describe('ROOT', () => {
 				await userUtils.createUniqueUserAndLogin(app)
 
 			for (let i = 0; i < 3; i++) {
-				await gameUtils.createGameAndFinish(
-					app,
-					userFirstAccessToken,
-					userSecondAccessToken,
-				)
+				await gameUtils.createGameAndGaveAnswers(app, {
+					firstPlayer: {
+						accessToken: userFirstAccessToken,
+						correctAnswers: gameConfig.questionsNumber,
+						wrongAnswers: 0,
+					},
+					secondPlayer: {
+						accessToken: userSecondAccessToken,
+						correctAnswers: gameConfig.questionsNumber,
+						wrongAnswers: 0,
+					},
+				})
 			}
 
-			await gameUtils.createGameAndGiveTwoAnswers(
-				app,
-				userFirstAccessToken,
-				userSecondAccessToken,
-			)
+			await gameUtils.createGameAndGaveAnswers(app, {
+				firstPlayer: {
+					accessToken: userFirstAccessToken,
+					correctAnswers: 2,
+					wrongAnswers: 0,
+				},
+				secondPlayer: {
+					accessToken: userSecondAccessToken,
+					correctAnswers: 2,
+					wrongAnswers: 0,
+				},
+			})
 
 			const getUserGamesRes = await request(app.getHttpServer())
 				.get(
@@ -183,7 +247,7 @@ describe('ROOT', () => {
 				.set('authorization', 'Bearer ' + userFirstAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
-			// Check that the first game has status Active, and last have status Finished
+			// Check that the first game has status Active, and remaining games have status Finished
 			for (let i = 0; i < getUserGamesRes.body.items.length; i++) {
 				const thisGame = getUserGamesRes.body.items[i]
 
