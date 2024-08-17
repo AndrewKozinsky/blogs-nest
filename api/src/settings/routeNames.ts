@@ -179,6 +179,10 @@ export const RouteNames = {
 				value: 'my-statistic',
 				full: 'pair-game-quiz/users/my-statistic',
 			},
+			TOP: {
+				value: 'top',
+				full: 'pair-game-quiz/users/top',
+			},
 		},
 	},
 }

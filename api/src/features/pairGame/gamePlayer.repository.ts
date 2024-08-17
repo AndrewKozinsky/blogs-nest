@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource, FindOptionsWhere } from 'typeorm'
-import { GameAnswerStatus } from '../../db/pg/entities/game/gameAnswer'
 import { GamePlayer } from '../../db/pg/entities/game/gamePlayer'
 import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../types/resultCodes'
-import { gameConfig } from './config'
+import { truncateFloatNumber } from '../../utils/numbers'
 import { GameRepository } from './game.repository'
+import { GetTopStatisticQueries } from './models/game.input.model'
+import { TopStatisticsOutModel } from './models/game.output.model'
 import { GamePlayerServiceModel, GameServiceModel } from './models/game.service.model'
 
 @Injectable()
@@ -30,7 +31,7 @@ export class GamePlayerRepository {
 
 	async increaseScore(playerId: string): Promise<LayerResult<true>> {
 		const getPlayerRes = await this.getPlayerById(playerId)
-		if (getPlayerRes.code !== LayerSuccessCode.Success) {
+		if (getPlayerRes.code !== LayerSuccessCode.Success || !getPlayerRes.data) {
 			return {
 				code: LayerErrorCode.NotFound_404,
 			}
@@ -38,15 +39,39 @@ export class GamePlayerRepository {
 
 		const player = getPlayerRes.data
 
-		if (!player) {
+		const updatePlayerRes = await this.dataSource
+			.getRepository(GamePlayer)
+			.update(player.id, { score: player.score + 1 })
+
+		if (updatePlayerRes.affected !== 1) {
 			return {
 				code: LayerErrorCode.BadRequest_400,
 			}
 		}
 
+		return {
+			code: LayerSuccessCode.Success,
+			data: true,
+		}
+	}
+
+	async updateColumn(
+		playerId: string,
+		column: 'isPlayerWinning' | 'isPlayerLossing' | 'isPlayerDrawing',
+		columnValue: boolean,
+	): Promise<LayerResult<true>> {
+		const getPlayerRes = await this.getPlayerById(playerId)
+		if (getPlayerRes.code !== LayerSuccessCode.Success || !getPlayerRes.data) {
+			return {
+				code: LayerErrorCode.NotFound_404,
+			}
+		}
+
+		const player = getPlayerRes.data
+
 		const updatePlayerRes = await this.dataSource
 			.getRepository(GamePlayer)
-			.update(player.id, { score: player.score + 1 })
+			.update(player.id, { [column]: columnValue })
 
 		if (updatePlayerRes.affected !== 1) {
 			return {
@@ -164,85 +189,82 @@ export class GamePlayerRepository {
 		}
 	}
 
-	async addExtraPointForPlayerWhichFinishedFirst(gameId: string): Promise<LayerResult<null>> {
-		const getGameRes = await this.gameRepository.getGameById(gameId)
-		if (getGameRes.code !== LayerSuccessCode.Success || !getGameRes.data) {
-			return {
-				code: LayerErrorCode.BadRequest_400,
+	async getTopStatistics(
+		query: GetTopStatisticQueries,
+	): Promise<LayerResult<TopStatisticsOutModel>> {
+		const totalPlayersQuery = 'SELECT COUNT(*) as "totalPlayers" FROM game_player'
+		const totalPlayersRes = await this.dataSource.query(totalPlayersQuery)
+		const totalPlayersCount = +totalPlayersRes[0].totalPlayers
+
+		const pageNumber = query.pageNumber ? +query.pageNumber : 1
+		const pageSize = query.pageSize ? +query.pageSize : 10
+		const pagesCount = Math.ceil(totalPlayersCount / pageSize)
+
+		// console.log(query.sort)
+		const sortRawArr: string[] = []
+		if (query.sort) {
+			if (typeof query.sort === 'string') {
+				sortRawArr.push(query.sort)
+			} else {
+				sortRawArr.push(...query.sort)
 			}
 		}
+		sortRawArr.push('avgScores desc', 'sumScore desc')
+		const sortRawSet = new Set(sortRawArr)
 
-		const { firstPlayer, secondPlayer } = getGameRes.data
-
-		const firstPlayerFinished = firstPlayer.answers.length === gameConfig.questionsNumber
-		const secondPlayerFinished =
-			secondPlayer && secondPlayer.answers.length === gameConfig.questionsNumber
-
-		if (!firstPlayerFinished || !secondPlayerFinished) {
-			return {
-				code: LayerSuccessCode.Success,
-				data: null,
-			}
-		}
-
-		const firstPlayerLastAnswerDate =
-			firstPlayer.answers[gameConfig.questionsNumber - 1].addedAt
-		const secondPlayerLastAnswerDate =
-			secondPlayer.answers[gameConfig.questionsNumber - 1].addedAt
-
-		// If first player gave at least 1 right answer and finished first
-		if (
-			getPlayerRightAnswersLength(firstPlayer) > 0 &&
-			firstPlayerLastAnswerDate < secondPlayerLastAnswerDate
-		) {
-			await this.addExtraPointToPlayer(firstPlayer.id)
-		}
-
-		// If second player gave at least 1 right answer and finished first
-		if (
-			getPlayerRightAnswersLength(secondPlayer) > 0 &&
-			secondPlayerLastAnswerDate < firstPlayerLastAnswerDate
-		) {
-			await this.addExtraPointToPlayer(secondPlayer.id)
-		}
-
-		return {
-			code: LayerSuccessCode.Success,
-			data: null,
-		}
-
-		function getPlayerRightAnswersLength(player: null | GameServiceModel.Player): number {
-			if (!player) return 0
-
-			return player.answers.filter((answer) => {
-				return answer.answerStatus === GameAnswerStatus.Correct
-			}).length
-		}
-	}
-
-	async addExtraPointToPlayer(playerId: string): Promise<LayerResult<null>> {
-		const getPlayersRes = await this.getPlayersWhere({ id: playerId })
-		if (getPlayersRes.code !== LayerSuccessCode.Success || !getPlayersRes.data.length) {
-			return {
-				code: LayerErrorCode.NotFound_404,
-			}
-		}
-
-		const player = getPlayersRes.data[0]
-
-		const updatePlayerRes = await this.dataSource.getRepository(GamePlayer).update(playerId, {
-			score: player.score + 1,
+		// ['avgScores desc', 'sumScore desc'] -> ['"avgScores" DESC', '"sumScore" DESC']
+		const preparedSortArr = Array.from(sortRawSet).map((sortByAndDirectionStr) => {
+			const [sortBy, sortDirection] = sortByAndDirectionStr.split(' ')
+			return `"${sortBy}" ${sortDirection.toUpperCase()}`
 		})
 
-		if (updatePlayerRes.affected !== 1) {
-			return {
-				code: LayerErrorCode.BadRequest_400,
-			}
-		}
+		const topStatisticsOnPageQuery = `
+			SELECT
+			"userId",
+			(SELECT SUM(score) FROM game_player WHERE game_player."userId" = gp."userId") as "sumScore",
+			(
+				(SELECT SUM(score) FROM game_player WHERE game_player."userId" = gp."userId") / (SELECT COUNT("userId") FROM game_player WHERE game_player."userId" = gp."userId")
+			) as "avgScores",
+			(SELECT COUNT("userId") FROM game_player WHERE game_player."userId" = gp."userId") as "gamesCount",
+			(SELECT COUNT("isPlayerWinning") FROM game_player WHERE game_player."userId" = gp."userId" AND game_player."isPlayerWinning" = true) as "winsCount",
+			(SELECT COUNT("isPlayerLossing") FROM game_player WHERE game_player."userId" = gp."userId" AND game_player."isPlayerLossing" = true) as "lossesCount",
+			(SELECT COUNT("isPlayerDrawing") FROM game_player WHERE game_player."userId" = gp."userId" AND game_player."isPlayerDrawing" = true) as "drawsCount",
+			(SELECT "login" FROM public."user" u WHERE u.id = gp."userId") as login
+			FROM game_player gp
+			GROUP BY "userId"
+			ORDER BY ${preparedSortArr.join(', ')}
+			LIMIT ${pageSize}
+			OFFSET ${(pageNumber - 1) * pageSize}
+		`
+
+		const statisticsRes: any[] = await this.dataSource.query(topStatisticsOnPageQuery)
+		console.log(statisticsRes)
+		statisticsRes.forEach((stats) => {
+			stats.avgScores = truncateFloatNumber(+stats.avgScores, 2)
+		})
 
 		return {
 			code: LayerSuccessCode.Success,
-			data: null,
+			data: {
+				pagesCount,
+				page: pageNumber,
+				pageSize,
+				totalCount: totalPlayersCount,
+				items: statisticsRes.map((stats) => {
+					return {
+						sumScore: +stats.sumScore,
+						avgScores: stats.avgScores,
+						gamesCount: +stats.gamesCount,
+						winsCount: +stats.winsCount,
+						lossesCount: +stats.lossesCount,
+						drawsCount: +stats.drawsCount,
+						player: {
+							id: stats.userId.toString(),
+							login: stats.login,
+						},
+					}
+				}),
+			},
 		}
 	}
 

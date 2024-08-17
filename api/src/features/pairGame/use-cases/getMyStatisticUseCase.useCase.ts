@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { GameStatus } from '../../../db/pg/entities/game/game'
 import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../../types/resultCodes'
-import { cropDecimalFromFloatNumber } from '../../../utils/numbers'
+import { truncateFloatNumber } from '../../../utils/numbers'
 import { GameRepository } from '../game.repository'
+import { Statistic } from '../models/game.output.model'
 import { GameServiceModel } from '../models/game.service.model'
 
 @Injectable()
@@ -63,7 +64,7 @@ export class GetMyStatisticUseCase {
 		})
 
 		// Средний балл на игру. Округляем до 2-х знаков после запятой (например 2.43, 5.55, но не 2.00, а 2).
-		avgScores = cropDecimalFromFloatNumber(sumScore / gamesCount, 2)
+		avgScores = truncateFloatNumber(sumScore / gamesCount, 2)
 
 		return {
 			sumScore,
@@ -85,19 +86,4 @@ export class GetMyStatisticUseCase {
 			? game.secondPlayer!
 			: game.firstPlayer
 	}
-}
-
-type Statistic = {
-	// Сумма всех набранных баллов
-	sumScore: number
-	// Средний балл на игру. Округляем до 2-х знаков после запятой (например 2.43, 5.55, но не 2.00, а 2).
-	avgScores: number
-	// Количество игр у этого пользователя
-	gamesCount: number
-	// Количество игр, где пользователь победил
-	winsCount: number
-	// Количество игр, где пользователь проиграл
-	lossesCount: number
-	// Количество игр, где ничья
-	drawsCount: number
 }

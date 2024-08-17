@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource, FindOptionsWhere, Not } from 'typeorm'
 import { Game, GameStatus } from '../../db/pg/entities/game/game'
-import { GameAnswer } from '../../db/pg/entities/game/gameAnswer'
+import { GameAnswer, GameAnswerStatus } from '../../db/pg/entities/game/gameAnswer'
 import { GamePlayer } from '../../db/pg/entities/game/gamePlayer'
 import { GameQuestion } from '../../db/pg/entities/game/gameQuestion'
 import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../types/resultCodes'
@@ -217,12 +217,11 @@ export class GameRepository {
 		}
 	}
 
-	async finishGameIfNeed(gameId: string): Promise<LayerResult<null>> {
+	async isPlayersGaveAllAnswersInActiveGame(gameId: string): Promise<LayerResult<boolean>> {
 		const getGameRes = await this.getGameById(gameId)
 		if (getGameRes.code !== LayerSuccessCode.Success || !getGameRes.data) {
 			return {
-				code: LayerSuccessCode.Success,
-				data: null,
+				code: LayerErrorCode.NotFound_404,
 			}
 		}
 
@@ -232,15 +231,68 @@ export class GameRepository {
 			getGameRes.data.secondPlayer &&
 			getGameRes.data.secondPlayer.answers.length === gameConfig.questionsNumber
 
-		if (firstPlayerFinished && secondPlayerFinished) {
-			await this.dataSource
-				.getRepository(Game)
-				.update(gameId, { finishGameDate: new Date(), status: GameStatus.Finished })
+		const isGameFinished = firstPlayerFinished && !!secondPlayerFinished
+
+		return {
+			code: LayerSuccessCode.Success,
+			data: isGameFinished,
 		}
+	}
+
+	async finishGame(gameId: string): Promise<LayerResult<null>> {
+		const getGameRes = await this.getGameById(gameId)
+		if (getGameRes.code !== LayerSuccessCode.Success || !getGameRes.data) {
+			return {
+				code: LayerSuccessCode.Success,
+				data: null,
+			}
+		}
+
+		await this.dataSource
+			.getRepository(Game)
+			.update(gameId, { finishGameDate: new Date(), status: GameStatus.Finished })
 
 		return {
 			code: LayerSuccessCode.Success,
 			data: null,
+		}
+	}
+
+	// Returns fastest userId or null if
+	async getPlayerIdWhichFinishedFirst(gameId: string) {
+		const getGameRes = await this.getGameById(gameId)
+		if (getGameRes.code !== LayerSuccessCode.Success || !getGameRes.data) {
+			return {
+				code: LayerErrorCode.BadRequest_400,
+			}
+		}
+
+		const { firstPlayer, secondPlayer } = getGameRes.data
+
+		const firstPlayerLastAnswer = firstPlayer.answers[firstPlayer.answers.length - 1]
+		const secondPlayerLastAnswer = secondPlayer!.answers[secondPlayer!.answers.length - 1]
+
+		let fastestUserId: null | string = null
+
+		if (firstPlayerLastAnswer.addedAt < secondPlayerLastAnswer.addedAt) {
+			const correctAnswers = firstPlayer.answers.filter(
+				(answer) => answer.answerStatus === GameAnswerStatus.Correct,
+			)
+			if (correctAnswers.length) {
+				fastestUserId = firstPlayer.id
+			}
+		} else if (secondPlayerLastAnswer.addedAt < firstPlayerLastAnswer.addedAt) {
+			const correctAnswers = secondPlayer!.answers.filter(
+				(answer) => answer.answerStatus === GameAnswerStatus.Correct,
+			)
+			if (correctAnswers.length) {
+				fastestUserId = secondPlayer!.id
+			}
+		}
+
+		return {
+			code: LayerSuccessCode.Success,
+			data: fastestUserId,
 		}
 	}
 

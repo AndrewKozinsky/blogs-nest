@@ -18,4 +18,16 @@ export class GamePlayer {
 
 	@OneToMany(() => GameAnswer, (gameAnswer) => gameAnswer.player)
 	answers: GameAnswer[]
+
+	// Выигрывает ли сейчас игрок (требуется для статистики)?
+	@Column({ type: 'boolean', default: false })
+	isPlayerWinning: boolean
+
+	// Проигрывает ли сейчас игрок (требуется для статистики)?
+	@Column({ type: 'boolean', default: false })
+	isPlayerLossing: boolean
+
+	// Ничья ли сейчас с соперником (требуется для статистики)?
+	@Column({ type: 'boolean', default: false })
+	isPlayerDrawing: boolean
 }

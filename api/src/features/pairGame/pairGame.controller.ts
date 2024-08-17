@@ -23,6 +23,8 @@ import {
 	AnswerGameQuestionDtoModel,
 	GetMyGamesQueries,
 	GetMyGamesQueriesPipe,
+	GetTopStatisticQueries,
+	GetTopStatisticQueriesPipe,
 } from './models/game.input.model'
 import { AnswerGameQuestionUseCase } from './use-cases/answerGameQuestion.useCase'
 import { ConnectToGameUseCase } from './use-cases/connectToGame.useCase'
@@ -30,6 +32,7 @@ import { GetCurrentUserGameUseCase } from './use-cases/getCurrentUserGame.useCas
 import { GetGameUseCase } from './use-cases/getGame.useCase'
 import { GetMyGamesUseCase } from './use-cases/getMyGames.useCase'
 import { GetMyStatisticUseCase } from './use-cases/getMyStatisticUseCase.useCase'
+import { GetTopStatisticUseCase } from './use-cases/getTopStatisticUseCase.useCase'
 
 @Controller(RouteNames.PAIR_GAME.value)
 export class PairGameController {
@@ -40,11 +43,11 @@ export class PairGameController {
 		private getCurrentUserGameUseCase: GetCurrentUserGameUseCase,
 		private getMyStatisticUseCase: GetMyStatisticUseCase,
 		private getMyGamesUseCase: GetMyGamesUseCase,
+		private getTopStatisticUseCase: GetTopStatisticUseCase,
 	) {}
 
 	// Connect current user to existing random pending pair or create new pair which will be waiting second player
 	@UseGuards(CheckAccessTokenGuard)
-	// @Post(RouteNames.PAIR_GAME.PAIRS.value + '/connection')
 	@Post(RouteNames.PAIR_GAME.PAIRS.value + '/' + RouteNames.PAIR_GAME.PAIRS.CONNECTION.value)
 	@HttpCode(HttpStatus.OK)
 	async connectToGame(@Req() req: Request) {
@@ -96,6 +99,19 @@ export class PairGameController {
 		}
 
 		return getMyStatisticStatus.data
+	}
+
+	// Get current user statistic
+	@Get(RouteNames.PAIR_GAME.USERS.value + '/' + RouteNames.PAIR_GAME.USERS.TOP.value)
+	@HttpCode(HttpStatus.OK)
+	async getTopStatistic(@Query(new GetTopStatisticQueriesPipe()) query: GetTopStatisticQueries) {
+		const getTopStatisticStatus = await this.getTopStatisticUseCase.execute(query)
+
+		if (getTopStatisticStatus.code !== LayerSuccessCode.Success) {
+			throw new BadRequestException()
+		}
+
+		return getTopStatisticStatus.data
 	}
 
 	// Send an answer for the next not answered question in an active pair

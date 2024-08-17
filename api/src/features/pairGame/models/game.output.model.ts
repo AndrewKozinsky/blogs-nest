@@ -1,6 +1,5 @@
 import { GameAnswerStatus } from '../../../db/pg/entities/game/gameAnswer'
 import { GameStatus } from '../../../db/pg/entities/game/game'
-import { BlogOutModel } from '../../blogs/blogs/model/blogs.output.model'
 
 export type GamesOutModel = {
 	// Общее количество страниц
@@ -62,7 +61,37 @@ export type GameAnswerOutModel = {
 	addedAt: string
 }
 
-export type GamePlayerOutModel = {
-	id: string
-	login: string
+export type TopStatisticsOutModel = {
+	// Общее количество страниц
+	pagesCount: number
+	// Номер текущей страницы
+	page: number
+	// Сколько игр на странице
+	pageSize: number
+	// Общее количество игр
+	totalCount: number
+	// Игры на указанной странице
+	items: StatisticWithPlayer[]
+}
+
+export type Statistic = {
+	// Сумма всех набранных баллов
+	sumScore: number
+	// Средний балл на игру. Округляем до 2-х знаков после запятой (например 2.43, 5.55, но не 2.00, а 2).
+	avgScores: number
+	// Количество игр у этого пользователя
+	gamesCount: number
+	// Количество игр, где пользователь победил
+	winsCount: number
+	// Количество игр, где пользователь проиграл
+	lossesCount: number
+	// Количество игр, где ничья
+	drawsCount: number
+}
+
+export type StatisticWithPlayer = Statistic & {
+	player: {
+		id: string
+		login: string
+	}
 }

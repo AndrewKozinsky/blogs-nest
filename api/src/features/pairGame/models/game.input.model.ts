@@ -14,24 +14,20 @@ export class AnswerGameQuestionDtoModel {
 export class GetMyGamesQueries {
 	@IsOptional()
 	@IsString({ message: 'SortBy must be a string' })
-	// Default value : pairCreatedDate
 	sortBy?: string
 
 	@IsOptional()
 	@IsIn(['desc', 'asc'])
-	// Default value: desc. Available values : asc, desc
 	sortDirection?: 'desc' | 'asc'
 
 	@IsOptional()
 	@Type(() => Number)
 	@IsNumber()
-	// pageNumber is number of portions that should be returned. Default value : 1
 	pageNumber?: number
 
 	@IsOptional()
 	@Type(() => Number)
 	@IsNumber()
-	// pageSize is portions size that should be returned. Default value : 10
 	pageSize?: number
 }
 
@@ -43,5 +39,37 @@ export class GetMyGamesQueriesPipe implements PipeTransform {
 		}
 
 		return plainToInstance(metatype, dto)
+	}
+}
+
+export class GetTopStatisticQueries {
+	// Query параметр sort - это строка вида
+	// ?sort=avgScores desc&sort=sumScore desc&sort=winsCount desc&sort=lossesCount asc.
+	// После преобразования на стороне back-end поле sort из query будет иметь вид:
+	// sort: ["avgScores desc", "sumScore desc", "winsCount desc", "lossesCount asc"]
+	@IsOptional()
+	sort?: string[]
+
+	@IsOptional()
+	@Type(() => Number)
+	@IsNumber()
+	pageNumber?: number
+
+	@IsOptional()
+	@Type(() => Number)
+	@IsNumber()
+	pageSize?: number
+}
+
+@Injectable()
+export class GetTopStatisticQueriesPipe implements PipeTransform {
+	async transform(queries: GetBlogsQueries, { metatype }: ArgumentMetadata) {
+		// Sort property will be like
+		// '?sort=avgScores desc&sort=sumScore desc'
+		if (!metatype) {
+			return queries
+		}
+
+		return plainToInstance(metatype, queries)
 	}
 }

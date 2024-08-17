@@ -57,8 +57,8 @@ describe('ROOT', () => {
 			expect(getBlogsRes.body.totalCount).toBe(2)
 			expect(getBlogsRes.body.items.length).toBe(2)
 
-			checkBlogObj(getBlogsRes.body.items[0])
-			checkBlogObj(getBlogsRes.body.items[1])
+			blogUtils.checkBlogObj(getBlogsRes.body.items[0])
+			blogUtils.checkBlogObj(getBlogsRes.body.items[1])
 		})
 
 		it('should return an object with properties with specific values after creating 5 blogs', async () => {
@@ -104,7 +104,7 @@ describe('ROOT', () => {
 			const createdBlogRes = await blogUtils.addBlogRequest(app)
 			expect(createdBlogRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
-			checkBlogObj(createdBlogRes.body)
+			blogUtils.checkBlogObj(createdBlogRes.body)
 
 			// Check if there are 2 blogs after adding another one
 			const createdSecondBlogRes = await blogUtils.addBlogRequest(app)
@@ -130,7 +130,7 @@ describe('ROOT', () => {
 				'/' + RouteNames.BLOGS.BLOG_ID(createdBlogId).full,
 			)
 			expect(getBlogRes.status).toBe(HTTP_STATUSES.OK_200)
-			checkBlogObj(getBlogRes.body)
+			blogUtils.checkBlogObj(getBlogRes.body)
 		})
 	})
 
@@ -518,15 +518,3 @@ describe('ROOT', () => {
 		})
 	})
 })
-
-function checkBlogObj(blogObj: any) {
-	expect(typeof blogObj._id).toBe('undefined')
-	expect(typeof blogObj.id).toBe('string')
-	expect(typeof blogObj.name).toBe('string')
-	expect(typeof blogObj.description).toBe('string')
-	expect(blogObj.createdAt).toMatch(
-		/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/,
-	)
-	expect(typeof blogObj.websiteUrl).toBe('string')
-	expect(blogObj.isMembership).toBe(false)
-}

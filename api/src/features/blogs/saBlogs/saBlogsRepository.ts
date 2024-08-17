@@ -23,22 +23,6 @@ export class SaBlogsRepository {
 		return this.mapDbBlogToServiceBlog(blogsRes[0])
 	}
 
-	// DELETE !!!
-	/*async createBlog(dto: CreateBlogDtoModel) {
-		// Current data like '2024-05-19T14:36:40.112Z'
-		const createdAt = new Date().toISOString()
-
-		// Insert new blog and to get an array like this: [ { id: 10 } ]
-		const newBlogsIdRes = await this.dataSource.query(
-			`INSERT INTO blogs
-			("name", "description", "websiteurl", "createdat", "ismembership")
-			VALUES($1, $2, $3, $4, $5) RETURNING id`,
-			[dto.name, dto.description, dto.websiteUrl, createdAt, '0'],
-		)
-
-		return newBlogsIdRes[0].id
-	}*/
-
 	mapDbBlogToServiceBlog(DbBlog: PGGetBlogQuery): BlogServiceModel {
 		return {
 			id: DbBlog.id.toString(),

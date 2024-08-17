@@ -95,6 +95,16 @@ export const gameUtils = {
 			await this.giveWrongAnswer(app, secondPlayer.accessToken)
 		}
 	},
+	checkTopStatisticUserItem(statsObj: any) {
+		expect(typeof statsObj.sumScore).toBe('number')
+		expect(typeof statsObj.avgScores).toBe('number')
+		expect(typeof statsObj.gamesCount).toBe('number')
+		expect(typeof statsObj.winsCount).toBe('number')
+		expect(typeof statsObj.lossesCount).toBe('number')
+		expect(typeof statsObj.drawsCount).toBe('number')
+		expect(typeof statsObj.player.id).toBe('string')
+		expect(typeof statsObj.player.login).toBe('string')
+	},
 }
 
 export const checkGameUtils = {

@@ -48,9 +48,9 @@ export class BlogsController {
 
 	// Returns blogs with paging
 	@Get()
-	async getBlogs(@Query(new GetBlogsQueriesPipe()) query: GetBlogsQueries, @Res() res: Response) {
-		const blogs = await this.blogsQueryRepository.getBlogs(query)
-		res.status(HttpStatus.OK).send(blogs)
+	@HttpCode(HttpStatus.OK)
+	async getBlogs(@Query(new GetBlogsQueriesPipe()) query: GetBlogsQueries) {
+		return await this.blogsQueryRepository.getBlogs(query)
 	}
 
 	// Create new blog

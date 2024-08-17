@@ -27,7 +27,7 @@ export function extractNumFromStr(str: string): number {
  * @param num
  * @param decimalCount
  */
-export function cropDecimalFromFloatNumber(num: number, decimalCount: number): number {
+export function truncateFloatNumber(num: number, decimalCount: number): number {
 	try {
 		// 6.2569 -> '6.26'
 		// 6.2 -> '6.20'

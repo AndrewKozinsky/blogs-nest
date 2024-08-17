@@ -19,6 +19,7 @@ import { GetCurrentUserGameUseCase } from './use-cases/getCurrentUserGame.useCas
 import { GetGameUseCase } from './use-cases/getGame.useCase'
 import { GetMyGamesUseCase } from './use-cases/getMyGames.useCase'
 import { GetMyStatisticUseCase } from './use-cases/getMyStatisticUseCase.useCase'
+import { GetTopStatisticUseCase } from './use-cases/getTopStatisticUseCase.useCase'
 
 const useCases = [
 	ConnectToGameUseCase,
@@ -27,6 +28,7 @@ const useCases = [
 	GetCurrentUserGameUseCase,
 	GetMyStatisticUseCase,
 	GetMyGamesUseCase,
+	GetTopStatisticUseCase,
 ]
 
 @Module({
