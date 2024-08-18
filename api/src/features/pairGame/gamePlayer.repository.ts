@@ -192,9 +192,10 @@ export class GamePlayerRepository {
 	async getTopStatistics(
 		query: GetTopStatisticQueries,
 	): Promise<LayerResult<TopStatisticsOutModel>> {
-		const totalPlayersQuery = 'SELECT COUNT(*) as "totalPlayers" FROM game_player'
+		const totalPlayersQuery =
+			'SELECT COUNT(*) as "totalPlayers" FROM game_player GROUP BY "userId"'
 		const totalPlayersRes = await this.dataSource.query(totalPlayersQuery)
-		const totalPlayersCount = +totalPlayersRes[0].totalPlayers
+		const totalPlayersCount = +totalPlayersRes.length
 
 		const pageNumber = query.pageNumber ? +query.pageNumber : 1
 		const pageSize = query.pageSize ? +query.pageSize : 10
@@ -223,7 +224,9 @@ export class GamePlayerRepository {
 			"userId",
 			(SELECT SUM(score) FROM game_player WHERE game_player."userId" = gp."userId") as "sumScore",
 			(
-				(SELECT SUM(score) FROM game_player WHERE game_player."userId" = gp."userId") / (SELECT COUNT("userId") FROM game_player WHERE game_player."userId" = gp."userId")
+				(SELECT CAST(SUM(score) AS DECIMAL) FROM game_player WHERE game_player."userId" = gp."userId")
+				/
+				(SELECT CAST(COUNT("userId") AS DECIMAL) FROM game_player WHERE game_player."userId" = gp."userId")
 			) as "avgScores",
 			(SELECT COUNT("userId") FROM game_player WHERE game_player."userId" = gp."userId") as "gamesCount",
 			(SELECT COUNT("isPlayerWinning") FROM game_player WHERE game_player."userId" = gp."userId" AND game_player."isPlayerWinning" = true) as "winsCount",
@@ -238,10 +241,10 @@ export class GamePlayerRepository {
 		`
 
 		const statisticsRes: any[] = await this.dataSource.query(topStatisticsOnPageQuery)
-		console.log(statisticsRes)
 		statisticsRes.forEach((stats) => {
 			stats.avgScores = truncateFloatNumber(+stats.avgScores, 2)
 		})
+		// console.log(statisticsRes)
 
 		return {
 			code: LayerSuccessCode.Success,

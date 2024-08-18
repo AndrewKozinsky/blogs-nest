@@ -42,11 +42,11 @@ describe('ROOT', () => {
 			expect(getStatisticsRes.body).toEqual(successAnswer)
 		})
 
-		it.only('should return 4 games', async () => {
+		it('should return 4 games', async () => {
 			const [firstAccessToken, firstUserId] = await userUtils.createUniqueUserAndLogin(app)
 			const [secondAccessToken, secondUserId] = await userUtils.createUniqueUserAndLogin(app)
 
-			// The first user give 5 correct answers, but his rival give 0
+			// The first user gives 5 correct answers, but his rival gives 0
 			await gameUtils.createGameAndGaveAnswers(app, {
 				firstPlayer: {
 					accessToken: firstAccessToken,
@@ -141,93 +141,133 @@ describe('ROOT', () => {
 					expect(userStats.sumScore).toBe(12)
 					expect(userStats.avgScores).toBe(3)
 					expect(userStats.gamesCount).toBe(4)
-					// expect(userStats.winsCount).toBe(0)
-					// expect(userStats.lossesCount).toBe(0)
-					// expect(userStats.drawsCount).toBe(0)
+					expect(userStats.winsCount).toBe(2)
+					expect(userStats.lossesCount).toBe(1)
+					expect(userStats.drawsCount).toBe(1)
 				} else if (i === 1) {
 					expect(userStats.sumScore).toBe(10)
 					expect(userStats.avgScores).toBe(2.5)
 					expect(userStats.gamesCount).toBe(4)
-					// expect(userStats.winsCount).toBe(0)
-					// expect(userStats.lossesCount).toBe(0)
-					// expect(userStats.drawsCount).toBe(0)
+					expect(userStats.winsCount).toBe(1)
+					expect(userStats.lossesCount).toBe(2)
+					expect(userStats.drawsCount).toBe(1)
 				} else if (i === 2) {
 					expect(userStats.sumScore).toBe(6)
 					expect(userStats.avgScores).toBe(6)
 					expect(userStats.gamesCount).toBe(1)
-					// expect(userStats.winsCount).toBe(0)
-					// expect(userStats.lossesCount).toBe(0)
+					expect(userStats.winsCount).toBe(1)
+					expect(userStats.lossesCount).toBe(0)
 					// expect(userStats.drawsCount).toBe(0)
 				} else if (i === 3) {
 					expect(userStats.sumScore).toBe(0)
 					expect(userStats.avgScores).toBe(0)
 					expect(userStats.gamesCount).toBe(1)
-					// expect(userStats.winsCount).toBe(0)
-					// expect(userStats.lossesCount).toBe(0)
-					// expect(userStats.drawsCount).toBe(0)
+					expect(userStats.winsCount).toBe(0)
+					expect(userStats.lossesCount).toBe(1)
+					expect(userStats.drawsCount).toBe(0)
 				}
 			}
-
-			// console.log(JSON.stringify(getStatisticsRes.body))
 		})
 
-		/*it('should return full statistics of user`s games', async () => {
-			const getUserStatisticsRes = await request(app.getHttpServer())
-				.get('/' + RouteNames.PAIR_GAME.USERS.TOP.full)
-				.set('authorization', 'Bearer ' + firstAccessToken)
+		it('should return statiscist with paginating', async () => {
+			for (let i = 0; i < 4; i++) {
+				const [firstAccessToken, firstUserId] =
+					await userUtils.createUniqueUserAndLogin(app)
+				const [secondAccessToken, secondUserId] =
+					await userUtils.createUniqueUserAndLogin(app)
+
+				// The first user gives 2 correct answers, but his rival gives 4
+				await gameUtils.createGameAndGaveAnswers(app, {
+					firstPlayer: {
+						accessToken: firstAccessToken,
+						correctAnswers: 2,
+						wrongAnswers: gameConfig.questionsNumber - 2,
+					},
+					secondPlayer: {
+						accessToken: secondAccessToken,
+						correctAnswers: 4,
+						wrongAnswers: gameConfig.questionsNumber - 4,
+					},
+				})
+			}
+
+			const getStatsRes = await request(app.getHttpServer())
+				.get('/' + RouteNames.PAIR_GAME.USERS.TOP.full + '?pageNumber=2&pageSize=2')
 				.expect(HTTP_STATUSES.OK_200)
 
-			expect(getUserStatisticsRes.body.sumScore).toBe(12)
-			expect(getUserStatisticsRes.body.avgScores).toBe(4)
-			expect(getUserStatisticsRes.body.gamesCount).toBe(3)
-			expect(getUserStatisticsRes.body.winsCount).toBe(2)
-			expect(getUserStatisticsRes.body.lossesCount).toBe(1)
-			expect(getUserStatisticsRes.body.drawsCount).toBe(0)
-		})*/
+			expect(getStatsRes.body.pagesCount).toBe(4)
+			expect(getStatsRes.body.page).toBe(2)
+			expect(getStatsRes.body.pageSize).toBe(2)
+			expect(getStatsRes.body.totalCount).toBe(8)
+			expect(getStatsRes.body.items.length).toBe(2)
+		})
+
+		it('should sort by games count', async () => {
+			const [firstAccessToken, firstUserId] = await userUtils.createUniqueUserAndLogin(app)
+			const [secondAccessToken, secondUserId] = await userUtils.createUniqueUserAndLogin(app)
+
+			for (let i = 0; i < 3; i++) {
+				// The first user gives 5 correct answers, but his rival gives 0
+				await gameUtils.createGameAndGaveAnswers(app, {
+					firstPlayer: {
+						accessToken: firstAccessToken,
+						correctAnswers: gameConfig.questionsNumber,
+						wrongAnswers: 0,
+					},
+					secondPlayer: {
+						accessToken: secondAccessToken,
+						correctAnswers: 0,
+						wrongAnswers: gameConfig.questionsNumber,
+					},
+				})
+			}
+
+			// -------------
+
+			const [thirdUserAccessToken, thirdUserUserId] =
+				await userUtils.createUniqueUserAndLogin(app)
+			const [forthUserAccessToken, forthUserUserId] =
+				await userUtils.createUniqueUserAndLogin(app)
+
+			// The first user give 5 correct answers, but his rival give 0
+			await gameUtils.createGameAndGaveAnswers(app, {
+				firstPlayer: {
+					accessToken: thirdUserAccessToken,
+					correctAnswers: gameConfig.questionsNumber,
+					wrongAnswers: 0,
+				},
+				secondPlayer: {
+					accessToken: forthUserAccessToken,
+					correctAnswers: 0,
+					wrongAnswers: gameConfig.questionsNumber,
+				},
+			})
+
+			// -------------
+
+			const getStatisticsByGamesCountAscRes = await request(app.getHttpServer())
+				.get('/' + RouteNames.PAIR_GAME.USERS.TOP.full + '?sort=gamesCount asc')
+				.expect(HTTP_STATUSES.OK_200)
+
+			expect(getStatisticsByGamesCountAscRes.body.items[0].gamesCount).toBe(1)
+			expect(getStatisticsByGamesCountAscRes.body.items[1].gamesCount).toBe(1)
+			expect(getStatisticsByGamesCountAscRes.body.items[0].gamesCount).toBe(3)
+			expect(getStatisticsByGamesCountAscRes.body.items[1].gamesCount).toBe(3)
+
+			const getStatisticsByGamesCountDescRes = await request(app.getHttpServer())
+				.get('/' + RouteNames.PAIR_GAME.USERS.TOP.full + '?sort=gamesCount desc')
+				.expect(HTTP_STATUSES.OK_200)
+
+			expect(getStatisticsByGamesCountDescRes.body.items[0].gamesCount).toBe(3)
+			expect(getStatisticsByGamesCountDescRes.body.items[1].gamesCount).toBe(3)
+			expect(getStatisticsByGamesCountDescRes.body.items[2].gamesCount).toBe(1)
+			expect(getStatisticsByGamesCountDescRes.body.items[3].gamesCount).toBe(1)
+		})
+
+		it.only('should sort by games count', async () => {
+			const getStatisticsByGamesCountAscRes = await request(app.getHttpServer())
+				.get('/' + RouteNames.PAIR_GAME.USERS.TOP.full + '?sort=wrongProp asc')
+				.expect(HTTP_STATUSES.OK_200)
+		})
 	})
 })
-
-const f = {
-	pagesCount: 1,
-	page: 1,
-	pageSize: 10,
-	totalCount: 10,
-	items: [
-		{
-			sumScore: 10,
-			avgScores: 2,
-			gamesCount: 4,
-			winsCount: 1,
-			lossesCount: 1,
-			drawsCount: 2,
-			player: { id: '330', login: 'xdcqtc1w' },
-		},
-		{
-			sumScore: 12,
-			avgScores: 3,
-			gamesCount: 4,
-			winsCount: 1,
-			lossesCount: 1,
-			drawsCount: 2,
-			player: { id: '329', login: 'dp7zrxb6' },
-		},
-		{
-			sumScore: 0,
-			avgScores: 0,
-			gamesCount: 1,
-			winsCount: 0,
-			lossesCount: 1,
-			drawsCount: 0,
-			player: { id: '328', login: 'tp4qhsdk' },
-		},
-		{
-			sumScore: 6,
-			avgScores: 6,
-			gamesCount: 1,
-			winsCount: 1,
-			lossesCount: 0,
-			drawsCount: 0,
-			player: { id: '327', login: 'omy6kr44' },
-		},
-	],
-}

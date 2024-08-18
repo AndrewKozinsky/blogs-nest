@@ -39,8 +39,6 @@ export class AnswerGameQuestionUseCase {
 			? GameAnswerStatus.Correct
 			: GameAnswerStatus.Incorrect
 
-		await this.updatePlayerStatistics(game, player, userAnswerStatus)
-
 		// Создать ответ
 		const createAnswerRes = await this.gameAnswerRepository.createGameAnswer(
 			player.id,
@@ -87,6 +85,14 @@ export class AnswerGameQuestionUseCase {
 				await this.gamePlayerRepository.increaseScore(fastestPlayerId)
 			}
 		}
+
+		const getUpdatedGameRes = await this.gameRepository.getGameById(game.id)
+		if (getUpdatedGameRes.code !== LayerSuccessCode.Success || !getUpdatedGameRes.data) {
+			return {
+				code: LayerErrorCode.BadRequest_400,
+			}
+		}
+		await this.updatePlayerStatistics(getUpdatedGameRes.data, player)
 
 		// Get last answer
 		const answerId = createAnswerRes.data
@@ -152,16 +158,8 @@ export class AnswerGameQuestionUseCase {
 		}
 	}
 
-	async updatePlayerStatistics(
-		game: GameServiceModel.Main,
-		playerObj: GamePlayerServiceModel,
-		answerStatus: GameAnswerStatus,
-	) {
+	async updatePlayerStatistics(game: GameServiceModel.Main, playerObj: GamePlayerServiceModel) {
 		const { player, rival } = this.getPlayerAndRival(game, playerObj.id)
-
-		if (answerStatus === GameAnswerStatus.Correct) {
-			player.score++
-		}
 
 		const requests: Promise<LayerResult<true>>[] = []
 

@@ -2,7 +2,6 @@ import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common'
 import { plainToInstance, Type } from 'class-transformer'
 import { IsIn, IsNumber, IsOptional, IsString, MinLength } from 'class-validator'
 import { Trim } from '../../../infrastructure/pipes/Trim.decorator'
-import { GetBlogsQueries } from '../../blogs/blogs/model/blogs.input.model'
 
 export class AnswerGameQuestionDtoModel {
 	@IsString({ message: 'Answer must be a string' })
@@ -33,7 +32,7 @@ export class GetMyGamesQueries {
 
 @Injectable()
 export class GetMyGamesQueriesPipe implements PipeTransform {
-	async transform(dto: GetBlogsQueries, { metatype }: ArgumentMetadata) {
+	async transform(dto: GetMyGamesQueries, { metatype }: ArgumentMetadata) {
 		if (!metatype) {
 			return dto
 		}
@@ -63,11 +62,33 @@ export class GetTopStatisticQueries {
 
 @Injectable()
 export class GetTopStatisticQueriesPipe implements PipeTransform {
-	async transform(queries: GetBlogsQueries, { metatype }: ArgumentMetadata) {
+	async transform(queries: GetTopStatisticQueries, { metatype }: ArgumentMetadata) {
 		// Sort property will be like
 		// '?sort=avgScores desc&sort=sumScore desc'
 		if (!metatype) {
 			return queries
+		}
+
+		if (queries.sort && !Array.isArray(queries.sort)) {
+			queries.sort = [queries.sort]
+		}
+
+		// Remove all unresolved property names
+		const resolvedSortPropNames = [
+			'sumScore',
+			'avgScores',
+			'gamesCount',
+			'winsCount',
+			'lossesCount',
+			'drawsCount',
+		]
+
+		if (queries.sort) {
+			queries.sort = queries.sort?.filter((sortStr) => {
+				// 'sumScore desc' -> 'sumScore'
+				const propName = sortStr.split(' ')[0]
+				return resolvedSortPropNames.includes(propName)
+			})
 		}
 
 		return plainToInstance(metatype, queries)
