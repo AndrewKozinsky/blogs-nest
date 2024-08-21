@@ -45,6 +45,10 @@ export class Game {
 	@Column({ type: 'timestamp', nullable: true })
 	startGameDate: Date
 
+	// Max date when the game must be completed
+	@Column({ type: 'timestamp', nullable: true })
+	gameMustBeCompletedNoLaterThan: Date
+
 	@Column({ type: 'timestamp', nullable: true })
 	finishGameDate: Date
 }

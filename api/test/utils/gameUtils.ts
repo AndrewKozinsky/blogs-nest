@@ -6,6 +6,17 @@ import { questionUtils } from './questionUtils'
 import { userUtils } from './userUtils'
 
 export const gameUtils = {
+	async getGameById(app: INestApplication, gameId: string, userAccessToken: string) {
+		return await request(app.getHttpServer())
+			.get('/' + RouteNames.PAIR_GAME.PAIRS.GAME_ID(gameId).full)
+			.set('authorization', 'Bearer ' + userAccessToken)
+			.expect(HTTP_STATUSES.OK_200)
+	},
+	async getMyCurrenGame(app: INestApplication, userAccessToken: string) {
+		return await request(app.getHttpServer())
+			.get('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.full)
+			.set('authorization', 'Bearer ' + userAccessToken)
+	},
 	async createGameWithPlayers(app: INestApplication) {
 		await questionUtils.createGameQuestions(app, 10)
 
@@ -31,14 +42,12 @@ export const gameUtils = {
 			.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 			.send({ answer: 'Answer 1' })
 			.set('authorization', 'Bearer ' + userAccessToken)
-			.expect(HTTP_STATUSES.OK_200)
 	},
 	async giveWrongAnswer(app: INestApplication, userAccessToken: string) {
 		return await request(app.getHttpServer())
 			.post('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.ANSWERS.full)
 			.send({ answer: 'My wrong answer' })
 			.set('authorization', 'Bearer ' + userAccessToken)
-			.expect(HTTP_STATUSES.OK_200)
 	},
 	async usersConnectToGame(
 		app: INestApplication,

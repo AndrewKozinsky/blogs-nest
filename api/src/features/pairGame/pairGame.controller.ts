@@ -26,6 +26,7 @@ import {
 	GetTopStatisticQueries,
 	GetTopStatisticQueriesPipe,
 } from './models/game.input.model'
+import { TasksService } from './task.service'
 import { AnswerGameQuestionUseCase } from './use-cases/answerGameQuestion.useCase'
 import { ConnectToGameUseCase } from './use-cases/connectToGame.useCase'
 import { GetCurrentUserGameUseCase } from './use-cases/getCurrentUserGame.useCase'
@@ -149,7 +150,7 @@ export class PairGameController {
 
 	// Returns current unfinished user game
 	@UseGuards(CheckAccessTokenGuard)
-	@Get(RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.value)
+	@Get(RouteNames.PAIR_GAME.PAIRS.value + '/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.value)
 	@HttpCode(HttpStatus.OK)
 	async getCurrentUserGame(@Req() req: Request) {
 		if (!req.user) return
@@ -168,7 +169,7 @@ export class PairGameController {
 
 	// Returns game by id
 	@UseGuards(CheckAccessTokenGuard)
-	@Get(':gameId')
+	@Get(RouteNames.PAIR_GAME.PAIRS.value + '/' + ':gameId')
 	@HttpCode(HttpStatus.OK)
 	async getGame(@Req() req: Request, @Param('gameId', ParseIntPipe) gameId: string) {
 		if (!req.user) return

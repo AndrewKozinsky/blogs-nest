@@ -3,13 +3,14 @@ import { GameStatus } from '../../src/db/pg/entities/game/game'
 import { gameConfig } from '../../src/features/pairGame/config'
 import { HTTP_STATUSES } from '../../src/settings/config'
 import RouteNames from '../../src/settings/routeNames'
+import { wait } from '../../src/utils/promise'
 import { createTestApp } from '../utils/common'
 import { clearAllDB } from '../utils/db'
 import { gameUtils } from '../utils/gameUtils'
 import { userUtils } from '../utils/userUtils'
 import { agent as request } from 'supertest'
 
-it.only('123', async () => {
+it('123', async () => {
 	expect(2).toBe(2)
 })
 
@@ -49,8 +50,9 @@ describe('ROOT', () => {
 				await gameUtils.giveWrongAnswer(app, userFirstAccessToken)
 			}
 
-			// Try to answer one more time to check for Unauthorized status
-			await gameUtils.giveCorrectAnswer(app, userSecondAccessToken)
+			// Try to answer one more time to check for 403 code answer
+			const giveAnswerRes = await gameUtils.giveCorrectAnswer(app, userFirstAccessToken)
+			expect(giveAnswerRes.status).toBe(HTTP_STATUSES.FORBIDDEN_403)
 		})
 
 		it('first and second players gave a few answers', async () => {
@@ -145,13 +147,13 @@ describe('ROOT', () => {
 			await gameUtils.giveCorrectAnswer(app, userSecondAccessToken)
 
 			// Get the game
-			const getGameRes = await gameUtils.giveWrongAnswer(app, userSecondAccessToken)
+			const getGameRes = await gameUtils.getGameById(app, game.id, userSecondAccessToken)
 
 			// Check user 1 has score 2 and user 2 has score 5
 			const updatedGame = getGameRes.body
 			expect(updatedGame.status).toBe(GameStatus.Finished)
 			expect(updatedGame.firstPlayerProgress.score).toBe(2)
-			expect(updatedGame.secondPlayerProgress.score).toBe(5)
+			expect(updatedGame.secondPlayerProgress.score).toBe(1)
 			expect(typeof updatedGame.startGameDate).toBe('string')
 			expect(typeof updatedGame.finishGameDate).toBe('string')
 
@@ -227,6 +229,117 @@ describe('ROOT', () => {
 				await gameUtils.giveWrongAnswer(app, userFirstAccessToken)
 				await gameUtils.giveWrongAnswer(app, userSecondAccessToken)
 			}
+		})
+
+		it('game must finish after 10 seconds after one player give all answers', async () => {
+			const [userFirstAccessToken, userSecondAccessToken, game] =
+				await gameUtils.createGameWithPlayers(app)
+
+			// Give all answers by first and second user
+			// First user give no right answers, but second user answered all questions right
+			for (let i = 0; i < gameConfig.questionsNumber; i++) {
+				await gameUtils.giveCorrectAnswer(app, userFirstAccessToken)
+			}
+			await gameUtils.giveCorrectAnswer(app, userSecondAccessToken)
+
+			await wait(gameConfig.maxSecondsWhenGameActiveAfterOneUserAnsweredAllQuestions * 1000)
+
+			const getUpdatedGameRes = await gameUtils.getGameById(
+				app,
+				game.id,
+				userFirstAccessToken,
+			)
+
+			const updatedGame = getUpdatedGameRes.body
+			expect(updatedGame.firstPlayerProgress.score).toBe(6)
+			expect(updatedGame.secondPlayerProgress.score).toBe(1)
+
+			const giveAnswerRes = await gameUtils.giveCorrectAnswer(app, userSecondAccessToken)
+			expect(giveAnswerRes.status).toBe(HTTP_STATUSES.FORBIDDEN_403)
+		})
+
+		it.only('game must finish after 10 seconds after one player give all answers', async () => {
+			// create game1 by user1, connect to game by user2.
+			const [userFirstAccessToken, userSecondAccessToken, game1] =
+				await gameUtils.createGameWithPlayers(app)
+
+			// Add 3 incorrect answers by user2.
+			for (let i = 0; i < 3; i++) {
+				await gameUtils.giveWrongAnswer(app, userSecondAccessToken)
+			}
+
+			// Add 4 correct answers by user1.
+			for (let i = 0; i < 4; i++) {
+				await gameUtils.giveCorrectAnswer(app, userFirstAccessToken)
+			}
+
+			// Create game2 by user3, connect to game by user4.
+			const [userThirdAccessToken, userForthAccessToken, game2] =
+				await gameUtils.createGameWithPlayers(app)
+
+			// Add 5 correct answers by user3.
+			for (let i = 0; i < 5; i++) {
+				await gameUtils.giveCorrectAnswer(app, userThirdAccessToken)
+			}
+
+			// Add 2 correct answers by user4.
+			for (let i = 0; i < 2; i++) {
+				await gameUtils.giveCorrectAnswer(app, userForthAccessToken)
+			}
+
+			// Add 2 correct answers by user2.
+			for (let i = 0; i < 2; i++) {
+				await gameUtils.giveCorrectAnswer(app, userSecondAccessToken)
+			}
+
+			// Await 10 sec.
+			await wait(gameConfig.maxSecondsWhenGameActiveAfterOneUserAnsweredAllQuestions * 1000)
+
+			// -----
+
+			// Get current game by user2.
+			const getCurrentGame1Res = await gameUtils.getMyCurrenGame(app, userSecondAccessToken)
+			expect(getCurrentGame1Res.status).toBe(HTTP_STATUSES.NOT_FOUNT_404)
+
+			// Get game1 by user2.
+			const getUpdatedGame1Res = await gameUtils.getGameById(
+				app,
+				game1.id,
+				userSecondAccessToken,
+			)
+			const updatedGame1 = getUpdatedGame1Res.body
+
+			// Should return finished game - status: "Finished",
+			expect(updatedGame1.status).toBe(GameStatus.Finished)
+			// firstPlayerProgress.score: 4,
+			expect(updatedGame1.firstPlayerProgress.score).toBe(4)
+			// secondPlayerProgress.score: 3,
+			expect(updatedGame1.secondPlayerProgress.score).toBe(3)
+			expect(updatedGame1).not.toBe(null)
+			expect(getUpdatedGame1Res.status).toBe(HTTP_STATUSES.OK_200)
+
+			// -----
+
+			// Get current game by user2.
+			const getCurrentGame2Res = await gameUtils.getMyCurrenGame(app, userForthAccessToken)
+			expect(getCurrentGame2Res.status).toBe(HTTP_STATUSES.NOT_FOUNT_404)
+
+			// Get game2 by user3.
+			const getUpdatedGame2Res = await gameUtils.getGameById(
+				app,
+				game2.id,
+				userThirdAccessToken,
+			)
+			const updatedGame2 = getUpdatedGame2Res.body
+
+			// Should return finished game - status: "Finished"
+			expect(updatedGame2.status).toBe(GameStatus.Finished)
+			// firstPlayerProgress.score: 6,
+			expect(updatedGame2.firstPlayerProgress.score).toBe(6)
+			// secondPlayerProgress.score: 2,
+			expect(updatedGame2.secondPlayerProgress.score).toBe(2)
+			expect(updatedGame2).not.toBe(null)
+			expect(getUpdatedGame2Res.status).toBe(HTTP_STATUSES.OK_200)
 		})
 	})
 })

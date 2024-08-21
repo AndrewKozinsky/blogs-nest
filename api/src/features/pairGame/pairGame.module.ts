@@ -12,6 +12,7 @@ import { PairGameController } from './pairGame.controller'
 import { GameQuestionRepository } from './gameQuestion.repository'
 import { GameRepository } from './game.repository'
 import { GamePlayerRepository } from './gamePlayer.repository'
+import { TasksService } from './task.service'
 import { AnswerGameQuestionUseCase } from './use-cases/answerGameQuestion.useCase'
 import { ConnectToGameUseCase } from './use-cases/connectToGame.useCase'
 import { Question } from '../../db/pg/entities/game/question'
@@ -42,6 +43,7 @@ const useCases = [
 		GameQueryRepository,
 		GameAnswerRepository,
 		GameAnswerQueryRepository,
+		TasksService,
 		...useCases,
 	],
 })

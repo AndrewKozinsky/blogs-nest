@@ -18,6 +18,8 @@ export namespace GameServiceModel {
 		pairCreatedDate: string // '2024-07-28T07:45:51.040Z'
 		// Game starts immediately after second player connection to this pair
 		startGameDate: null | string // '2024-07-28T07:45:51.040Z'
+		// Max date when the game must be completed
+		gameMustBeCompletedNoLaterThan: null | string // '2024-07-28T07:45:51.040Z'
 		// Game finishes immediately after both players have answered all the questions
 		finishGameDate: null | string // '2024-07-28T07:45:51.040Z'
 	}

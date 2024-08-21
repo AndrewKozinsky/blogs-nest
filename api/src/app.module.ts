@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
+import { ScheduleModule } from '@nestjs/schedule'
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm'
 import { Blog } from './db/pg/entities/blog'
 import { Comment } from './db/pg/entities/comment'
@@ -40,6 +41,7 @@ const typeORMOptions: TypeOrmModuleOptions = {
 		// Ограничитель можно сделать отдельным пакетом Limit throtller
 		// Схемы в папку feature
 		TypeOrmModule.forRoot(typeORMOptions),
+		ScheduleModule.forRoot(),
 		AuthModule,
 		BlogsModule,
 		UsersModule,

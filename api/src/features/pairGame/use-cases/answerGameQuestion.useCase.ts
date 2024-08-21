@@ -1,14 +1,16 @@
 import { Injectable } from '@nestjs/common'
+import { add } from 'date-fns'
+import { GameStatus } from '../../../db/pg/entities/game/game'
 import { GameAnswerStatus } from '../../../db/pg/entities/game/gameAnswer'
 import { LayerErrorCode, LayerResult, LayerSuccessCode } from '../../../types/resultCodes'
 import { gameConfig } from '../config'
 import { GameRepository } from '../game.repository'
-import { AnswerGameQuestionDtoModel } from '../models/game.input.model'
-import { GameAnswerOutModel } from '../models/game.output.model'
 import { GameAnswerQueryRepository } from '../gameAnswer.queryRepository'
 import { GameAnswerRepository } from '../gameAnswer.repository'
-import { GameQuestionRepository } from '../gameQuestion.repository'
 import { GamePlayerRepository } from '../gamePlayer.repository'
+import { GameQuestionRepository } from '../gameQuestion.repository'
+import { AnswerGameQuestionDtoModel } from '../models/game.input.model'
+import { GameAnswerOutModel } from '../models/game.output.model'
 import {
 	GamePlayerServiceModel,
 	GameQuestionServiceModel,
@@ -58,16 +60,33 @@ export class AnswerGameQuestionUseCase {
 		}
 
 		// Check if all players gave all answers
-		const isPlayersGaveAllAnswersInActiveGameRes =
-			await this.gameRepository.isPlayersGaveAllAnswersInActiveGame(gameQuestion.gameId)
-		if (isPlayersGaveAllAnswersInActiveGameRes.code !== LayerSuccessCode.Success) {
+		const getGameAnswersStatusRes = await this.gameRepository.getGameAnswersStatus(
+			gameQuestion.gameId,
+		)
+		if (getGameAnswersStatusRes.code !== LayerSuccessCode.Success) {
 			return {
 				code: LayerErrorCode.BadRequest_400,
 			}
 		}
 
+		// If one player answered all the questions, then set gameMustBeCompletedNoLaterThan property in Game table
+		// to prevent receiving answers from the opponent after the specified time
+		if (getGameAnswersStatusRes.data === 'oneAnsweredAllQuestions') {
+			const allowedTime = add(new Date(), {
+				seconds: 10,
+			})
+
+			await this.gameRepository.updateGame(game.id, {
+				gameMustBeCompletedNoLaterThan: allowedTime,
+			})
+
+			setTimeout(() => {
+				this.gameRepository.forceFinishGame(game.id)
+			}, 10 * gameConfig.maxSecondsWhenGameActiveAfterOneUserAnsweredAllQuestions)
+		}
+
 		// If all players answered all questions
-		if (isPlayersGaveAllAnswersInActiveGameRes.data) {
+		if (getGameAnswersStatusRes.data === 'bothAnsweredAllQuestions') {
 			// Set finished status to game
 			await this.gameRepository.finishGame(gameQuestion.gameId)
 
@@ -119,11 +138,16 @@ export class AnswerGameQuestionUseCase {
 		// Найти незавершённую игру, где пользователь является игроком.
 		// И если находится, то отдавать 403
 		const getGameRes = await this.gameRepository.getUnfinishedGameByUserId(userId)
-		if (getGameRes.code !== LayerSuccessCode.Success || !getGameRes.data) {
+		if (
+			getGameRes.code !== LayerSuccessCode.Success ||
+			!getGameRes.data ||
+			getGameRes.data.status === GameStatus.Finished
+		) {
 			return {
 				code: LayerErrorCode.Forbidden_403,
 			}
 		}
+		const game = getGameRes.data
 
 		const getPlayerRes = await this.gamePlayerRepository.getUnfinishedGamePlayerByUserId(userId)
 		if (getPlayerRes.code !== LayerSuccessCode.Success || !getPlayerRes.data) {
@@ -154,7 +178,7 @@ export class AnswerGameQuestionUseCase {
 
 		return {
 			code: LayerSuccessCode.Success,
-			data: { game: getGameRes.data, player, gameQuestion: resCurrentGameQuestionRes.data },
+			data: { game, player, gameQuestion: resCurrentGameQuestionRes.data },
 		}
 	}
 

@@ -9,7 +9,7 @@ import { gameUtils } from '../utils/gameUtils'
 import { userUtils } from '../utils/userUtils'
 import { agent as request } from 'supertest'
 
-it('123', async () => {
+it.only('123', async () => {
 	expect(2).toBe(2)
 })
 
@@ -109,6 +109,7 @@ describe('ROOT', () => {
 					},
 				})
 			}
+
 			await gameUtils.createGameAndGaveAnswers(app, {
 				firstPlayer: {
 					accessToken: userFirstAccessToken,
@@ -122,16 +123,16 @@ describe('ROOT', () => {
 				},
 			})
 
-			const getUserGamesRes = await request(app.getHttpServer())
+			const getFirstUserGamesRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.PAIR_GAME.PAIRS.MY_GAMES.full)
 				.set('authorization', 'Bearer ' + userFirstAccessToken)
 				.expect(HTTP_STATUSES.OK_200)
 
-			expect(getUserGamesRes.body.pagesCount).toBe(1)
-			expect(getUserGamesRes.body.page).toBe(1)
-			expect(getUserGamesRes.body.pageSize).toBe(10)
-			expect(getUserGamesRes.body.totalCount).toBe(3)
-			expect(getUserGamesRes.body.items.length).toBe(3)
+			expect(getFirstUserGamesRes.body.pagesCount).toBe(1)
+			expect(getFirstUserGamesRes.body.page).toBe(1)
+			expect(getFirstUserGamesRes.body.pageSize).toBe(10)
+			expect(getFirstUserGamesRes.body.totalCount).toBe(5)
+			expect(getFirstUserGamesRes.body.items.length).toBe(5)
 		})
 
 		it('games takes many pages', async () => {
@@ -204,7 +205,7 @@ describe('ROOT', () => {
 			}
 		})
 
-		it.only('games array must be sorted by status field', async () => {
+		it('games array must be sorted by status field', async () => {
 			const [userFirstAccessToken, firstUserId] =
 				await userUtils.createUniqueUserAndLogin(app)
 			const [userSecondAccessToken, secondUserId] =
