@@ -82,7 +82,7 @@ export class AnswerGameQuestionUseCase {
 
 			setTimeout(() => {
 				this.gameRepository.forceFinishGame(game.id)
-			}, 10 * gameConfig.maxSecondsWhenGameActiveAfterOneUserAnsweredAllQuestions)
+			}, 1000 * gameConfig.maxSecondsWhenGameActiveAfterOneUserAnsweredAllQuestions)
 		}
 
 		// If all players answered all questions

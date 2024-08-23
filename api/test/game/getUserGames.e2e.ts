@@ -51,7 +51,7 @@ describe('ROOT', () => {
 			const [secondAccessToken, secondUserId] = await userUtils.createUniqueUserAndLogin(app)
 
 			for (let i = 0; i < 3; i++) {
-				await gameUtils.createGameAndGaveAnswers(app, {
+				await gameUtils.createGameAndQuestionsAndPlayersAndGaveAnswers(app, {
 					firstPlayer: {
 						accessToken: firstAccessToken,
 						correctAnswers: gameConfig.questionsNumber,
@@ -64,7 +64,7 @@ describe('ROOT', () => {
 					},
 				})
 			}
-			await gameUtils.createGameAndGaveAnswers(app, {
+			await gameUtils.createGameAndQuestionsAndPlayersAndGaveAnswers(app, {
 				firstPlayer: {
 					accessToken: firstAccessToken,
 					correctAnswers: 2,
@@ -96,7 +96,7 @@ describe('ROOT', () => {
 				await userUtils.createUniqueUserAndLogin(app)
 
 			for (let i = 0; i < 4; i++) {
-				await gameUtils.createGameAndGaveAnswers(app, {
+				await gameUtils.createGameAndQuestionsAndPlayersAndGaveAnswers(app, {
 					firstPlayer: {
 						accessToken: userFirstAccessToken,
 						correctAnswers: gameConfig.questionsNumber,
@@ -110,7 +110,7 @@ describe('ROOT', () => {
 				})
 			}
 
-			await gameUtils.createGameAndGaveAnswers(app, {
+			await gameUtils.createGameAndQuestionsAndPlayersAndGaveAnswers(app, {
 				firstPlayer: {
 					accessToken: userFirstAccessToken,
 					correctAnswers: 2,
@@ -142,7 +142,7 @@ describe('ROOT', () => {
 				await userUtils.createUniqueUserAndLogin(app)
 
 			for (let i = 0; i < 10; i++) {
-				await gameUtils.createGameAndGaveAnswers(app, {
+				await gameUtils.createGameAndQuestionsAndPlayersAndGaveAnswers(app, {
 					firstPlayer: {
 						accessToken: userFirstAccessToken,
 						correctAnswers: gameConfig.questionsNumber,
@@ -175,7 +175,7 @@ describe('ROOT', () => {
 				await userUtils.createUniqueUserAndLogin(app)
 
 			for (let i = 0; i < 10; i++) {
-				await gameUtils.createGameAndGaveAnswers(app, {
+				await gameUtils.createGameAndQuestionsAndPlayersAndGaveAnswers(app, {
 					firstPlayer: {
 						accessToken: userFirstAccessToken,
 						correctAnswers: gameConfig.questionsNumber,
@@ -212,7 +212,7 @@ describe('ROOT', () => {
 				await userUtils.createUniqueUserAndLogin(app)
 
 			for (let i = 0; i < 3; i++) {
-				await gameUtils.createGameAndGaveAnswers(app, {
+				await gameUtils.createGameAndQuestionsAndPlayersAndGaveAnswers(app, {
 					firstPlayer: {
 						accessToken: userFirstAccessToken,
 						correctAnswers: gameConfig.questionsNumber,
@@ -226,7 +226,7 @@ describe('ROOT', () => {
 				})
 			}
 
-			await gameUtils.createGameAndGaveAnswers(app, {
+			await gameUtils.createGameAndQuestionsAndPlayersAndGaveAnswers(app, {
 				firstPlayer: {
 					accessToken: userFirstAccessToken,
 					correctAnswers: 2,

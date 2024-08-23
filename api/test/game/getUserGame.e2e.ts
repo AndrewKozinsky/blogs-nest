@@ -67,7 +67,7 @@ describe('ROOT', () => {
 
 		it('two players have joined to the game', async () => {
 			const [userFirstAccessToken, userSecondAccessToken] =
-				await gameUtils.createGameWithPlayers(app)
+				await gameUtils.createGameWithQuestionsAndPlayers(app)
 
 			const getGameRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.full)
@@ -83,7 +83,7 @@ describe('ROOT', () => {
 
 		it('should return 404 if players have finished game', async () => {
 			const [userFirstAccessToken, userSecondAccessToken] =
-				await gameUtils.createGameWithPlayers(app)
+				await gameUtils.createGameWithQuestionsAndPlayers(app)
 
 			for (let i = 0; i < 2; i++) {
 				await gameUtils.giveWrongAnswer(app, userFirstAccessToken)
@@ -103,7 +103,7 @@ describe('ROOT', () => {
 
 		it('should return 404 if players have finished game', async () => {
 			const [userFirstAccessToken, userSecondAccessToken] =
-				await gameUtils.createGameWithPlayers(app)
+				await gameUtils.createGameWithQuestionsAndPlayers(app)
 
 			for (let i = 0; i < gameConfig.questionsNumber; i++) {
 				await gameUtils.giveWrongAnswer(app, userFirstAccessToken)

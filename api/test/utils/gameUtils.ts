@@ -17,7 +17,26 @@ export const gameUtils = {
 			.get('/' + RouteNames.PAIR_GAME.PAIRS.MY_CURRENT.full)
 			.set('authorization', 'Bearer ' + userAccessToken)
 	},
-	async createGameWithPlayers(app: INestApplication) {
+	async createGameWithQuestions(
+		app: INestApplication,
+		userFirstAccessToken: string,
+		userSecondAccessToken: string,
+	) {
+		await questionUtils.createGameQuestions(app, 10)
+
+		// First user connects to the game
+		const firstConnectToGameRes = await request(app.getHttpServer())
+			.post('/' + RouteNames.PAIR_GAME.PAIRS.CONNECTION.full)
+			.set('authorization', 'Bearer ' + userFirstAccessToken)
+
+		// Second user connects to the game
+		const secondConnectToGameRes = await request(app.getHttpServer())
+			.post('/' + RouteNames.PAIR_GAME.PAIRS.CONNECTION.full)
+			.set('authorization', 'Bearer ' + userSecondAccessToken)
+
+		return [firstConnectToGameRes]
+	},
+	async createGameWithQuestionsAndPlayers(app: INestApplication) {
 		await questionUtils.createGameQuestions(app, 10)
 
 		const [userFirstAccessToken] = await userUtils.createUniqueUserAndLogin(app)
@@ -66,7 +85,7 @@ export const gameUtils = {
 			.set('authorization', 'Bearer ' + secondUserAccessToken)
 			.expect(HTTP_STATUSES.OK_200)
 	},
-	async createGameAndGaveAnswers(
+	async createGameAndQuestionsAndPlayersAndGaveAnswers(
 		app: INestApplication,
 		config: {
 			firstPlayer: {

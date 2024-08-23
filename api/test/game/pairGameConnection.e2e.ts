@@ -69,7 +69,7 @@ describe('ROOT', () => {
 
 		it('should return an object if the second user connected to the game', async () => {
 			const [userFirstAccessToken, userSecondAccessToken, game] =
-				await gameUtils.createGameWithPlayers(app)
+				await gameUtils.createGameWithQuestionsAndPlayers(app)
 
 			const updatedGameRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.PAIR_GAME.PAIRS.GAME_ID(game.id).full)

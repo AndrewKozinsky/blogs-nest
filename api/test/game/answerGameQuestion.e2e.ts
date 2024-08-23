@@ -43,7 +43,7 @@ describe('ROOT', () => {
 
 		it('should return 403 if to try 6-th answer', async () => {
 			const [userFirstAccessToken, userSecondAccessToken, game] =
-				await gameUtils.createGameWithPlayers(app)
+				await gameUtils.createGameWithQuestionsAndPlayers(app)
 
 			// Give 5 answers by second user
 			for (let i = 0; i < gameConfig.questionsNumber; i++) {
@@ -57,7 +57,7 @@ describe('ROOT', () => {
 
 		it('first and second players gave a few answers', async () => {
 			const [userFirstAccessToken, userSecondAccessToken, game] =
-				await gameUtils.createGameWithPlayers(app)
+				await gameUtils.createGameWithQuestionsAndPlayers(app)
 
 			// First player gave correct answer
 			const answer1Req = await gameUtils.giveCorrectAnswer(app, userFirstAccessToken)
@@ -95,7 +95,7 @@ describe('ROOT', () => {
 
 		it('first player has finished game, but second not', async () => {
 			const [userFirstAccessToken, userSecondAccessToken, game] =
-				await gameUtils.createGameWithPlayers(app)
+				await gameUtils.createGameWithQuestionsAndPlayers(app)
 
 			// First player gave 3 wrong answers
 			for (let i = 0; i < gameConfig.questionsNumber - 2; i++) {
@@ -131,7 +131,7 @@ describe('ROOT', () => {
 
 		it('players have finished game and started another', async () => {
 			const [userFirstAccessToken, userSecondAccessToken, game] =
-				await gameUtils.createGameWithPlayers(app)
+				await gameUtils.createGameWithQuestionsAndPlayers(app)
 
 			// Give 4 answers by first and second user
 			// First user give no right answers, but second user answered all questions right
@@ -177,7 +177,7 @@ describe('ROOT', () => {
 
 		it('players does not finished game and another started a new one', async () => {
 			const [userFirstAccessToken, userSecondAccessToken, game] =
-				await gameUtils.createGameWithPlayers(app)
+				await gameUtils.createGameWithQuestionsAndPlayers(app)
 
 			// Give 4 answers by first and second user
 			// First user give no right answers, but second user answered all questions right
@@ -189,7 +189,7 @@ describe('ROOT', () => {
 			// New players RUN A NEW GAME
 
 			const [userThirdAccessToken, userFourthAccessToken] =
-				await gameUtils.createGameWithPlayers(app)
+				await gameUtils.createGameWithQuestionsAndPlayers(app)
 
 			// Third and fourth players gave one answer each
 			await gameUtils.giveWrongAnswer(app, userThirdAccessToken)
@@ -202,7 +202,7 @@ describe('ROOT', () => {
 
 		it('players finished one game and another', async () => {
 			const [userFirstAccessToken, userSecondAccessToken, game] =
-				await gameUtils.createGameWithPlayers(app)
+				await gameUtils.createGameWithQuestionsAndPlayers(app)
 
 			// Give all answers by first and second user
 			// First user give no right answers, but second user answered all questions right
@@ -233,7 +233,7 @@ describe('ROOT', () => {
 
 		it('game must finish after 10 seconds after one player give all answers', async () => {
 			const [userFirstAccessToken, userSecondAccessToken, game] =
-				await gameUtils.createGameWithPlayers(app)
+				await gameUtils.createGameWithQuestionsAndPlayers(app)
 
 			// Give all answers by first and second user
 			// First user give no right answers, but second user answered all questions right
@@ -258,10 +258,56 @@ describe('ROOT', () => {
 			expect(giveAnswerRes.status).toBe(HTTP_STATUSES.FORBIDDEN_403)
 		})
 
-		it.only('game must finish after 10 seconds after one player give all answers', async () => {
+		it.only('create game and users. One user gives 5 answers. Game must finish after 10 seconds. Old users create second game.', async () => {
 			// create game1 by user1, connect to game by user2.
 			const [userFirstAccessToken, userSecondAccessToken, game1] =
-				await gameUtils.createGameWithPlayers(app)
+				await gameUtils.createGameWithQuestionsAndPlayers(app)
+
+			// Add 3 incorrect answers by user2.
+			for (let i = 0; i < 3; i++) {
+				await gameUtils.giveWrongAnswer(app, userSecondAccessToken)
+			}
+
+			// Add 4 correct answers by user1.
+			for (let i = 0; i < 3; i++) {
+				await gameUtils.giveCorrectAnswer(app, userFirstAccessToken)
+			}
+
+			for (let i = 0; i < 2; i++) {
+				await gameUtils.giveWrongAnswer(app, userSecondAccessToken)
+			}
+
+			const getMyGameRes = await gameUtils.getMyCurrenGame(app, userSecondAccessToken)
+			// console.log(getMyGameRes.status)
+			// console.log(getMyGameRes.body)
+
+			await wait(
+				(gameConfig.maxSecondsWhenGameActiveAfterOneUserAnsweredAllQuestions * 1000) / 2,
+			)
+
+			const getMyGame2Res = await gameUtils.getMyCurrenGame(app, userSecondAccessToken)
+			expect(getMyGame2Res.status).toBe(HTTP_STATUSES.OK_200)
+
+			await wait(
+				(gameConfig.maxSecondsWhenGameActiveAfterOneUserAnsweredAllQuestions * 1000) / 2,
+			)
+
+			const getMyGame3Res = await gameUtils.getMyCurrenGame(app, userSecondAccessToken)
+			expect(getMyGame3Res.status).toBe(HTTP_STATUSES.NOT_FOUNT_404)
+
+			const [firstConnectToGameRes] = await gameUtils.createGameWithQuestions(
+				app,
+				userFirstAccessToken,
+				userSecondAccessToken,
+			)
+
+			expect(firstConnectToGameRes.status).toBe(HTTP_STATUSES.OK_200)
+		})
+
+		it('game must finish after 10 seconds after one player give all answers', async () => {
+			// create game1 by user1, connect to game by user2.
+			const [userFirstAccessToken, userSecondAccessToken, game1] =
+				await gameUtils.createGameWithQuestionsAndPlayers(app)
 
 			// Add 3 incorrect answers by user2.
 			for (let i = 0; i < 3; i++) {
@@ -275,7 +321,7 @@ describe('ROOT', () => {
 
 			// Create game2 by user3, connect to game by user4.
 			const [userThirdAccessToken, userForthAccessToken, game2] =
-				await gameUtils.createGameWithPlayers(app)
+				await gameUtils.createGameWithQuestionsAndPlayers(app)
 
 			// Add 5 correct answers by user3.
 			for (let i = 0; i < 5; i++) {
@@ -291,6 +337,7 @@ describe('ROOT', () => {
 			for (let i = 0; i < 2; i++) {
 				await gameUtils.giveCorrectAnswer(app, userSecondAccessToken)
 			}
+			// -----
 
 			// Await 10 sec.
 			await wait(gameConfig.maxSecondsWhenGameActiveAfterOneUserAnsweredAllQuestions * 1000)
@@ -340,6 +387,34 @@ describe('ROOT', () => {
 			expect(updatedGame2.secondPlayerProgress.score).toBe(2)
 			expect(updatedGame2).not.toBe(null)
 			expect(getUpdatedGame2Res.status).toBe(HTTP_STATUSES.OK_200)
+
+			// -----
+
+			// create game3 by user5, connect to game by user5.
+			const [userFifthAccessToken, userSixthAccessToken, game3] =
+				await gameUtils.createGameWithQuestionsAndPlayers(app)
+
+			// Add 3 incorrect answers by user5.
+			for (let i = 0; i < 3; i++) {
+				await gameUtils.giveWrongAnswer(app, userFifthAccessToken)
+			}
+			for (let i = 0; i < 2; i++) {
+				await gameUtils.giveWrongAnswer(app, userFifthAccessToken)
+				await gameUtils.giveCorrectAnswer(app, userSixthAccessToken)
+			}
+
+			// Await 10 sec.
+			await wait(gameConfig.maxSecondsWhenGameActiveAfterOneUserAnsweredAllQuestions * 1000)
+
+			// Get current game by user2.
+			const getCurrentGame3Res = await gameUtils.getGameById(
+				app,
+				game3.id,
+				userSixthAccessToken,
+			)
+			const currentGame = getCurrentGame3Res.body
+			expect(currentGame.status).toBe(GameStatus.Finished)
+			expect(getCurrentGame3Res.status).toBe(HTTP_STATUSES.OK_200)
 		})
 	})
 })

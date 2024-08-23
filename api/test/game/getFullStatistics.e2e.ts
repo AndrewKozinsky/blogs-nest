@@ -47,7 +47,7 @@ describe('ROOT', () => {
 			const [secondAccessToken, secondUserId] = await userUtils.createUniqueUserAndLogin(app)
 
 			// The first user gives 5 correct answers, but his rival gives 0
-			await gameUtils.createGameAndGaveAnswers(app, {
+			await gameUtils.createGameAndQuestionsAndPlayersAndGaveAnswers(app, {
 				firstPlayer: {
 					accessToken: firstAccessToken,
 					correctAnswers: gameConfig.questionsNumber,
@@ -60,7 +60,7 @@ describe('ROOT', () => {
 				},
 			})
 			// The first user give 0 correct answers, but his rival give 5
-			await gameUtils.createGameAndGaveAnswers(app, {
+			await gameUtils.createGameAndQuestionsAndPlayersAndGaveAnswers(app, {
 				firstPlayer: {
 					accessToken: firstAccessToken,
 					correctAnswers: 0,
@@ -74,7 +74,7 @@ describe('ROOT', () => {
 			})
 			// The first and second users give 3 correct answers and 2 wrong ones
 			// The first player won because he answered quicker
-			await gameUtils.createGameAndGaveAnswers(app, {
+			await gameUtils.createGameAndQuestionsAndPlayersAndGaveAnswers(app, {
 				firstPlayer: {
 					accessToken: firstAccessToken,
 					correctAnswers: 3,
@@ -87,7 +87,7 @@ describe('ROOT', () => {
 				},
 			})
 			// The first and second players give only 2 correct answers
-			await gameUtils.createGameAndGaveAnswers(app, {
+			await gameUtils.createGameAndQuestionsAndPlayersAndGaveAnswers(app, {
 				firstPlayer: {
 					accessToken: firstAccessToken,
 					correctAnswers: 2,
@@ -108,7 +108,7 @@ describe('ROOT', () => {
 				await userUtils.createUniqueUserAndLogin(app)
 
 			// The first user give 5 correct answers, but his rival give 0
-			await gameUtils.createGameAndGaveAnswers(app, {
+			await gameUtils.createGameAndQuestionsAndPlayersAndGaveAnswers(app, {
 				firstPlayer: {
 					accessToken: thirdUserAccessToken,
 					correctAnswers: gameConfig.questionsNumber,
@@ -177,7 +177,7 @@ describe('ROOT', () => {
 					await userUtils.createUniqueUserAndLogin(app)
 
 				// The first user gives 2 correct answers, but his rival gives 4
-				await gameUtils.createGameAndGaveAnswers(app, {
+				await gameUtils.createGameAndQuestionsAndPlayersAndGaveAnswers(app, {
 					firstPlayer: {
 						accessToken: firstAccessToken,
 						correctAnswers: 2,
@@ -208,7 +208,7 @@ describe('ROOT', () => {
 
 			for (let i = 0; i < 3; i++) {
 				// The first user gives 5 correct answers, but his rival gives 0
-				await gameUtils.createGameAndGaveAnswers(app, {
+				await gameUtils.createGameAndQuestionsAndPlayersAndGaveAnswers(app, {
 					firstPlayer: {
 						accessToken: firstAccessToken,
 						correctAnswers: gameConfig.questionsNumber,
@@ -230,7 +230,7 @@ describe('ROOT', () => {
 				await userUtils.createUniqueUserAndLogin(app)
 
 			// The first user give 5 correct answers, but his rival give 0
-			await gameUtils.createGameAndGaveAnswers(app, {
+			await gameUtils.createGameAndQuestionsAndPlayersAndGaveAnswers(app, {
 				firstPlayer: {
 					accessToken: thirdUserAccessToken,
 					correctAnswers: gameConfig.questionsNumber,

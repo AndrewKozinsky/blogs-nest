@@ -244,7 +244,6 @@ export class GamePlayerRepository {
 		statisticsRes.forEach((stats) => {
 			stats.avgScores = truncateFloatNumber(+stats.avgScores, 2)
 		})
-		// console.log(statisticsRes)
 
 		return {
 			code: LayerSuccessCode.Success,

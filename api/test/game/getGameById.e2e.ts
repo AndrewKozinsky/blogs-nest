@@ -32,7 +32,7 @@ describe('ROOT', () => {
 
 		it('should return 403 if current user is not a player', async () => {
 			const [userFirstAccessToken, userSecondAccessToken, game] =
-				await gameUtils.createGameWithPlayers(app)
+				await gameUtils.createGameWithQuestionsAndPlayers(app)
 
 			const [userAccessToken] = await userUtils.createUniqueUserAndLogin(app)
 
@@ -84,7 +84,7 @@ describe('ROOT', () => {
 
 		it('two players have joined to the game', async () => {
 			const [userFirstAccessToken, userSecondAccessToken, game] =
-				await gameUtils.createGameWithPlayers(app)
+				await gameUtils.createGameWithQuestionsAndPlayers(app)
 
 			const getGameRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.PAIR_GAME.PAIRS.GAME_ID(game.id).full)
