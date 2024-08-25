@@ -1,13 +1,12 @@
 import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
 import { describe } from 'node:test'
-import { UpdateBlogPostDtoModel } from '../src/features/blogs/saBlogs/model/blogs.input.model'
+import { LikeStatuses } from '../src/db/pg/entities/postLikes'
+import { CreateBlogDtoModel, UpdateBlogPostDtoModel } from '../src/models/blogs/blogs.input.model'
+import { GetBlogsOutModel } from '../src/models/blogs/blogs.output.model'
 import { HTTP_STATUSES } from '../src/settings/config'
 import RouteNames from '../src/settings/routeNames'
-import { DBTypes } from '../src/db/mongo/dbTypes'
-import { CreateBlogDtoModel } from '../src/features/blogs/blogs/model/blogs.input.model'
-import { GetBlogsOutModel } from '../src/features/blogs/blogs/model/blogs.output.model'
-import { GetPostsOutModel } from '../src/features/blogs/posts/model/posts.output.model'
+import { GetPostsOutModel } from '../src/models/posts/posts.output.model'
 import { blogUtils } from './utils/blogUtils'
 import { adminAuthorizationValue, createTestApp } from './utils/common'
 import { clearAllDB } from './utils/db'
@@ -250,8 +249,8 @@ describe('ROOT', () => {
 			expect(getBlogPostsRes.body.totalCount).toBe(2)
 			expect(getBlogPostsRes.body.items.length).toBe(2)
 
-			postUtils.checkPostObj(getBlogPostsRes.body.items[0], 0, 0, DBTypes.LikeStatuses.None)
-			postUtils.checkPostObj(getBlogPostsRes.body.items[1], 0, 0, DBTypes.LikeStatuses.None)
+			postUtils.checkPostObj(getBlogPostsRes.body.items[0], 0, 0, LikeStatuses.None)
+			postUtils.checkPostObj(getBlogPostsRes.body.items[1], 0, 0, LikeStatuses.None)
 		})
 
 		it('should return an object with properties with specific values after creating 5 blog posts', async () => {
@@ -386,7 +385,7 @@ describe('ROOT', () => {
 				createdBlogRes.body.id,
 			)
 
-			postUtils.checkPostObj(createBlogPostRes.body, 0, 0, DBTypes.LikeStatuses.None)
+			postUtils.checkPostObj(createBlogPostRes.body, 0, 0, LikeStatuses.None)
 
 			// Check if there are 2 blog posts after adding another one
 			const createdSecondBlogPostRes = await blogUtils.addBlogPostRequest(

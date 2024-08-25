@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
-import { CreateQuestionDtoModel } from '../../src/features/saQuestions/models/questions.input.model'
+import { CreateQuestionDtoModel } from '../../src/models/saQuestions/questions.input.model'
 import RouteNames from '../../src/settings/routeNames'
 import { adminAuthorizationValue } from './common'
 

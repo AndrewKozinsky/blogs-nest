@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
-import { CreateUserDtoModel } from '../../src/features/users/models/users.input.model'
+import { CreateUserDtoModel } from '../../src/models/users/users.input.model'
 import { HTTP_STATUSES } from '../../src/settings/config'
 import RouteNames from '../../src/settings/routeNames'
 import { adminAuthorizationValue, userEmail, userLogin, userPassword } from './common'

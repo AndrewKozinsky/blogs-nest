@@ -1,4 +1,4 @@
-import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose'
+/*import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument } from 'mongoose'
 
 export type DeviceTokenDocument = HydratedDocument<DeviceToken>
@@ -24,4 +24,4 @@ export class DeviceToken {
 	deviceName: string
 }
 
-export const DeviceTokenSchema = SchemaFactory.createForClass(DeviceToken)
+export const DeviceTokenSchema = SchemaFactory.createForClass(DeviceToken)*/

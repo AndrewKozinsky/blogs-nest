@@ -3,11 +3,11 @@ import { add } from 'date-fns'
 import * as jwt from 'jsonwebtoken'
 import { agent as request } from 'supertest'
 import { JwtService } from '../src/base/application/jwt.service'
-import { AuthRepository } from '../src/features/auth/authRepository'
-import { UsersRepository } from '../src/features/users/usersRepository'
+import { DeviceTokenOutModel } from '../src/models/auth/auth.output.model'
+import { AuthRepository } from '../src/repositories/authRepository/auth.repository'
+import { UsersRepository } from '../src/repositories/users.repository'
 import { wait } from '../src/utils/promise'
 import { createUniqString, parseCookieStringToObj } from '../src/utils/stringUtils'
-import { DBTypes } from '../src/db/mongo/dbTypes'
 import { userUtils } from './utils/userUtils'
 import { describe } from 'node:test'
 import { HTTP_STATUSES, config } from '../src/settings/config'
@@ -182,7 +182,7 @@ describe('ROOT', () => {
 			// Create expired token
 			const deviceId = createUniqString()
 
-			const expiredRefreshToken: DBTypes.DeviceToken = {
+			const expiredRefreshToken: DeviceTokenOutModel = {
 				issuedAt: new Date(),
 				expirationDate: add(new Date(), { days: -6 }),
 				deviceIP: '123',
@@ -472,7 +472,7 @@ describe('ROOT', () => {
 			// Create expired token
 			const deviceId = createUniqString()
 
-			const expiredRefreshToken: DBTypes.DeviceToken = {
+			const expiredRefreshToken: DeviceTokenOutModel = {
 				issuedAt: new Date(),
 				expirationDate: new Date(),
 				deviceIP: '123',

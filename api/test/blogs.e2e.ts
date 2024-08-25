@@ -1,12 +1,12 @@
 import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
 import { describe } from 'node:test'
+import { LikeStatuses } from '../src/db/pg/entities/postLikes'
+import { CreateBlogDtoModel } from '../src/models/blogs/blogs.input.model'
+import { GetBlogsOutModel } from '../src/models/blogs/blogs.output.model'
 import { HTTP_STATUSES } from '../src/settings/config'
 import RouteNames from '../src/settings/routeNames'
-import { DBTypes } from '../src/db/mongo/dbTypes'
-import { CreateBlogDtoModel } from '../src/features/blogs/blogs/model/blogs.input.model'
-import { GetBlogsOutModel } from '../src/features/blogs/blogs/model/blogs.output.model'
-import { GetPostsOutModel } from '../src/features/blogs/posts/model/posts.output.model'
+import { GetPostsOutModel } from '../src/models/posts/posts.output.model'
 import { blogUtils } from './utils/blogUtils'
 import { adminAuthorizationValue, createTestApp } from './utils/common'
 import { clearAllDB } from './utils/db'
@@ -175,8 +175,8 @@ describe('ROOT', () => {
 			expect(getBlogPostsRes.body.totalCount).toBe(2)
 			expect(getBlogPostsRes.body.items.length).toBe(2)
 
-			postUtils.checkPostObj(getBlogPostsRes.body.items[0], 0, 0, DBTypes.LikeStatuses.None)
-			postUtils.checkPostObj(getBlogPostsRes.body.items[1], 0, 0, DBTypes.LikeStatuses.None)
+			postUtils.checkPostObj(getBlogPostsRes.body.items[0], 0, 0, LikeStatuses.None)
+			postUtils.checkPostObj(getBlogPostsRes.body.items[1], 0, 0, LikeStatuses.None)
 		})
 
 		it('should return an object with properties with specific values after creating 7 blog posts', async () => {
@@ -324,7 +324,7 @@ describe('ROOT', () => {
 			async function setLikeStatus(
 				userToken: string,
 				postId: string,
-				likeStatus: DBTypes.LikeStatuses,
+				likeStatus: LikeStatuses,
 			) {
 				await request(app.getHttpServer())
 					.put('/' + RouteNames.POSTS.POST_ID(postId).LIKE_STATUS.full)
@@ -336,18 +336,18 @@ describe('ROOT', () => {
 			}
 
 			// Set a like statuses to the posts
-			await setLikeStatus(user1Token, postId1, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user2Token, postId1, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user2Token, postId2, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user3Token, postId2, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user1Token, postId3, DBTypes.LikeStatuses.Dislike)
-			await setLikeStatus(user1Token, postId4, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user4Token, postId4, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user2Token, postId4, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user3Token, postId4, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user2Token, postId5, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user3Token, postId5, DBTypes.LikeStatuses.Dislike)
-			await setLikeStatus(user1Token, postId6, DBTypes.LikeStatuses.Like)
+			await setLikeStatus(user1Token, postId1, LikeStatuses.Like)
+			await setLikeStatus(user2Token, postId1, LikeStatuses.Like)
+			await setLikeStatus(user2Token, postId2, LikeStatuses.Like)
+			await setLikeStatus(user3Token, postId2, LikeStatuses.Like)
+			await setLikeStatus(user1Token, postId3, LikeStatuses.Dislike)
+			await setLikeStatus(user1Token, postId4, LikeStatuses.Like)
+			await setLikeStatus(user4Token, postId4, LikeStatuses.Like)
+			await setLikeStatus(user2Token, postId4, LikeStatuses.Like)
+			await setLikeStatus(user3Token, postId4, LikeStatuses.Like)
+			await setLikeStatus(user2Token, postId5, LikeStatuses.Like)
+			await setLikeStatus(user3Token, postId5, LikeStatuses.Dislike)
+			await setLikeStatus(user1Token, postId6, LikeStatuses.Like)
 
 			// Get the posts by user 1 after all likes NewestLikes should be sorted in descending
 			const getPostsRes = await request(app.getHttpServer())
@@ -368,10 +368,10 @@ describe('ROOT', () => {
 			expect(postDescItems[4].title).toBe('post-5')
 			expect(postDescItems[5].title).toBe('post-6')
 
-			expect(postDescItems[0].extendedLikesInfo.myStatus).toBe(DBTypes.LikeStatuses.Like)
-			expect(postDescItems[2].extendedLikesInfo.myStatus).toBe(DBTypes.LikeStatuses.Dislike)
-			expect(postDescItems[3].extendedLikesInfo.myStatus).toBe(DBTypes.LikeStatuses.Like)
-			expect(postDescItems[5].extendedLikesInfo.myStatus).toBe(DBTypes.LikeStatuses.Like)
+			expect(postDescItems[0].extendedLikesInfo.myStatus).toBe(LikeStatuses.Like)
+			expect(postDescItems[2].extendedLikesInfo.myStatus).toBe(LikeStatuses.Dislike)
+			expect(postDescItems[3].extendedLikesInfo.myStatus).toBe(LikeStatuses.Like)
+			expect(postDescItems[5].extendedLikesInfo.myStatus).toBe(LikeStatuses.Like)
 		})
 	})
 
@@ -474,7 +474,7 @@ describe('ROOT', () => {
 				createdBlogRes.body.id,
 			)
 
-			postUtils.checkPostObj(createBlogPostRes.body, 0, 0, DBTypes.LikeStatuses.None)
+			postUtils.checkPostObj(createBlogPostRes.body, 0, 0, LikeStatuses.None)
 
 			// Check if there are 2 blog posts after adding another one
 			const createdSecondBlogPostRes = await blogUtils.addBlogPostRequest(

@@ -1,4 +1,4 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+/*import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument } from 'mongoose'
 
 export type PostDocument = HydratedDocument<Post>
@@ -24,4 +24,4 @@ export class Post {
 	createdAt: string
 }
 
-export const PostSchema = SchemaFactory.createForClass(Post)
+export const PostSchema = SchemaFactory.createForClass(Post)*/

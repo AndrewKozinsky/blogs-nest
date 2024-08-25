@@ -1,4 +1,4 @@
-export namespace DBTypes {
+/*export namespace DBTypes {
 	export type Blog = {
 		name: string
 		description: string
@@ -75,4 +75,4 @@ export namespace DBTypes {
 		path: string
 		method: string
 	}
-}
+}*/

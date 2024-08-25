@@ -1,8 +1,8 @@
 import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
+import { LikeStatuses } from '../src/db/pg/entities/postLikes'
 import { HTTP_STATUSES } from '../src/settings/config'
 import RouteNames from '../src/settings/routeNames'
-import { DBTypes } from '../src/db/mongo/dbTypes'
 import { blogUtils } from './utils/blogUtils'
 import { commentUtils } from './utils/commentUtils'
 import { postUtils } from './utils/postUtils'
@@ -55,7 +55,7 @@ describe('ROOT', () => {
 			await request(app.getHttpServer())
 				.put('/' + RouteNames.COMMENTS.COMMENT_ID(commentId).LIKE_STATUS.full)
 				.set('authorization', 'Bearer ' + userToken)
-				.send(JSON.stringify({ likeStatus: DBTypes.LikeStatuses.Like }))
+				.send(JSON.stringify({ likeStatus: LikeStatuses.Like }))
 				.set('Content-Type', 'application/json')
 				.set('Accept', 'application/json')
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
@@ -70,7 +70,7 @@ describe('ROOT', () => {
 				createdUserRes.body.login,
 				1,
 				0,
-				DBTypes.LikeStatuses.None,
+				LikeStatuses.None,
 			)
 		})
 
@@ -102,7 +102,7 @@ describe('ROOT', () => {
 				createdUserRes.body.login,
 				0,
 				0,
-				DBTypes.LikeStatuses.None,
+				LikeStatuses.None,
 			)
 		})
 
@@ -163,7 +163,7 @@ describe('ROOT', () => {
 				await request(app.getHttpServer())
 					.put('/' + RouteNames.COMMENTS.COMMENT_ID(comment1Id).LIKE_STATUS.full)
 					.set('authorization', 'Bearer ' + userToken)
-					.send(JSON.stringify({ likeStatus: DBTypes.LikeStatuses.Like }))
+					.send(JSON.stringify({ likeStatus: LikeStatuses.Like }))
 					.set('Content-Type', 'application/json')
 					.set('Accept', 'application/json')
 					.expect(HTTP_STATUSES.NO_CONTENT_204)
@@ -173,7 +173,7 @@ describe('ROOT', () => {
 			await request(app.getHttpServer())
 				.put('/' + RouteNames.COMMENTS.COMMENT_ID(comment1Id).LIKE_STATUS.full)
 				.set('authorization', 'Bearer ' + user2Token)
-				.send(JSON.stringify({ likeStatus: DBTypes.LikeStatuses.Dislike }))
+				.send(JSON.stringify({ likeStatus: LikeStatuses.Dislike }))
 				.set('Content-Type', 'application/json')
 				.set('Accept', 'application/json')
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
@@ -184,7 +184,7 @@ describe('ROOT', () => {
 				.set('authorization', 'Bearer ' + user2Token)
 				.expect(HTTP_STATUSES.OK_200)
 
-			expect(getCommentByUser2Res.body.likesInfo.myStatus).toBe(DBTypes.LikeStatuses.Dislike)
+			expect(getCommentByUser2Res.body.likesInfo.myStatus).toBe(LikeStatuses.Dislike)
 			expect(getCommentByUser2Res.body.likesInfo.likesCount).toBe(2)
 			expect(getCommentByUser2Res.body.likesInfo.dislikesCount).toBe(1)
 
@@ -194,7 +194,7 @@ describe('ROOT', () => {
 				.set('authorization', 'Bearer ' + user3Token)
 				.expect(HTTP_STATUSES.OK_200)
 
-			expect(getCommentByUser3Res.body.likesInfo.myStatus).toBe(DBTypes.LikeStatuses.Like)
+			expect(getCommentByUser3Res.body.likesInfo.myStatus).toBe(LikeStatuses.Like)
 
 			// Check if user 4 has status None in the comment 2
 			const getCommentByUser4Res = await request(app.getHttpServer())
@@ -202,7 +202,7 @@ describe('ROOT', () => {
 				.set('authorization', 'Bearer ' + user4Token)
 				.expect(HTTP_STATUSES.OK_200)
 
-			expect(getCommentByUser4Res.body.likesInfo.myStatus).toBe(DBTypes.LikeStatuses.None)
+			expect(getCommentByUser4Res.body.likesInfo.myStatus).toBe(LikeStatuses.None)
 		})
 
 		it(' create comment then: like the comment by user 1, user 2, user 3, user 4. Dislike by user 3. Get the comment by user 1.', async () => {
@@ -260,7 +260,7 @@ describe('ROOT', () => {
 			await request(app.getHttpServer())
 				.put('/' + RouteNames.COMMENTS.COMMENT_ID(comment2Id).LIKE_STATUS.full)
 				.set('authorization', 'Bearer ' + user1Token)
-				.send(JSON.stringify({ likeStatus: DBTypes.LikeStatuses.Dislike }))
+				.send(JSON.stringify({ likeStatus: LikeStatuses.Dislike }))
 				.set('Content-Type', 'application/json')
 				.set('Accept', 'application/json')
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
@@ -269,7 +269,7 @@ describe('ROOT', () => {
 			await request(app.getHttpServer())
 				.put('/' + RouteNames.COMMENTS.COMMENT_ID(comment2Id).LIKE_STATUS.full)
 				.set('authorization', 'Bearer ' + user2Token)
-				.send(JSON.stringify({ likeStatus: DBTypes.LikeStatuses.Dislike }))
+				.send(JSON.stringify({ likeStatus: LikeStatuses.Dislike }))
 				.set('Content-Type', 'application/json')
 				.set('Accept', 'application/json')
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
@@ -278,7 +278,7 @@ describe('ROOT', () => {
 			await request(app.getHttpServer())
 				.put('/' + RouteNames.COMMENTS.COMMENT_ID(comment2Id).LIKE_STATUS.full)
 				.set('authorization', 'Bearer ' + user2Token)
-				.send(JSON.stringify({ likeStatus: DBTypes.LikeStatuses.Like }))
+				.send(JSON.stringify({ likeStatus: LikeStatuses.Like }))
 				.set('Content-Type', 'application/json')
 				.set('Accept', 'application/json')
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
@@ -289,7 +289,7 @@ describe('ROOT', () => {
 				.set('authorization', 'Bearer ' + user1Token)
 				.expect(HTTP_STATUSES.OK_200)
 
-			expect(getCommentByUser2Res.body.likesInfo.myStatus).toBe(DBTypes.LikeStatuses.Dislike)
+			expect(getCommentByUser2Res.body.likesInfo.myStatus).toBe(LikeStatuses.Dislike)
 
 			// Get the comment 1
 			const getCommentByUser1Res = await request(app.getHttpServer())
@@ -297,7 +297,7 @@ describe('ROOT', () => {
 				.set('authorization', 'Bearer ' + user1Token)
 				.expect(HTTP_STATUSES.OK_200)
 
-			expect(getCommentByUser1Res.body.likesInfo.myStatus).toBe(DBTypes.LikeStatuses.None)
+			expect(getCommentByUser1Res.body.likesInfo.myStatus).toBe(LikeStatuses.None)
 			expect(getCommentByUser1Res.body.likesInfo.likesCount).toBe(0)
 			expect(getCommentByUser1Res.body.likesInfo.dislikesCount).toBe(0)
 		})
@@ -567,7 +567,7 @@ describe('ROOT', () => {
 			await request(app.getHttpServer())
 				.put('/' + RouteNames.COMMENTS.COMMENT_ID(commentId).LIKE_STATUS.full)
 				.set('authorization', 'Bearer ' + userToken)
-				.send(JSON.stringify({ likeStatus: DBTypes.LikeStatuses.Dislike }))
+				.send(JSON.stringify({ likeStatus: LikeStatuses.Dislike }))
 				.set('Content-Type', 'application/json')
 				.set('Accept', 'application/json')
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
@@ -583,14 +583,14 @@ describe('ROOT', () => {
 				createdUserRes.body.login,
 				0,
 				1,
-				DBTypes.LikeStatuses.Dislike,
+				LikeStatuses.Dislike,
 			)
 
 			// Get the comment again by an authorized user to check a returned object
 			const getComment2Res = await request(app.getHttpServer())
 				.get('/' + RouteNames.COMMENTS.COMMENT_ID(commentId).full)
 				.set('authorization', 'Bearer ' + userToken)
-				.send(JSON.stringify({ likeStatus: DBTypes.LikeStatuses.Like }))
+				.send(JSON.stringify({ likeStatus: LikeStatuses.Like }))
 				.expect(HTTP_STATUSES.OK_200)
 
 			commentUtils.checkCommentObj(
@@ -599,7 +599,7 @@ describe('ROOT', () => {
 				createdUserRes.body.login,
 				0,
 				1,
-				DBTypes.LikeStatuses.Dislike,
+				LikeStatuses.Dislike,
 			)
 		})
 

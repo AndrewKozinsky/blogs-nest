@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common'
 import { GameStatus } from '../../src/db/pg/entities/game/game'
-import { gameConfig } from '../../src/features/pairGame/config'
+import { gameConfig } from '../../src/routes/pairGame/config'
 import { HTTP_STATUSES } from '../../src/settings/config'
 import RouteNames from '../../src/settings/routeNames'
 import { createTestApp } from '../utils/common'

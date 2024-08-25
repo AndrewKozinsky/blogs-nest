@@ -5,9 +5,7 @@ const sendpulse = require('sendpulse-api')
 export class EmailAdapter {
 	async sendEmail(toEmail: string, subject: string, textMessage: string, htmlMessage: string) {
 		return new Promise((resolve, reject) => {
-			/*
-			 * https://login.sendpulse.com/settings/#api
-			 */
+			/* https://login.sendpulse.com/settings/#api */
 			const API_USER_ID = 'b96661c19faf35a7a862d56abbae22c8'
 			const API_SECRET = 'ab8cc8878db31680bfacab37e9382933'
 			const TOKEN_STORAGE = '/tmp/'

@@ -10,13 +10,14 @@ import { Post } from './db/pg/entities/post'
 import { PostLikes } from './db/pg/entities/postLikes'
 import { RateLimit } from './db/pg/entities/rateLimit'
 import { User } from './db/pg/entities/user'
-import { AuthModule } from './features/auth/auth.module'
-import { BlogsModule } from './features/blogs/blogs.module'
-import { PairGameModule } from './features/pairGame/pairGame.module'
-import { SaQuizQuestionsModule } from './features/saQuestions/saQuestions.module'
-import { SecurityModule } from './features/security/security.module'
-import { TestsModule } from './features/test/tests.module'
-import { UsersModule } from './features/users/users.module'
+import { AuthModule } from './routes/auth/auth.module'
+import { BloggerBlogsModule } from './routes/blogger/blogs/bloggerBlogs.module'
+import { BlogsModule } from './routes/blogs/blogs.module'
+import { PairGameModule } from './routes/pairGame/pairGame.module'
+import { SaQuizQuestionsModule } from './routes/saQuestions/saQuestions.module'
+import { SecurityModule } from './routes/security/security.module'
+import { TestsModule } from './routes/test/tests.module'
+import { UsersModule } from './routes/users/users.module'
 import 'reflect-metadata'
 
 const { DB_NAME, DB_USER_NAME, DB_USER_PASSWORD, POSTGRES_PORT } = process.env
@@ -44,6 +45,7 @@ const typeORMOptions: TypeOrmModuleOptions = {
 		ScheduleModule.forRoot(),
 		AuthModule,
 		BlogsModule,
+		BloggerBlogsModule,
 		UsersModule,
 		SecurityModule,
 		TestsModule,

@@ -1,4 +1,4 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+/*import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument } from 'mongoose'
 
 export type PostLikeDocument = HydratedDocument<PostLike>
@@ -18,4 +18,4 @@ export class PostLike {
 	addedAt: string
 }
 
-export const PostLikeSchema = SchemaFactory.createForClass(PostLike)
+export const PostLikeSchema = SchemaFactory.createForClass(PostLike)*/

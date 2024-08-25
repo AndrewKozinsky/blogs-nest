@@ -2,6 +2,12 @@ import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
 import { Post } from './post'
 import { User } from './user'
 
+export enum LikeStatuses {
+	None = 'None',
+	Like = 'Like',
+	Dislike = 'Dislike',
+}
+
 @Entity()
 export class PostLikes {
 	@PrimaryGeneratedColumn()

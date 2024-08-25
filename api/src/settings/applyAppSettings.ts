@@ -4,7 +4,7 @@ import { useContainer } from 'class-validator'
 import { NextFunction, Request, Response } from 'express'
 import { AppModule } from '../app.module'
 import { JwtService } from '../base/application/jwt.service'
-import { UsersRepository } from '../features/users/usersRepository'
+import { UsersRepository } from '../repositories/users.repository'
 import { HttpExceptionFilter } from '../infrastructure/exception-filters/exception.filter'
 import { SetReqUserMiddleware } from '../infrastructure/middlewares/setReqUser.middleware'
 

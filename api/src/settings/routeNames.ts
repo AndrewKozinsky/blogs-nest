@@ -31,6 +31,31 @@ export const RouteNames = {
 			}
 		},
 	},
+	BLOGGER: {
+		value: 'blogger',
+		BLOGS: {
+			value: 'blogs',
+			full: 'blogger/blogs',
+			BLOG_ID(blogId: string) {
+				return {
+					value: blogId,
+					full: 'blogger/blogs/' + blogId,
+					POSTS(blogId: string) {
+						return {
+							value: 'posts',
+							full: `blogger/blogs/${blogId}/posts`,
+							POST_ID(blogId: string, postId: string) {
+								return {
+									value: postId,
+									full: `blogger/blogs/${blogId}/posts/${postId}`,
+								}
+							},
+						}
+					},
+				}
+			},
+		},
+	},
 	POSTS: {
 		value: 'posts',
 		POST_ID(postId: string) {

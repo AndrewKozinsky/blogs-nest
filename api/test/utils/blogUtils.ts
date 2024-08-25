@@ -3,7 +3,7 @@ import { agent as request } from 'supertest'
 import {
 	CreateBlogDtoModel,
 	CreateBlogPostDtoModel,
-} from '../../src/features/blogs/blogs/model/blogs.input.model'
+} from '../../src/models/blogs/blogs.input.model'
 import RouteNames from '../../src/settings/routeNames'
 import { adminAuthorizationValue } from './common'
 

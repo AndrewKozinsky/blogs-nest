@@ -1,4 +1,4 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+/*import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument } from 'mongoose'
 
 export type RateLimitDocument = HydratedDocument<RateLimit>
@@ -18,4 +18,4 @@ export class RateLimit {
 	method: string
 }
 
-export const RateLimitSchema = SchemaFactory.createForClass(RateLimit)
+export const RateLimitSchema = SchemaFactory.createForClass(RateLimit)*/

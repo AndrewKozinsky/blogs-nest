@@ -1,11 +1,11 @@
 import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
-import { CreatePostDtoModel } from '../src/features/blogs/posts/model/posts.input.model'
-import { GetPostsOutModel } from '../src/features/blogs/posts/model/posts.output.model'
+import { LikeStatuses } from '../src/db/pg/entities/postLikes'
+import { CreatePostDtoModel } from '../src/models/posts/posts.input.model'
+import { GetPostsOutModel } from '../src/models/posts/posts.output.model'
 import { HTTP_STATUSES } from '../src/settings/config'
 import RouteNames from '../src/settings/routeNames'
-import { DBTypes } from '../src/db/mongo/dbTypes'
-import { GetPostCommentsOutModel } from '../src/features/blogs/comments/model/comments.output.model'
+import { GetPostCommentsOutModel } from '../src/models/comments/comments.output.model'
 import { blogUtils } from './utils/blogUtils'
 import { commentUtils } from './utils/commentUtils'
 import { adminAuthorizationValue, createTestApp, userEmail, userPassword } from './utils/common'
@@ -87,7 +87,7 @@ describe('ROOT', () => {
 				userLogin,
 				0,
 				0,
-				DBTypes.LikeStatuses.None,
+				LikeStatuses.None,
 			)
 			commentUtils.checkCommentObj(
 				getPostCommentsRes.body.items[1],
@@ -95,7 +95,7 @@ describe('ROOT', () => {
 				userLogin,
 				0,
 				0,
-				DBTypes.LikeStatuses.None,
+				LikeStatuses.None,
 			)
 		})
 
@@ -209,7 +209,7 @@ describe('ROOT', () => {
 			async function setLikeStatus(
 				userToken: string,
 				commentId: string,
-				likeStatus: DBTypes.LikeStatuses,
+				likeStatus: LikeStatuses,
 			) {
 				await request(app.getHttpServer())
 					.put('/' + RouteNames.COMMENTS.COMMENT_ID(commentId).LIKE_STATUS.full)
@@ -221,19 +221,19 @@ describe('ROOT', () => {
 			}
 
 			// Set a like statuses to the comments
-			await setLikeStatus(user1Token, comment1Id, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user2Token, comment1Id, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user2Token, comment2Id, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user3Token, comment2Id, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user1Token, comment3Id, DBTypes.LikeStatuses.Dislike)
-			await setLikeStatus(user1Token, comment4Id, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user4Token, comment4Id, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user2Token, comment4Id, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user3Token, comment4Id, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user2Token, comment5Id, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user3Token, comment5Id, DBTypes.LikeStatuses.Dislike)
-			await setLikeStatus(user1Token, comment6Id, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user2Token, comment6Id, DBTypes.LikeStatuses.Dislike)
+			await setLikeStatus(user1Token, comment1Id, LikeStatuses.Like)
+			await setLikeStatus(user2Token, comment1Id, LikeStatuses.Like)
+			await setLikeStatus(user2Token, comment2Id, LikeStatuses.Like)
+			await setLikeStatus(user3Token, comment2Id, LikeStatuses.Like)
+			await setLikeStatus(user1Token, comment3Id, LikeStatuses.Dislike)
+			await setLikeStatus(user1Token, comment4Id, LikeStatuses.Like)
+			await setLikeStatus(user4Token, comment4Id, LikeStatuses.Like)
+			await setLikeStatus(user2Token, comment4Id, LikeStatuses.Like)
+			await setLikeStatus(user3Token, comment4Id, LikeStatuses.Like)
+			await setLikeStatus(user2Token, comment5Id, LikeStatuses.Like)
+			await setLikeStatus(user3Token, comment5Id, LikeStatuses.Dislike)
+			await setLikeStatus(user1Token, comment6Id, LikeStatuses.Like)
+			await setLikeStatus(user2Token, comment6Id, LikeStatuses.Dislike)
 
 			const getPostCommentsRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.POSTS.POST_ID(postId).COMMENTS.full('?sortDirection=asc'))
@@ -254,7 +254,7 @@ describe('ROOT', () => {
 				user1Login,
 				2,
 				0,
-				DBTypes.LikeStatuses.Like,
+				LikeStatuses.Like,
 			)
 			commentUtils.checkCommentObj(
 				getPostCommentsRes.body.items[1],
@@ -262,7 +262,7 @@ describe('ROOT', () => {
 				user1Login,
 				2,
 				0,
-				DBTypes.LikeStatuses.None,
+				LikeStatuses.None,
 			)
 			commentUtils.checkCommentObj(
 				getPostCommentsRes.body.items[2],
@@ -270,7 +270,7 @@ describe('ROOT', () => {
 				user1Login,
 				0,
 				1,
-				DBTypes.LikeStatuses.Dislike,
+				LikeStatuses.Dislike,
 			)
 			commentUtils.checkCommentObj(
 				getPostCommentsRes.body.items[3],
@@ -278,7 +278,7 @@ describe('ROOT', () => {
 				user1Login,
 				4,
 				0,
-				DBTypes.LikeStatuses.Like,
+				LikeStatuses.Like,
 			)
 			commentUtils.checkCommentObj(
 				getPostCommentsRes.body.items[4],
@@ -286,7 +286,7 @@ describe('ROOT', () => {
 				user1Login,
 				1,
 				1,
-				DBTypes.LikeStatuses.None,
+				LikeStatuses.None,
 			)
 			commentUtils.checkCommentObj(
 				getPostCommentsRes.body.items[5],
@@ -294,7 +294,7 @@ describe('ROOT', () => {
 				user1Login,
 				1,
 				1,
-				DBTypes.LikeStatuses.Like,
+				LikeStatuses.Like,
 			)
 		})
 	})
@@ -367,7 +367,7 @@ describe('ROOT', () => {
 				userLogin,
 				0,
 				0,
-				DBTypes.LikeStatuses.None,
+				LikeStatuses.None,
 			)
 
 			// Check if there are 2 posts after adding another one
@@ -420,8 +420,8 @@ describe('ROOT', () => {
 			expect(getPostsRes.body.totalCount).toBe(2)
 			expect(getPostsRes.body.items.length).toBe(2)
 
-			postUtils.checkPostObj(getPostsRes.body.items[0], 0, 0, DBTypes.LikeStatuses.None)
-			postUtils.checkPostObj(getPostsRes.body.items[1], 0, 0, DBTypes.LikeStatuses.None)
+			postUtils.checkPostObj(getPostsRes.body.items[0], 0, 0, LikeStatuses.None)
+			postUtils.checkPostObj(getPostsRes.body.items[1], 0, 0, LikeStatuses.None)
 		})
 
 		it('should return an array of objects matching the queries scheme', async () => {
@@ -520,17 +520,17 @@ describe('ROOT', () => {
 				}
 			}
 
-			await postUtils.setPostLikeStatus(app, post1Id, user1Token, DBTypes.LikeStatuses.Like)
-			await postUtils.setPostLikeStatus(app, post1Id, user2Token, DBTypes.LikeStatuses.Like)
-			await postUtils.setPostLikeStatus(app, post1Id, user3Token, DBTypes.LikeStatuses.Like)
-			await postUtils.setPostLikeStatus(app, post1Id, user4Token, DBTypes.LikeStatuses.Like)
+			await postUtils.setPostLikeStatus(app, post1Id, user1Token, LikeStatuses.Like)
+			await postUtils.setPostLikeStatus(app, post1Id, user2Token, LikeStatuses.Like)
+			await postUtils.setPostLikeStatus(app, post1Id, user3Token, LikeStatuses.Like)
+			await postUtils.setPostLikeStatus(app, post1Id, user4Token, LikeStatuses.Like)
 
 			const getPostsRes = await request(app.getHttpServer()).get('/' + RouteNames.POSTS.value)
 
 			const post = getPostsRes.body.items[0]
 			expect(post.extendedLikesInfo.likesCount).toBe(4)
 			expect(post.extendedLikesInfo.dislikesCount).toBe(0)
-			expect(post.extendedLikesInfo.myStatus).toBe(DBTypes.LikeStatuses.None)
+			expect(post.extendedLikesInfo.myStatus).toBe(LikeStatuses.None)
 
 			expect(post.extendedLikesInfo.newestLikes).toHaveLength(3)
 			expect(typeof post.extendedLikesInfo.newestLikes[0].addedAt).toBe('string')
@@ -565,7 +565,7 @@ describe('ROOT', () => {
 			const createdPostRes = await postUtils.addPostRequest(app, blogId)
 			expect(createdPostRes.status).toBe(HTTP_STATUSES.CREATED_201)
 
-			postUtils.checkPostObj(createdPostRes.body, 0, 0, DBTypes.LikeStatuses.None)
+			postUtils.checkPostObj(createdPostRes.body, 0, 0, LikeStatuses.None)
 
 			// Check if there are 2 posts after adding another one
 			const createdPost2Res = await postUtils.addPostRequest(app, blogId)
@@ -597,7 +597,7 @@ describe('ROOT', () => {
 			)
 			expect(getPostRes.status).toBe(HTTP_STATUSES.OK_200)
 
-			postUtils.checkPostObj(getPostRes.body, 0, 0, DBTypes.LikeStatuses.None)
+			postUtils.checkPostObj(getPostRes.body, 0, 0, LikeStatuses.None)
 		})
 	})
 
@@ -773,7 +773,7 @@ describe('ROOT', () => {
 			await request(app.getHttpServer())
 				.put('/' + RouteNames.POSTS.POST_ID(postId).LIKE_STATUS.full)
 				.set('authorization', 'Bearer ' + userToken)
-				.send(JSON.stringify({ likeStatus: DBTypes.LikeStatuses.Like }))
+				.send(JSON.stringify({ likeStatus: LikeStatuses.Like }))
 				.set('Content-Type', 'application/json')
 				.set('Accept', 'application/json')
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
@@ -781,7 +781,7 @@ describe('ROOT', () => {
 			await request(app.getHttpServer())
 				.put('/' + RouteNames.POSTS.POST_ID(postId).LIKE_STATUS.full)
 				.set('authorization', 'Bearer ' + userToken)
-				.send(JSON.stringify({ likeStatus: DBTypes.LikeStatuses.Like }))
+				.send(JSON.stringify({ likeStatus: LikeStatuses.Like }))
 				.set('Content-Type', 'application/json')
 				.set('Accept', 'application/json')
 				.expect(HTTP_STATUSES.NO_CONTENT_204)
@@ -791,7 +791,7 @@ describe('ROOT', () => {
 				.get('/' + RouteNames.POSTS.POST_ID(postId).full)
 				.expect(HTTP_STATUSES.OK_200)
 
-			postUtils.checkPostObj(getPostRes.body, 1, 0, DBTypes.LikeStatuses.None)
+			postUtils.checkPostObj(getPostRes.body, 1, 0, LikeStatuses.None)
 		})
 
 		it('create post and make a few likes from different users', async () => {
@@ -837,14 +837,14 @@ describe('ROOT', () => {
 			}
 
 			// Set a like statuses to the post
-			await postUtils.setPostLikeStatus(app, postId, user1Token, DBTypes.LikeStatuses.Like)
+			await postUtils.setPostLikeStatus(app, postId, user1Token, LikeStatuses.Like)
 
 			// Get the post again by an unauthorized user to check a returned object
 			let getPostRes = await request(app.getHttpServer())
 				.get('/' + RouteNames.POSTS.POST_ID(postId).full)
 				.expect(HTTP_STATUSES.OK_200)
 
-			postUtils.checkPostObj(getPostRes.body, 1, 0, DBTypes.LikeStatuses.None)
+			postUtils.checkPostObj(getPostRes.body, 1, 0, LikeStatuses.None)
 
 			// Get the post again by an authorized user to check a returned object
 			getPostRes = await request(app.getHttpServer())
@@ -854,12 +854,12 @@ describe('ROOT', () => {
 				.set('Accept', 'application/json')
 				.expect(HTTP_STATUSES.OK_200)
 
-			postUtils.checkPostObj(getPostRes.body, 1, 0, DBTypes.LikeStatuses.Like)
+			postUtils.checkPostObj(getPostRes.body, 1, 0, LikeStatuses.Like)
 
 			// Set a like statuses to the post
-			await postUtils.setPostLikeStatus(app, postId, user2Token, DBTypes.LikeStatuses.Like)
-			await postUtils.setPostLikeStatus(app, postId, user3Token, DBTypes.LikeStatuses.Like)
-			await postUtils.setPostLikeStatus(app, postId, user4Token, DBTypes.LikeStatuses.Like)
+			await postUtils.setPostLikeStatus(app, postId, user2Token, LikeStatuses.Like)
+			await postUtils.setPostLikeStatus(app, postId, user3Token, LikeStatuses.Like)
+			await postUtils.setPostLikeStatus(app, postId, user4Token, LikeStatuses.Like)
 
 			// Get the post again by an authorized user to check a returned object
 			getPostRes = await request(app.getHttpServer())
@@ -869,7 +869,7 @@ describe('ROOT', () => {
 				.set('Accept', 'application/json')
 				.expect(HTTP_STATUSES.OK_200)
 
-			postUtils.checkPostObj(getPostRes.body, 4, 0, DBTypes.LikeStatuses.Like)
+			postUtils.checkPostObj(getPostRes.body, 4, 0, LikeStatuses.Like)
 			expect(getPostRes.body.extendedLikesInfo.newestLikes.length).toBe(3)
 
 			// Check extendedLikesInfo order
@@ -922,7 +922,7 @@ describe('ROOT', () => {
 			async function setLikeStatus(
 				userToken: string,
 				postId: string,
-				likeStatus: DBTypes.LikeStatuses,
+				likeStatus: LikeStatuses,
 			) {
 				await request(app.getHttpServer())
 					.put('/' + RouteNames.POSTS.POST_ID(postId).LIKE_STATUS.full)
@@ -934,18 +934,18 @@ describe('ROOT', () => {
 			}
 
 			// Set a like statuses to the posts
-			await setLikeStatus(user1Token, postId1, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user2Token, postId1, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user2Token, postId2, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user3Token, postId2, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user1Token, postId3, DBTypes.LikeStatuses.Dislike)
-			await setLikeStatus(user1Token, postId4, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user4Token, postId4, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user2Token, postId4, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user3Token, postId4, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user2Token, postId5, DBTypes.LikeStatuses.Like)
-			await setLikeStatus(user3Token, postId5, DBTypes.LikeStatuses.Dislike)
-			await setLikeStatus(user1Token, postId6, DBTypes.LikeStatuses.Like)
+			await setLikeStatus(user1Token, postId1, LikeStatuses.Like)
+			await setLikeStatus(user2Token, postId1, LikeStatuses.Like)
+			await setLikeStatus(user2Token, postId2, LikeStatuses.Like)
+			await setLikeStatus(user3Token, postId2, LikeStatuses.Like)
+			await setLikeStatus(user1Token, postId3, LikeStatuses.Dislike)
+			await setLikeStatus(user1Token, postId4, LikeStatuses.Like)
+			await setLikeStatus(user4Token, postId4, LikeStatuses.Like)
+			await setLikeStatus(user2Token, postId4, LikeStatuses.Like)
+			await setLikeStatus(user3Token, postId4, LikeStatuses.Like)
+			await setLikeStatus(user2Token, postId5, LikeStatuses.Like)
+			await setLikeStatus(user3Token, postId5, LikeStatuses.Dislike)
+			await setLikeStatus(user1Token, postId6, LikeStatuses.Like)
 
 			// Get the posts by user 1 after all likes NewestLikes should be sorted in descending
 			const getPostsRes = await request(app.getHttpServer())
@@ -966,10 +966,10 @@ describe('ROOT', () => {
 			expect(postDescItems[4].title).toBe('post-5')
 			expect(postDescItems[5].title).toBe('post-6')
 
-			expect(postDescItems[0].extendedLikesInfo.myStatus).toBe(DBTypes.LikeStatuses.Like)
-			expect(postDescItems[2].extendedLikesInfo.myStatus).toBe(DBTypes.LikeStatuses.Dislike)
-			expect(postDescItems[3].extendedLikesInfo.myStatus).toBe(DBTypes.LikeStatuses.Like)
-			expect(postDescItems[5].extendedLikesInfo.myStatus).toBe(DBTypes.LikeStatuses.Like)
+			expect(postDescItems[0].extendedLikesInfo.myStatus).toBe(LikeStatuses.Like)
+			expect(postDescItems[2].extendedLikesInfo.myStatus).toBe(LikeStatuses.Dislike)
+			expect(postDescItems[3].extendedLikesInfo.myStatus).toBe(LikeStatuses.Like)
+			expect(postDescItems[5].extendedLikesInfo.myStatus).toBe(LikeStatuses.Like)
 		})
 	})
 })

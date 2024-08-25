@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { add, addMilliseconds } from 'date-fns'
 import jwt, { decode } from 'jsonwebtoken'
+import { DeviceTokenOutModel } from '../../models/auth/auth.output.model'
 import { config } from '../../settings/config'
-import { DBTypes } from '../../db/mongo/dbTypes'
 import { createUniqString } from '../../utils/stringUtils'
 
 @Injectable()
@@ -29,7 +29,7 @@ export class JwtService {
 		userId: string,
 		deviceIP: string,
 		deviceName: string,
-	): DBTypes.DeviceToken {
+	): DeviceTokenOutModel {
 		const deviceId = createUniqString()
 
 		return {

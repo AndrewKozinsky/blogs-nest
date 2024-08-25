@@ -1,4 +1,4 @@
-import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose'
+/*import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument } from 'mongoose'
 
 export type UserDocument = HydratedDocument<User>
@@ -26,4 +26,4 @@ export class User {
 	emailConfirmation: Record<string, any>
 }
 
-export const UserSchema = SchemaFactory.createForClass(User)
+export const UserSchema = SchemaFactory.createForClass(User)*/

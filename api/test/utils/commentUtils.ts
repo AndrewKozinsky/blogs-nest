@@ -1,4 +1,4 @@
-import { DBTypes } from '../../src/db/mongo/dbTypes'
+import { LikeStatuses } from '../../src/db/pg/entities/postLikes'
 
 export const commentUtils = {
 	checkCommentObj(
@@ -7,7 +7,7 @@ export const commentUtils = {
 		userLogin: string,
 		likesCount: number,
 		dislikesCount: number,
-		currentUserLikeStatus: DBTypes.LikeStatuses,
+		currentUserLikeStatus: LikeStatuses,
 	) {
 		expect(commentObj).toEqual({
 			id: commentObj.id,

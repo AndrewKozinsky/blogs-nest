@@ -1,10 +1,10 @@
 import { INestApplication } from '@nestjs/common'
 import { agent as request } from 'supertest'
-import { DBTypes } from '../../src/db/mongo/dbTypes'
+import { LikeStatuses } from '../../src/db/pg/entities/postLikes'
 import {
 	CreatePostCommentDtoModel,
 	CreatePostDtoModel,
-} from '../../src/features/blogs/posts/model/posts.input.model'
+} from '../../src/models/posts/posts.input.model'
 import { HTTP_STATUSES } from '../../src/settings/config'
 import RouteNames from '../../src/settings/routeNames'
 import { adminAuthorizationValue } from './common'
@@ -40,7 +40,7 @@ export const postUtils = {
 		postObj: any,
 		likesCount: number,
 		dislikesCount: number,
-		currentUserLikeStatus: DBTypes.LikeStatuses,
+		currentUserLikeStatus: LikeStatuses,
 	) {
 		expect(postObj._id).toBe(undefined)
 		expect(typeof postObj.id).toBe('string')
@@ -71,7 +71,7 @@ export const postUtils = {
 		app: INestApplication,
 		postId: string,
 		userToken: string,
-		likeStatus: DBTypes.LikeStatuses,
+		likeStatus: LikeStatuses,
 	) {
 		await request(app.getHttpServer())
 			.put('/' + RouteNames.POSTS.POST_ID(postId).LIKE_STATUS.full)
